@@ -1,0 +1,14 @@
+<p-layout :title="title">
+  <h2>hello {{ strrev(name) }}</h2>
+  <p-userprofile dark v-if="ok" :userid="user"></p-userprofile>
+</p-layout>
+
+<style></style>
+
+<?php
+
+$title = "startseite!";
+$name = "welt";
+$ok = true;
+$user = '1234';
+?>

@@ -1,0 +1,10 @@
+<section>
+  <strong>user: {{ props.userid }}</strong>
+</section>
+
+<style></style>
+
+<?php
+
+
+?>
