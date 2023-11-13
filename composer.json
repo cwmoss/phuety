@@ -1,10 +1,15 @@
 {
   "autoload": {
     "psr-4": {
-      "slow\\": "src"
+      "phuety\\": "src",
+      "WMDE\\VueJsTemplating\\": "src/php-vuejs-templating/src"
     }
   },
+  "scripts": {
+    "post-update-cmd": "@setup",
+    "setup": "mkdir -p compiled"
+  },
   "require": {
-    "wmde/php-vuejs-templating": "^2.0"
+    "chillerlan/php-qrcode": "^4.3"
   }
 }
