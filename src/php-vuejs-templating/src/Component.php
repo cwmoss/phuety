@@ -40,7 +40,7 @@ class Component {
 	public function render_page(array $data) {
 		$dom = new DOMDocument();
 		@$dom->loadHTML($this->template);
-		$dom->is_page = true;
+		// $dom->is_page = true;
 		$this->handleNode($dom->documentElement, $data);
 		return $dom->saveHTML();
 	}
