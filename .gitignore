@@ -1,3 +1,4 @@
 vendor/
 composer.lock
 compiled/
+.DS_Store
