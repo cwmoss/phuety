@@ -34,7 +34,37 @@ class component {
         return substr(trim($dom->saveHtml()), 4, -5);
     }
 
+    public function run_code(array $props) {
+    }
+
     public function run(array $props = [], DOMNodeList $children = null) {
+        $result = $this->run_code($props);
+
+        if ($this->is_layout) {
+            $html = $this->renderer->render_page($result);
+        } else {
+            $html = $this->renderer->render($result);
+        }
+
+
+        #print "html result: $html\n";
+        #print "slot?\n";
+        //print_r($children);
+        // layouts are different 
+        if ($this->is_layout) {
+            $dom = compiler::get_document($html);
+        } else {
+            $dom = compiler::get_fragment($html);
+        }
+
+        $this->travel_nodes($dom->documentElement, $dom);
+        $this->replace_slot($dom, $children);
+        # compiler::d("after replace " . static::class, $dom);
+        return $dom;
+    }
+
+
+    public function run0(array $props = [], DOMNodeList $children = null) {
         // print "\nrunning... " . static::class . "\n";
         $file = $this->cbase . '/' . $this->name . '.run.php';
         include($file);
@@ -158,15 +188,33 @@ class component {
         # print "create component $name";
         // print_r($parts);
         $tpl = file_get_contents(__DIR__ . '/_component.php');
-        $repl = ['NAME' => $name, 'UID' => $parts['uid'], 'ISLAYOUT' => $parts['is_layout'] ? 'true' : 'false'];
+
+        [$php, $use] = self::get_use_statements($parts['php']);
+        $repl = [
+            'NAME' => $name, 'UID' => $parts['uid'],
+            'ISLAYOUT' => $parts['is_layout'] ? 'true' : 'false',
+            'PHPCODE' => $php,
+            'USESTATEMENTS' => $use
+        ];
+
+
         $tpl = str_replace(array_keys($repl), array_values($repl), $tpl);
         file_put_contents($dir . '/' . $name . '_component.php', $tpl);
         $css = sprintf(".%s{\n%s\n}", $parts['uid'], $parts['css']);
         file_put_contents($dir . '/' . $name . '.css', $css);
-        $php = '<?php ' . $parts['php'];
-        file_put_contents($dir . '/' . $name . '.run.php', $php);
+        // $php = '<?php ' . $parts['php'];
+        // file_put_contents($dir . '/' . $name . '.run.php', $php);
         $vue = sprintf('%s', $parts['vue']);
         file_put_contents($dir . '/' . $name . '.html', $vue);
         return $repl['UID'];
+    }
+
+    static public function get_use_statements($code) {
+        $use = preg_match_all("/^\s*use\s+[^;]+;\s*$/ms", $code, $mat, \PREG_SET_ORDER);
+        if (!$mat) return [$code, ""];
+
+        $use = join("\n", array_map(fn ($el) => $el[0], $mat));
+        $code = preg_replace("/^\s*use\s+[^;]+;\s*$/ms", "", $code);
+        return [$code, $use];
     }
 }
