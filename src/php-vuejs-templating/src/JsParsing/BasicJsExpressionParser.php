@@ -8,7 +8,7 @@ class BasicJsExpressionParser implements JsExpressionParser {
 
 	private $methods;
 
-	public function __construct( array $methods ) {
+	public function __construct(array $methods) {
 		$this->methods = $methods;
 	}
 
@@ -17,23 +17,26 @@ class BasicJsExpressionParser implements JsExpressionParser {
 	 *
 	 * @return ParsedExpression
 	 */
-	public function parse( $expression ) {
-		$expression = $this->normalizeExpression( $expression );
-		if ( strncmp( $expression, '!', 1 ) === 0 ) {
-			return new NegationOperator( $this->parse( substr( $expression, 1 ) ) );
-		} elseif ( strncmp( $expression, "'", 1 ) === 0 ) {
-			return new StringLiteral( substr( $expression, 1, -1 ) );
-		} elseif ( preg_match( '/^(\w+)\((.*)\)$/', $expression, $matches ) ) {
+	public function parse($expression, array $methods = []) {
+		$expression = $this->normalizeExpression($expression);
+		if (strncmp($expression, '!', 1) === 0) {
+			return new NegationOperator($this->parse(substr($expression, 1)));
+		} elseif (strncmp($expression, "'", 1) === 0) {
+			return new StringLiteral(substr($expression, 1, -1));
+		} elseif (preg_match('/^(\w+)\((.*)\)$/', $expression, $matches)) {
 			$methodName = $matches[1];
-			if ( !array_key_exists( $methodName, $this->methods ) ) {
-				throw new RuntimeException( "Method '{$methodName}' is undefined" );
+			$method = $methods[$methodName] ?? ($this->methods[$methodName] ?? null);
+
+			if (!$method) {
+				// print_r($methods);
+				throw new RuntimeException("Method '{$methodName}' is undefined");
 			}
-			$method = $this->methods[$methodName];
-			$args = [ $this->parse( $matches[2] ) ];
-			return new MethodCall( $method, $args );
+
+			$args = [$this->parse($matches[2])];
+			return new MethodCall($method, $args);
 		} else {
-			$parts = explode( '.', $expression );
-			return new VariableAccess( $parts );
+			$parts = explode('.', $expression);
+			return new VariableAccess($parts);
 		}
 	}
 
@@ -42,8 +45,7 @@ class BasicJsExpressionParser implements JsExpressionParser {
 	 *
 	 * @return string
 	 */
-	protected function normalizeExpression( $expression ) {
-		return trim( $expression );
+	protected function normalizeExpression($expression) {
+		return trim($expression);
 	}
-
 }

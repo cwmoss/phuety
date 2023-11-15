@@ -11,7 +11,7 @@ class VariableAccess implements ParsedExpression {
 	 */
 	private $pathParts;
 
-	public function __construct( array $pathParts ) {
+	public function __construct(array $pathParts) {
 		$this->pathParts = $pathParts;
 	}
 
@@ -21,16 +21,16 @@ class VariableAccess implements ParsedExpression {
 	 * @throws RuntimeException when a path element cannot be found in the array
 	 * @return mixed
 	 */
-	public function evaluate( array $data ) {
+	public function evaluate(array $data) {
 		$value = $data;
-		foreach ( $this->pathParts as $key ) {
-			if ( !array_key_exists( $key, $value ) ) {
-				$expression = implode( '.', $this->pathParts );
-				throw new RuntimeException( "Undefined variable '{$expression}'" );
+		foreach ($this->pathParts as $key) {
+			if (!array_key_exists($key, $value)) {
+				$expression = implode('.', $this->pathParts);
+				return "";
+				throw new RuntimeException("Undefined variable '{$expression}'");
 			}
 			$value = $value[$key];
 		}
 		return $value;
 	}
-
 }

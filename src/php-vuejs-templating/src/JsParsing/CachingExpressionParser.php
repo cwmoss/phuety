@@ -14,7 +14,7 @@ class CachingExpressionParser implements JsExpressionParser {
 	 */
 	private $expressionCache;
 
-	public function __construct( JsExpressionParser $parser ) {
+	public function __construct(JsExpressionParser $parser) {
 		$this->parser = $parser;
 	}
 
@@ -23,13 +23,13 @@ class CachingExpressionParser implements JsExpressionParser {
 	 *
 	 * @return ParsedExpression
 	 */
-	public function parse( $expression ) {
-		$expression = $this->normalizeExpression( $expression );
-		if ( isset( $this->expressionCache[$expression] ) ) {
-			return $this->expressionCache[$expression];
+	public function parse($expression, array $methods = []) {
+		$expression = $this->normalizeExpression($expression);
+		if (isset($this->expressionCache[$expression])) {
+			# return $this->expressionCache[$expression];
 		}
 
-		$result = $this->parser->parse( $expression );
+		$result = $this->parser->parse($expression, $methods);
 		$this->expressionCache[$expression] = $result;
 		return $result;
 	}
@@ -39,8 +39,7 @@ class CachingExpressionParser implements JsExpressionParser {
 	 *
 	 * @return string
 	 */
-	protected function normalizeExpression( $expression ) {
-		return trim( $expression );
+	protected function normalizeExpression($expression) {
+		return trim($expression);
 	}
-
 }

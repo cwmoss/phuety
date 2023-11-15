@@ -37,11 +37,11 @@ class Component {
 		$this->expressionParser = new CachingExpressionParser(new BasicJsExpressionParser($methods));
 	}
 
-	public function render_page(array $data) {
+	public function render_page(array $data, array $methods = []) {
 		$dom = new DOMDocument();
 		@$dom->loadHTML($this->template);
 		// $dom->is_page = true;
-		$this->handleNode($dom->documentElement, $data);
+		$this->handleNode($dom->documentElement, $data, $methods);
 		return $dom->saveHTML();
 	}
 	/**
@@ -49,12 +49,14 @@ class Component {
 	 *
 	 * @return string HTML
 	 */
-	public function render(array $data) {
+	public function render(array $data, array $methods = []) {
+		#var_dump($data);
+		#var_dump($methods);
 		$document = $this->parseHtml($this->template);
 		$html = [];
 		$rootNodes = $this->getRootNode($document);
 		foreach ($rootNodes as $root) {
-			$this->handleNode($root, $data);
+			$this->handleNode($root, $data, $methods);
 			$html[] = $document->saveHTML($root);
 		}
 		return join("\n", $html);
@@ -106,7 +108,7 @@ class Component {
 	 * @throws Exception
 	 */
 	private function getRootNode(DOMDocument $document) {
-		$rootNodes = $document->documentElement->childNodes->item(0)->childNodes;
+		$rootNodes = $document->documentElement->childNodes; // ->item(0)->childNodes;
 
 		return $rootNodes;
 
@@ -121,20 +123,20 @@ class Component {
 	 * @param DOMNode $node
 	 * @param array $data
 	 */
-	private function handleNode(DOMNode $node, array $data) {
-		$this->replaceMustacheVariables($node, $data);
+	private function handleNode(DOMNode $node, array $data, array $methods = []) {
+		$this->replaceMustacheVariables($node, $data, $methods);
 
 		if (!$this->isTextNode($node)) {
 			$this->stripEventHandlers($node);
-			$this->handleFor($node, $data);
-			$this->handleRawHtml($node, $data);
+			$this->handleFor($node, $data, $methods);
+			$this->handleRawHtml($node, $data, $methods);
 
 			if (!$this->isRemovedFromTheDom($node)) {
-				$this->handleAttributeBinding($node, $data);
-				$this->handleIf($node->childNodes, $data);
+				$this->handleAttributeBinding($node, $data, $methods);
+				$this->handleIf($node->childNodes, $data, $methods);
 
 				foreach (iterator_to_array($node->childNodes) as $childNode) {
-					$this->handleNode($childNode, $data);
+					$this->handleNode($childNode, $data, $methods);
 				}
 			}
 		}
@@ -156,7 +158,8 @@ class Component {
 	 * @param DOMNode $node
 	 * @param array $data
 	 */
-	private function replaceMustacheVariables(DOMNode $node, array $data) {
+	private function replaceMustacheVariables(DOMNode $node, array $data, array $methods = []) {
+		// print_r($methods);
 		if ($node instanceof DOMText) {
 			$text = $node->wholeText;
 
@@ -164,8 +167,8 @@ class Component {
 			preg_match_all($regex, $text, $matches);
 
 			foreach ($matches['expression'] as $index => $expression) {
-				$value = $this->expressionParser->parse($expression)
-					->evaluate($data);
+				$value = $this->expressionParser->parse($expression, $methods)
+					->evaluate($data, $methods);
 
 				$text = str_replace($matches[0][$index], $value, $text);
 			}
@@ -177,14 +180,14 @@ class Component {
 		}
 	}
 
-	private function handleAttributeBinding(DOMElement $node, array $data) {
+	private function handleAttributeBinding(DOMElement $node, array $data, array $methods = []) {
 		/** @var DOMAttr $attribute */
 		foreach (iterator_to_array($node->attributes) as $attribute) {
 			if (!preg_match('/^:[\w-]+$/', $attribute->name)) {
 				continue;
 			}
 
-			$value = $this->expressionParser->parse($attribute->value)
+			$value = $this->expressionParser->parse($attribute->value, $methods)
 				->evaluate($data);
 
 			$name = substr($attribute->name, 1);
@@ -203,7 +206,7 @@ class Component {
 	 * @param DOMNodeList $nodes
 	 * @param array $data
 	 */
-	private function handleIf(DOMNodeList $nodes, array $data) {
+	private function handleIf(DOMNodeList $nodes, array $data, array $methods = []) {
 		// Iteration of iterator breaks if we try to remove items while iterating, so defer node
 		// removing until finished iterating.
 		$nodesToRemove = [];
@@ -216,7 +219,7 @@ class Component {
 			if ($node->hasAttribute('v-if')) {
 				$conditionString = $node->getAttribute('v-if');
 				$node->removeAttribute('v-if');
-				$condition = $this->evaluateExpression($conditionString, $data);
+				$condition = $this->evaluateExpression($conditionString, $data, $methods);
 
 				if (!$condition) {
 					$nodesToRemove[] = $node;
@@ -237,7 +240,7 @@ class Component {
 		}
 	}
 
-	private function handleFor(DOMNode $node, array $data) {
+	private function handleFor(DOMNode $node, array $data, array $methods = []) {
 		if ($this->isTextNode($node)) {
 			return;
 		}
@@ -250,7 +253,7 @@ class Component {
 			foreach ($data[$listName] as $item) {
 				$newNode = $node->cloneNode(true);
 				$node->parentNode->insertBefore($newNode, $node);
-				$this->handleNode($newNode, array_merge($data, [$itemName => $item]));
+				$this->handleNode($newNode, array_merge($data, [$itemName => $item]), $methods);
 			}
 
 			$this->removeNode($node);
@@ -265,7 +268,7 @@ class Component {
 		}
 	}
 
-	private function handleRawHtml(DOMNode $node, array $data) {
+	private function handleRawHtml(DOMNode $node, array $data, array $methods = []) {
 		if ($this->isTextNode($node)) {
 			return;
 		}
@@ -289,8 +292,8 @@ class Component {
 	 *
 	 * @return bool
 	 */
-	private function evaluateExpression($expression, array $data) {
-		return $this->expressionParser->parse($expression)->evaluate($data);
+	private function evaluateExpression($expression, array $data, array $methods = []) {
+		return $this->expressionParser->parse($expression, $methods)->evaluate($data);
 	}
 
 	private function removeNode(DOMElement $node) {

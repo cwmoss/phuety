@@ -2,6 +2,7 @@
 
 namespace phuety;
 
+use Closure;
 use DOMNode;
 use DOMNodeList;
 use DOMDocument;
@@ -34,16 +35,29 @@ class component {
         return substr(trim($dom->saveHtml()), 4, -5);
     }
 
+    public function separate_functions($input) {
+        $data = $fun = [];
+        foreach ($input as $key => $value) {
+            if ($value instanceof Closure) {
+                $fun[$key] = $value;
+            } else {
+                $data[$key] = $value;
+            }
+        }
+        return [$data, $fun];
+    }
+
     public function run_code(array $props) {
     }
 
     public function run(array $props = [], DOMNodeList $children = null) {
         $result = $this->run_code($props);
+        [$data, $methods] = $this->separate_functions($result);
 
         if ($this->is_layout) {
-            $html = $this->renderer->render_page($result);
+            $html = $this->renderer->render_page($data, $methods);
         } else {
-            $html = $this->renderer->render($result);
+            $html = $this->renderer->render($data, $methods);
         }
 
 
