@@ -1,11 +1,11 @@
-<aside v-if="show" class="aside">
+<aside v-if="show">
   <div>
     <strong>user: {{ backw(props.userid) }}</strong> <em>{{props.size}}</em>
   </div>
 </aside>
 
 <style>
-  &.aside {
+  root {
     padding: 1em;
   }
 </style>

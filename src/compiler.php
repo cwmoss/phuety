@@ -99,12 +99,12 @@ class compiler {
                     $remove[] = $node;
                 } elseif ($node->nodeType == \XML_ELEMENT_NODE) {
                     if ($node->tagName == 'style') {
-                        $parts['css'] = str_replace('.this', '.' . $parts['uid'], (string) $node->nodeValue);
+                        $parts['css'] = str_replace('root', '&.root', (string) $node->nodeValue);
                         $remove[] = $node;
                         #$dom->documentElement->removeChild($node);
                     } else {
                         // add class
-                        self::add_class($node, $parts['uid']);
+                        self::add_class($node, $parts['uid'] . ' root');
                     }
                 }
             }
