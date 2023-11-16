@@ -12,11 +12,11 @@ class compiler {
     public array $compiled;
     public string $cbase;
 
-    public function __construct(public string $base) {
+    public function __construct(public string $base, public array $opts = ['css' => 'scope']) {
         $this->cbase = $base . '/../compiled';
     }
 
-    public function get_component($name) {
+    public function get_component($name): component {
         $cname = $name . '_component';
         if ($this->compiled[$name] ?? null) {
             $comp = $this->compiled[$name];
@@ -60,6 +60,9 @@ class compiler {
 
     public function split_sfc(DOMDocument $dom, $name, $is_layout = false) {
         $parts = ['php' => "", 'vue' => "", 'css' => "", 'uid' => $name . '-' . uniqid()];
+        if ($this->opts['css'] == 'scoped_simple') {
+            $parts['uid'] = $name;
+        }
         $remove = [];
         if ($is_layout) {
             // self::d("split layout", $dom);

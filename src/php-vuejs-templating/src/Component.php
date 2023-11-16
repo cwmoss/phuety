@@ -11,7 +11,7 @@ use DOMNodeList;
 use DOMText;
 use Exception;
 use LibXMLError;
-
+use phuety\compiler;
 use WMDE\VueJsTemplating\JsParsing\BasicJsExpressionParser;
 use WMDE\VueJsTemplating\JsParsing\CachingExpressionParser;
 use WMDE\VueJsTemplating\JsParsing\JsExpressionParser;
@@ -37,6 +37,35 @@ class Component {
 		$this->expressionParser = new CachingExpressionParser(new BasicJsExpressionParser($methods));
 	}
 
+	public function render_page_dom($dom, array $data, array $methods = []) {
+		// $dom->is_page = true;
+		$this->handleNode($dom->documentElement, $data, $methods);
+		// return $dom;
+	}
+	/**
+	 * @param array $data
+	 *
+	 * @return string HTML
+	 */
+	public function render_dom($dom, array $data, array $methods = []) {
+		#var_dump($data);
+		#var_dump($methods);
+		$this->handleNode($dom->documentElement, $data, $methods);
+		return;
+		$document = $this->parseHtml($this->template);
+		$html = [];
+		// $rootNodes = $this->getRootNode($document);
+		compiler::d("parse fragment", $document->documentElement->childNodes->item(0)->childNodes);
+		$rootNode = $document->documentElement->childNodes; // ->item(0)->childNodes;
+		foreach ($rootNodes as $root) {
+			$this->handleNode($root, $data, $methods);
+			$html[] = $document->saveHTML($root);
+		}
+		return join("\n", $html);
+		return $document->saveHTML();
+		// return $document->saveHTML($rootNode);
+	}
+
 	public function render_page(array $data, array $methods = []) {
 		$dom = new DOMDocument();
 		@$dom->loadHTML($this->template);
@@ -54,7 +83,9 @@ class Component {
 		#var_dump($methods);
 		$document = $this->parseHtml($this->template);
 		$html = [];
-		$rootNodes = $this->getRootNode($document);
+		// $rootNodes = $this->getRootNode($document);
+		compiler::d("parse fragment", $document->documentElement->childNodes->item(0)->childNodes);
+		$rootNode = $document->documentElement->childNodes; // ->item(0)->childNodes;
 		foreach ($rootNodes as $root) {
 			$this->handleNode($root, $data, $methods);
 			$html[] = $document->saveHTML($root);

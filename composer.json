@@ -7,9 +7,16 @@
   },
   "scripts": {
     "post-update-cmd": "@setup",
-    "setup": "mkdir -p compiled"
+    "setup": "mkdir -p compiled",
+    "test": [
+      "@phpunit"
+    ],
+    "phpunit": [
+      "phpunit"
+    ]
   },
   "require": {
-    "chillerlan/php-qrcode": "^4.3"
+    "chillerlan/php-qrcode": "^4.3",
+    "phpunit/phpunit": "^10.4"
   }
 }

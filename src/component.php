@@ -18,12 +18,23 @@ class component {
     public ?DOMDocument $pagedom = null;
     public vcomponent $renderer;
     public compiler $compiler;
+    public $dom = null;
 
     public function __construct(public string $cbase) {
         //   $this->uid = uniqid();
         $this->name = str_replace('_component', '', static::class);
         $tpl = file_get_contents($cbase . '/' . $this->name . '.html');
-        $this->renderer = new vcomponent($tpl, ['strrev' => 'strrev']);
+        $this->load_dom($tpl);
+        $this->renderer = new vcomponent('', ['strrev' => 'strrev']);
+    }
+
+    public function load_dom($html) {
+        if ($this->is_layout) {
+            $dom = compiler::get_document($html);
+        } else {
+            $dom = compiler::get_fragment($html);
+        }
+        $this->dom = $dom;
     }
 
     public function start_running(array $props = []) {
@@ -51,24 +62,26 @@ class component {
     }
 
     public function run(array $props = [], DOMNodeList $children = null) {
+        $dom = $this->dom->cloneNode(true);
         $result = $this->run_code($props);
         [$data, $methods] = $this->separate_functions($result);
 
         if ($this->is_layout) {
-            $html = $this->renderer->render_page($data, $methods);
+            # $html = $this->renderer->render_page($data, $methods);
+            $this->renderer->render_page_dom($dom, $data, $methods);
         } else {
-            $html = $this->renderer->render($data, $methods);
+            $this->renderer->render_dom($dom, $data, $methods);
         }
 
-
-        #print "html result: $html\n";
+        // var_dump($this->is_layout);
+        //print "html result: $html\n";
         #print "slot?\n";
         //print_r($children);
         // layouts are different 
         if ($this->is_layout) {
-            $dom = compiler::get_document($html);
+            #    $dom = compiler::get_document($html);
         } else {
-            $dom = compiler::get_fragment($html);
+            #    $dom = compiler::get_fragment($html);
         }
 
         $this->travel_nodes($dom->documentElement, $dom);
@@ -195,6 +208,7 @@ class component {
         $cname = $name . '_component';
         require_once($dir . '/' . $cname . '.php');
         $comp = new $cname($dir);
+        // $comp->load_dom();
         return $comp;
     }
 

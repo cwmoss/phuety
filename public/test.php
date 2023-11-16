@@ -3,6 +3,20 @@ require __DIR__ . '/../vendor/autoload.php';
 
 use slow\compiler;
 
+$profile = '<p>イリノイ州シカゴにて、アイルランド系の家庭に、9😄</p>';
+$dom = new DOMDocument();
+
+$dom->loadHTML('<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>' . $profile);
+// $dom->loadHTML('<!DOCTYPE html><meta charset="UTF-8">' . $profile);
+echo $dom->saveHTML();
+
+#exit;
+$dom->loadHTML('<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><body></body>');
+$f = $dom->createDocumentFragment();
+$f->appendXML($profile);
+$dom->documentElement->childNodes->item(1)->appendChild($f);
+print $dom->saveHTML();
+exit;
 print "huhu";
 $dom = get_fragment('<p-ok><h2>huh</h2></p-ok>');
 compiler::dump($dom);
