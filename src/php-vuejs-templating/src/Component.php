@@ -48,6 +48,7 @@ class Component {
 	 * @return string HTML
 	 */
 	public function render_dom($dom, array $data, array $methods = []) {
+		#var_dump("render-dom");
 		#var_dump($data);
 		#var_dump($methods);
 		$this->handleNode($dom->documentElement, $data, $methods);

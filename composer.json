@@ -17,6 +17,7 @@
   },
   "require": {
     "chillerlan/php-qrcode": "^4.3",
-    "phpunit/phpunit": "^10.4"
+    "phpunit/phpunit": "^10.4",
+    "symfony/expression-language": "^6.3"
   }
 }

@@ -1,7 +1,7 @@
 <?php
 require __DIR__ . '/../vendor/autoload.php';
 
-$compiler = new phuety\compiler(__DIR__ . '/../templates');
+$phuety = new phuety\phuety(__DIR__ . '/../templates');
 
 if ($_SERVER['REQUEST_URI'] == '/mvp.css') {
     header("Content-Type: text/css");
@@ -13,9 +13,6 @@ if ($_SERVER['REQUEST_URI'] == '/mvp.css') {
     }
 } else {
 
-
-    $c = $compiler->get_component('hello');
-
-    $doc = $c->start_running(['data' => 'huhu']);
+    $doc = $phuety->run('hello', ['data' => 'huhu']);
     print $doc;
 }

@@ -10,6 +10,6 @@ class NAME_component extends component {
 
     function run_code($props){
         PHPCODE
-        return get_defined_vars();
+        return get_defined_vars() + $props;
     }
 }
