@@ -1,6 +1,6 @@
 <aside v-if="show">
   <div>
-    <strong>user: {{ backw(props.userid) }}</strong> <em>{{props.size}}</em>
+    <strong>user: {{ backw(props.userid) }}</strong> <em>{{size}}</em>
   </div>
 </aside>
 
@@ -13,6 +13,7 @@
 <?php
 
 $show = $props['userid'] != 'bad';
+$size = $props['size'] ?? 50;
 
 $backw = function ($str) use ($props) {
   return substr(strrev($str), 0, $props['size'] ?? null) . " " . ($props['size'] ?? ' -- ');

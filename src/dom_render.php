@@ -10,6 +10,7 @@ use DOMNode;
 use DOMNodeList;
 use DOMText;
 use Exception;
+use Le\SMPLang\SMPLang;
 use LibXMLError;
 use phuety\compiler;
 use WMDE\VueJsTemplating\JsParsing\BasicJsExpressionParser;
@@ -23,10 +24,8 @@ class dom_render {
      */
     private $template;
 
-    /**
-     * @var JsExpressionParser
-     */
-    private $expressionParser;
+
+    private SMPLang $expressionParser;
 
     /**
      * @param string $template HTML
@@ -34,7 +33,8 @@ class dom_render {
      */
     public function __construct($template, array $methods) {
         $this->template = $template;
-        $this->expressionParser = new CachingExpressionParser(new BasicJsExpressionParser($methods));
+        // $this->expressionParser = new CachingExpressionParser(new BasicJsExpressionParser($methods));
+        $this->expressionParser = new SMPLang(['strrev' => 'strrev']);
     }
 
     public function render_page_dom($dom, array $data, array $methods = []) {
@@ -93,9 +93,9 @@ class dom_render {
             preg_match_all($regex, $text, $matches);
 
             foreach ($matches['expression'] as $index => $expression) {
-                $value = $this->expressionParser->parse($expression, $methods)
-                    ->evaluate($data, $methods);
-
+                //$value = $this->expressionParser->parse($expression, $methods)
+                //    ->evaluate($data, $methods);
+                $value = $this->expressionParser->evaluate($expression, $data + $methods);
                 $text = str_replace($matches[0][$index], $value, $text);
             }
 
@@ -113,9 +113,9 @@ class dom_render {
                 continue;
             }
 
-            $value = $this->expressionParser->parse($attribute->value, $methods)
-                ->evaluate($data);
-
+            // $value = $this->expressionParser->parse($attribute->value, $methods)
+            //    ->evaluate($data);
+            $value = $this->expressionParser->evaluate($attribute->value, $data + $methods);
             $name = substr($attribute->name, 1);
             if (is_bool($value)) {
                 if ($value) {
@@ -188,8 +188,9 @@ class dom_render {
         if ($node->hasAttribute('v-for')) {
             list($itemName, $listName) = explode(' in ', $node->getAttribute('v-for'));
             $node->removeAttribute('v-for');
-            $value = $this->expressionParser->parse($listName, $methods)
-                ->evaluate($data);
+            // $value = $this->expressionParser->parse($listName, $methods)
+            //    ->evaluate($data);
+            $value = $this->expressionParser->evaluate($listName, $data + $methods);
             foreach ($value as $item) {
                 $newNode = $node->cloneNode(true);
                 $node->parentNode->insertBefore($newNode, $node);
@@ -231,6 +232,7 @@ class dom_render {
      * @return bool
      */
     private function evaluateExpression($expression, array $data, array $methods = []) {
+        return $this->expressionParser->evaluate($expression, $data + $methods);
         return $this->expressionParser->parse($expression, $methods)->evaluate($data);
     }
 
