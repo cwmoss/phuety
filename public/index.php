@@ -1,7 +1,10 @@
 <?php
 require __DIR__ . '/../vendor/autoload.php';
 
+
 $phuety = new phuety\phuety(__DIR__ . '/../templates');
+
+send_nocache();
 
 if ($_SERVER['REQUEST_URI'] == '/mvp.css') {
     header("Content-Type: text/css");

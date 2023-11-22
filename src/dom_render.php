@@ -67,10 +67,11 @@ class dom_render {
             // $this->stripEventHandlers($node);
             $this->handleIf($node->childNodes, $data, $methods);
             $this->handleFor($node, $data, $methods);
+
+            $this->handleAttributeBinding($node, $data, $methods);
             $this->handleRawHtml($node, $data, $methods);
 
             if (!$this->isRemovedFromTheDom($node)) {
-                $this->handleAttributeBinding($node, $data, $methods);
 
                 foreach (iterator_to_array($node->childNodes) as $childNode) {
                     $this->handleNode($childNode, $data, $methods);
@@ -117,6 +118,7 @@ class dom_render {
             //    ->evaluate($data);
             $value = $this->expressionParser->evaluate($attribute->value, $data + $methods);
             $name = substr($attribute->name, 1);
+            //            print "attr {$attribute->name} => $name \n";
             if (is_bool($value)) {
                 if ($value) {
                     $node->setAttribute($name, $name);
@@ -194,6 +196,8 @@ class dom_render {
             foreach ($value as $item) {
                 $newNode = $node->cloneNode(true);
                 $node->parentNode->insertBefore($newNode, $node);
+                //print "FOR nav";
+                //var_dump([$itemName => $item]);
                 $this->handleNode($newNode, array_merge($data, [$itemName => $item]), $methods);
                 if ($node->tagName == 'template') {
                     dom::d('for-template', $node);
@@ -206,7 +210,6 @@ class dom_render {
     }
 
 
-
     private function handleRawHtml(DOMNode $node, array $data, array $methods = []) {
         if ($this->isTextNode($node)) {
             return;
@@ -215,11 +218,12 @@ class dom_render {
         /** @var DOMElement $node */
         if ($node->hasAttribute('v-html')) {
             $variableName = $node->getAttribute('v-html');
+            $value = $this->expressionParser->evaluate($variableName, $data);
             $node->removeAttribute('v-html');
 
             $newNode = $node->cloneNode(true);
-
-            dom::append_html($newNode, $data[$variableName]);
+            #dom::d("v-html", $newNode);
+            dom::append_html($newNode, $value);
 
             $node->parentNode->replaceChild($newNode, $node);
         }

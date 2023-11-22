@@ -32,7 +32,8 @@ class component {
         return new self($cbase, $tpl);
     }
 
-    static function load($name, $dir) {
+    static function load_class($name, $dir) {
+
         $cname = $name . '_component';
         require_once($dir . '/' . $cname . '.php');
         $comp = new $cname($dir);
@@ -55,7 +56,7 @@ class component {
         $this->is_start = true;
         $dom = $this->run($props);
         if ($this->pagedom) return $this->pagedom->saveHTML();
-
+        if ($this->is_layout) return $dom->saveHTML();
         // fragment with "ok" root 
         return substr(trim($dom->saveHtml()), 4, -5);
     }
@@ -184,7 +185,7 @@ class component {
             return;
         }
 
-        if (($node->tagName ?? null) && str_starts_with($node->tagName, 'p-')) {
+        if (($node->tagName ?? null) && $this->engine->is_component($node->tagName)) {
             # print "+++ handle component {$node->tagName}\n";
             $this->handle_component($node->tagName, $node, $dom, $slotmode);
             return;
@@ -195,10 +196,9 @@ class component {
         }
     }
 
-    public function handle_component($coname, DOMNode $node, $dom, $slotmode = false) {
-        $name = str_replace('p-', '', $coname);
+    public function handle_component($tagname, DOMNode $node, $dom, $slotmode = false) {
         // var_dump($this->engine);
-        $component = $this->engine->get_component($name);
+        $component = $this->engine->get_component($tagname);
         # print "\n=== +handle this {$this->name} compname {$component->name} start? -{$this->is_start}- layout? -{$this->is_layout}- slotmode? -{$slotmode}-\n";
 
         $newdom = $component->run(dom::attributes($node), $node->childNodes);

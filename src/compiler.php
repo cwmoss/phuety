@@ -12,25 +12,22 @@ class compiler {
     public array $compiled;
     public string $cbase;
 
-    public function __construct(public string $base, public array $opts = ['css' => 'scope']) {
-        $this->cbase = $base . '/../compiled';
+
+    public function __construct(public phuety $engine) {
+        $this->cbase = $engine->cbase;
     }
 
-
-
-
-    public function compile($name) {
+    public function compile($name, $source) {
         $is_layout = false;
-        $html = file_get_contents($this->base . '/' . $name . '.vue.php');
         if (
-            str_starts_with($html, '<html') || str_starts_with($html, '<!DOCTYPE') ||
-            str_starts_with($html, '<root') || str_starts_with($html, '<head') || str_starts_with($html, '<x-page')
+            str_starts_with($source, '<html') || str_starts_with($source, '<!DOCTYPE') ||
+            str_starts_with($source, '<root') || str_starts_with($source, '<head') || str_starts_with($source, '<x-page')
         ) {
             $is_layout = true;
             // $dom = compiler::get_document($html);
-            $dom = dom::get_document($html);
+            $dom = dom::get_document($source);
         } else {
-            $dom = dom::get_fragment($html);
+            $dom = dom::get_fragment($source);
         }
 
         $parts = $this->split_sfc($dom, $name, $is_layout);
@@ -74,7 +71,8 @@ class compiler {
 
     public function split_sfc(DOMDocument $dom, $name, $is_layout = false) {
         $parts = ['php' => "", 'vue' => "", 'css' => "", 'uid' => $name . '-' . uniqid()];
-        if ($this->opts['css'] == 'scoped_simple') {
+        // dom::d("split $name -- ", $dom);
+        if ($this->engine->opts['css'] == 'scoped_simple') {
             $parts['uid'] = $name;
         }
         $remove = [];
@@ -125,6 +123,8 @@ class compiler {
                     }
                 }
             }
+            /* sometimes code ends with ?> */
+            $php = rtrim($php, '>?');
             $parts['php'] = $php;
         }
         foreach ($remove as $node) {
@@ -139,8 +139,8 @@ class compiler {
         }
 
         $parts['is_layout'] = $is_layout;
-
-        // print_r($parts);
+        //if ($name == 'sc_navigation')
+        //    print_r($parts);
         return $parts;
     }
 }
