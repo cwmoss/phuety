@@ -1,0 +1,8 @@
+<div class="sc_team-655f24d011e77 root">
+    <div v-for="person in res.data.results" class="slide">
+        <h4>{{person.name.first}} {{person.name.last}}</h4>
+        <img :src="person.picture.large">
+    </div>
+</div>
+
+

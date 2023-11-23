@@ -4,7 +4,7 @@ use phuety\component;
 
 
 class page_home_component extends component {
-    public string $uid = "page_home-655e63b973e79";
+    public string $uid = "page_home-655f221e9b73d";
     public bool $is_layout = false;
     public string $name = "page_home";
 

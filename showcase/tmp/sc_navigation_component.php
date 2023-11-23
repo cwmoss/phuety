@@ -4,7 +4,7 @@ use phuety\component;
 
 
 class sc_navigation_component extends component {
-    public string $uid = "sc_navigation-655e63bc21f4c";
+    public string $uid = "sc_navigation-655f24d01121d";
     public bool $is_layout = false;
     public string $name = "sc_navigation";
 
