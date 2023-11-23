@@ -1,0 +1,12 @@
+<nav class="sc_navigation-655e63bc21f4c root">
+
+    <a href="/"><sc-logo></sc-logo></a>
+    <ul>
+        <li v-for="item in navpoints">
+            <a :href="item.url" :class="active==item.url?'active':''" v-html="item.title"></a>
+        </li>
+    </ul>
+</nav>
+
+
+

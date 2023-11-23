@@ -13,35 +13,50 @@ class component {
 
     public string $name;
     public string $uid;
-    public bool $is_layout;
+    public bool $is_layout = false;
     public bool $is_start = false;
     public ?DOMDocument $pagedom = null;
-    public vcomponent $renderer;
-    public compiler $compiler;
+    public dom_render $renderer;
+    public phuety $engine;
     public $dom = null;
 
-    public function __construct(public string $cbase) {
+    public function __construct(public string $cbase, $tpl = null) {
         //   $this->uid = uniqid();
         $this->name = str_replace('_component', '', static::class);
-        $tpl = file_get_contents($cbase . '/' . $this->name . '.html');
+        if (!$tpl) $tpl = file_get_contents($cbase . '/' . $this->name . '.html');
         $this->load_dom($tpl);
-        $this->renderer = new vcomponent('', ['strrev' => 'strrev']);
+        $this->renderer = new dom_render('', ['strrev' => 'strrev']);
+    }
+
+    static function new_from_string(string $tpl, string $cbase): component {
+        return new self($cbase, $tpl);
+    }
+
+    static function load_class($name, $dir) {
+
+        $cname = $name . '_component';
+        require_once($dir . '/' . $cname . '.php');
+        $comp = new $cname($dir);
+        // $comp->load_dom();
+        return $comp;
     }
 
     public function load_dom($html) {
         if ($this->is_layout) {
-            $dom = compiler::get_document($html);
+            $dom = dom::get_document($html);
         } else {
-            $dom = compiler::get_fragment($html);
+            $dom = dom::get_fragment($html);
         }
         $this->dom = $dom;
     }
 
     public function start_running(array $props = []) {
+        // dom::d("start run dom", $this->dom);
+        #var_dump($props);
         $this->is_start = true;
         $dom = $this->run($props);
         if ($this->pagedom) return $this->pagedom->saveHTML();
-
+        if ($this->is_layout) return $dom->saveHTML();
         // fragment with "ok" root 
         return substr(trim($dom->saveHtml()), 4, -5);
     }
@@ -59,13 +74,15 @@ class component {
     }
 
     public function run_code(array $props) {
+        return ['props' => $props] + $props;
     }
 
     public function run(array $props = [], DOMNodeList $children = null) {
         $dom = $this->dom->cloneNode(true);
         $result = $this->run_code($props);
+        #var_dump($result);
         [$data, $methods] = $this->separate_functions($result);
-
+        #var_dump($data);
         if ($this->is_layout) {
             # $html = $this->renderer->render_page($data, $methods);
             $this->renderer->render_page_dom($dom, $data, $methods);
@@ -108,9 +125,9 @@ class component {
         //print_r($children);
         // layouts are different 
         if ($this->is_layout) {
-            $dom = compiler::get_document($html);
+            $dom = dom::get_document($html);
         } else {
-            $dom = compiler::get_fragment($html);
+            $dom = dom::get_fragment($html);
         }
 
         $this->travel_nodes($dom->documentElement, $dom);
@@ -168,7 +185,7 @@ class component {
             return;
         }
 
-        if (($node->tagName ?? null) && str_starts_with($node->tagName, 'p-')) {
+        if (($node->tagName ?? null) && $this->engine->is_component($node->tagName)) {
             # print "+++ handle component {$node->tagName}\n";
             $this->handle_component($node->tagName, $node, $dom, $slotmode);
             return;
@@ -179,12 +196,12 @@ class component {
         }
     }
 
-    public function handle_component($coname, DOMNode $node, $dom, $slotmode = false) {
-        $name = str_replace('p-', '', $coname);
-        $component = $this->compiler->get_component($name);
+    public function handle_component($tagname, DOMNode $node, $dom, $slotmode = false) {
+        // var_dump($this->engine);
+        $component = $this->engine->get_component($tagname);
         # print "\n=== +handle this {$this->name} compname {$component->name} start? -{$this->is_start}- layout? -{$this->is_layout}- slotmode? -{$slotmode}-\n";
 
-        $newdom = $component->run(compiler::attributes($node), $node->childNodes);
+        $newdom = $component->run(dom::attributes($node), $node->childNodes);
         // print_r($newdom);
         # print "\n=== -handle this {$this->name} compname {$component->name} start? -{$this->is_start}- layout? -{$this->is_layout}- slotmode? -{$slotmode}-\n";
 
@@ -203,46 +220,5 @@ class component {
             $node->parentNode->insertBefore($newnode, $node);
         }
         $node->parentNode->removeChild($node);
-    }
-    static function load($name, $dir) {
-        $cname = $name . '_component';
-        require_once($dir . '/' . $cname . '.php');
-        $comp = new $cname($dir);
-        // $comp->load_dom();
-        return $comp;
-    }
-
-    static public function create($name, $dir, $parts) {
-        # print "create component $name";
-        // print_r($parts);
-        $tpl = file_get_contents(__DIR__ . '/_component.php');
-
-        [$php, $use] = self::get_use_statements($parts['php']);
-        $repl = [
-            'NAME' => $name, 'UID' => $parts['uid'],
-            'ISLAYOUT' => $parts['is_layout'] ? 'true' : 'false',
-            'PHPCODE' => $php,
-            'USESTATEMENTS' => $use
-        ];
-
-
-        $tpl = str_replace(array_keys($repl), array_values($repl), $tpl);
-        file_put_contents($dir . '/' . $name . '_component.php', $tpl);
-        $css = sprintf(".%s{\n%s\n}", $parts['uid'], $parts['css']);
-        file_put_contents($dir . '/' . $name . '.css', $css);
-        // $php = '<?php ' . $parts['php'];
-        // file_put_contents($dir . '/' . $name . '.run.php', $php);
-        $vue = sprintf('%s', $parts['vue']);
-        file_put_contents($dir . '/' . $name . '.html', $vue);
-        return $repl['UID'];
-    }
-
-    static public function get_use_statements($code) {
-        $use = preg_match_all("/^\s*use\s+[^;]+;\s*$/ms", $code, $mat, \PREG_SET_ORDER);
-        if (!$mat) return [$code, ""];
-
-        $use = join("\n", array_map(fn ($el) => $el[0], $mat));
-        $code = preg_replace("/^\s*use\s+[^;]+;\s*$/ms", "", $code);
-        return [$code, $use];
     }
 }

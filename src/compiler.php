@@ -12,55 +12,67 @@ class compiler {
     public array $compiled;
     public string $cbase;
 
-    public function __construct(public string $base, public array $opts = ['css' => 'scope']) {
-        $this->cbase = $base . '/../compiled';
+
+    public function __construct(public phuety $engine) {
+        $this->cbase = $engine->cbase;
     }
 
-    public function get_component($name): component {
-        $cname = $name . '_component';
-        if ($this->compiled[$name] ?? null) {
-            $comp = $this->compiled[$name];
-        } else {
-            $uid = $this->compile($name);
-            $comp = $this->load($name);
-        }
-        return $comp;
-    }
-
-    public function xxxxrun($component) {
-    }
-
-    public function load($name) {
-        $cname = $name . '_component';
-        $comp = component::load($name, $this->cbase);
-        $comp->compiler = $this;
-        $this->compiled[$name] = $comp;
-        return $comp;
-    }
-
-
-    public function compile($name) {
+    public function compile($name, $source) {
         $is_layout = false;
-        $html = file_get_contents($this->base . '/' . $name . '.vue.php');
         if (
-            str_starts_with($html, '<html') || str_starts_with($html, '<!DOCTYPE') ||
-            str_starts_with($html, '<root') || str_starts_with($html, '<head') || str_starts_with($html, '<x-page')
+            str_starts_with($source, '<html') || str_starts_with($source, '<!DOCTYPE') ||
+            str_starts_with($source, '<root') || str_starts_with($source, '<head') || str_starts_with($source, '<x-page')
         ) {
             $is_layout = true;
             // $dom = compiler::get_document($html);
-            $dom = compiler::get_document($html);
+            $dom = dom::get_document($source);
         } else {
-            $dom = compiler::get_fragment($html);
+            $dom = dom::get_fragment($source);
         }
 
         $parts = $this->split_sfc($dom, $name, $is_layout);
-        $uid = component::create($name, $this->cbase, $parts);
+        $uid = $this->create_component($name, $parts);
+        // $uid = component::create($name, $this->cbase, $parts);
         return $uid;
+    }
+
+    public function create_component($name, $parts) {
+        # print "create component $name";
+        // print_r($parts);
+        $tpl = file_get_contents(__DIR__ . '/_component.php');
+        $dir = $this->cbase;
+        [$php, $use] = $this->get_use_statements($parts['php']);
+        $repl = [
+            'NAME' => $name, 'UID' => $parts['uid'],
+            'ISLAYOUT' => $parts['is_layout'] ? 'true' : 'false',
+            'PHPCODE' => $php,
+            'USESTATEMENTS' => $use
+        ];
+
+        $tpl = str_replace(array_keys($repl), array_values($repl), $tpl);
+        file_put_contents($dir . '/' . $name . '_component.php', $tpl);
+        $css = sprintf(".%s{\n%s\n}", $parts['uid'], $parts['css']);
+        file_put_contents($dir . '/' . $name . '.css', $css);
+        // $php = '<?php ' . $parts['php'];
+        // file_put_contents($dir . '/' . $name . '.run.php', $php);
+        $vue = sprintf('%s', $parts['vue']);
+        file_put_contents($dir . '/' . $name . '.html', $vue);
+        return $repl['UID'];
+    }
+
+    public function get_use_statements($code) {
+        $use = preg_match_all("/^\s*use\s+[^;]+;\s*$/ms", $code, $mat, \PREG_SET_ORDER);
+        if (!$mat) return [$code, ""];
+
+        $use = join("\n", array_map(fn ($el) => $el[0], $mat));
+        $code = preg_replace("/^\s*use\s+[^;]+;\s*$/ms", "", $code);
+        return [$code, $use];
     }
 
     public function split_sfc(DOMDocument $dom, $name, $is_layout = false) {
         $parts = ['php' => "", 'vue' => "", 'css' => "", 'uid' => $name . '-' . uniqid()];
-        if ($this->opts['css'] == 'scoped_simple') {
+        // dom::d("split $name -- ", $dom);
+        if ($this->engine->opts['css'] == 'scoped_simple') {
             $parts['uid'] = $name;
         }
         $remove = [];
@@ -107,10 +119,12 @@ class compiler {
                         #$dom->documentElement->removeChild($node);
                     } else {
                         // add class
-                        self::add_class($node, $parts['uid'] . ' root');
+                        dom::add_class($node, $parts['uid'] . ' root');
                     }
                 }
             }
+            /* sometimes code ends with ?> */
+            $php = rtrim($php, '>?');
             $parts['php'] = $php;
         }
         foreach ($remove as $node) {
@@ -125,57 +139,8 @@ class compiler {
         }
 
         $parts['is_layout'] = $is_layout;
-
-        // print_r($parts);
+        //if ($name == 'sc_navigation')
+        //    print_r($parts);
         return $parts;
-    }
-    static public function attributes(DOMNode $node) {
-        $attrs = [];
-        if ($node->hasAttributes()) {
-            foreach ($node->attributes as $attr) {
-                $attrs[$attr->nodeName] = $attr->nodeValue;
-            }
-        }
-        return $attrs;
-    }
-    static function add_class(DOMElement $node, $class) {
-        if ($node->hasAttribute('class')) {
-            $class = $node->getAttribute('class') . ' ' . $class;
-        }
-        $node->setAttribute('class', $class);
-    }
-
-    static function get_document($html) {
-        $document = new DOMDocument();
-        @$document->loadHTML($html);
-        return $document;
-    }
-
-    static function get_fragment($html) {
-        $document = new DOMDocument();
-        @$document->loadHTML("<meta http-equiv='Content-Type' content='charset=utf-8' /><ok>$html</ok>");
-        $dom = new DOMDocument();
-        $first_div = $document->getElementsByTagName('ok')[0];
-        $first_div_node = $dom->importNode($first_div, true);
-        $dom->appendChild($first_div_node);
-        return $dom;
-    }
-
-    static function d($descr, $dom) {
-        print "$descr -- start --\n";
-        self::dump($dom);
-        print "$descr -- end --\n";
-    }
-
-    static function dump($node, $level = 0) {
-        static $types = [1 => 'el', 2 => 'attr', 3 => 'txt', 4 => 'cdata', 7 => 'pi', 8 => 'com', 9 => 'doc', 10 => 'doctype', 13 => 'html'];
-        $child = $node->childNodes;
-        print str_repeat(' ', $level * 2) . " " . ($types[$node->nodeType] ?? $node->nodeType) .
-            " " . (property_exists($node, 'tagName') ? $node->tagName : 'n.a.') .
-            $node->nodeValue .
-            ' (level ' .  $level . ")\n";
-        foreach ($child as $item) {
-            self::dump($item, $level + 1);
-        }
     }
 }
