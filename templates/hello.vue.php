@@ -4,7 +4,7 @@
 
   <p-userprofile userid="favuser" size="3"></p-userprofile>
 
-  <h2>hello {{ strrev(name) }}</h2>
+  <h2>hello <span>{{ strrev(name) }}</span></h2>
 
   <p-userprofile dark v-if="ok" userid="bad"></p-userprofile>
 
@@ -14,6 +14,12 @@
 <style>
   h2 {
     color: magenta;
+  }
+
+  @media (width >=600px) {
+    span {
+      font-size: 2rem;
+    }
   }
 </style>
 
