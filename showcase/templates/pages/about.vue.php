@@ -1,7 +1,7 @@
 <layout title="About Us" :path="props.path">
 
     <h1>Our Team</h1>
-    <sc-team></sc-team>
+    <sc-team :persons="res.data.results"></sc-team>
 
 </layout>
 
@@ -13,5 +13,10 @@
 
 <?php
 
+
+
+use Leaf\Fetch;
+
+$res = Fetch::get("https://randomuser.me/api/?results=12");
 
 ?>

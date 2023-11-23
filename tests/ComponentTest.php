@@ -58,13 +58,7 @@ class ComponentTest extends TestCase {
     }
 
     private function create_and_render(string $template, array $data, array $methods = []) {
-        $runner = new phuety(__DIR__ . '/fixtures', ['css' => 'scoped_simple']);
+        $runner = new phuety(__DIR__ . '/fixtures', ['hello' => 'hello'], "", ['css' => 'scoped_simple']);
         return $runner->run($template, $data);
-
-        // old
-        $c = new compiler(__DIR__ . '/fixtures', ['css' => 'scoped_simple']);
-        $tpl = $c->get_component($template);
-        $res = $tpl->start_running($data);
-        return $res;
     }
 }

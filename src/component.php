@@ -19,6 +19,7 @@ class component {
     public dom_render $renderer;
     public phuety $engine;
     public $dom = null;
+    public ?props $propholder = null;
 
     public function __construct(public string $cbase, $tpl = null) {
         //   $this->uid = uniqid();
@@ -54,6 +55,9 @@ class component {
         // dom::d("start run dom", $this->dom);
         #var_dump($props);
         $this->is_start = true;
+        if (!$this->propholder) {
+            $this->propholder = new props;
+        }
         $dom = $this->run($props);
         if ($this->pagedom) return $this->pagedom->saveHTML();
         if ($this->is_layout) return $dom->saveHTML();
@@ -79,15 +83,17 @@ class component {
 
     public function run(array $props = [], DOMNodeList $children = null) {
         $dom = $this->dom->cloneNode(true);
+        dom::register_class($dom);
         $result = $this->run_code($props);
         #var_dump($result);
         [$data, $methods] = $this->separate_functions($result);
         #var_dump($data);
+
         if ($this->is_layout) {
             # $html = $this->renderer->render_page($data, $methods);
-            $this->renderer->render_page_dom($dom, $data, $methods);
+            $this->renderer->render_page_dom($dom, $this->propholder, $data, $methods);
         } else {
-            $this->renderer->render_dom($dom, $data, $methods);
+            $this->renderer->render_dom($dom, $this->propholder, $data, $methods);
         }
 
         // var_dump($this->is_layout);
@@ -101,8 +107,8 @@ class component {
             #    $dom = compiler::get_fragment($html);
         }
 
-        $this->travel_nodes($dom->documentElement, $dom);
-        $this->replace_slot($dom, $children);
+        $this->travel_nodes($dom->documentElement, $dom, $this->propholder);
+        $this->replace_slot($dom, $children, $this->propholder);
         # compiler::d("after replace " . static::class, $dom);
         return $dom;
     }
@@ -136,9 +142,10 @@ class component {
         return $dom;
     }
 
-    public function replace_slot($dom, $children) {
+    public function replace_slot($dom, $children, props $props) {
         if (!$children) return;
         $ndom = new DOMDocument();
+        $ndom->registerNodeClass("DOMElement", custom_domelement::class);
         foreach ($children as $ch) {
             # print "+++ children import " . ($ch->tagName ?? null) . " \n";
             $nch = $ndom->importNode($ch, true);
@@ -147,7 +154,7 @@ class component {
 
         # compiler::d('-new dom before travel-', $ndom);
         // print_r($ndom->documentElement);
-        $this->travel_nodes($ndom, $ndom, true);
+        $this->travel_nodes($ndom, $ndom, $props, true);
         # compiler::d('-new dom after travel-', $ndom);
         // print $ndom->saveHTML();
         $slottags = $dom->getElementsByTagName('slot');
@@ -165,18 +172,18 @@ class component {
         }
     }
 
-    public function travel_nodes(DOMNode $node, $dom, $slotmode = false) {
+    public function travel_nodes(DOMNode $node, $dom, props $props, $slotmode = false) {
         # print("travel $node->nodeType \n");
         if ($node instanceof DOMNodeList) {
             # print "travel list\n";
             foreach (iterator_to_array($node) as $childNode) {
-                $this->travel_nodes($childNode, $dom, $slotmode);
+                $this->travel_nodes($childNode, $dom, $props, $slotmode);
             }
         }
         if ($node->nodeType == \XML_DOCUMENT_NODE) {
             # print "travel doc\n";
             foreach (iterator_to_array($node->childNodes) as $childNode) {
-                $this->travel_nodes($childNode, $dom, $slotmode);
+                $this->travel_nodes($childNode, $dom, $props, $slotmode);
             }
             return;
         }
@@ -187,21 +194,35 @@ class component {
 
         if (($node->tagName ?? null) && $this->engine->is_component($node->tagName)) {
             # print "+++ handle component {$node->tagName}\n";
-            $this->handle_component($node->tagName, $node, $dom, $slotmode);
+            $this->handle_component($node->tagName, $node, $dom, $props, $slotmode);
             return;
         };
         foreach (iterator_to_array($node->childNodes) as $childNode) {
             # print "travel child len {$node->childNodes->length}\n";
-            $this->travel_nodes($childNode, $dom, $slotmode);
+            $this->travel_nodes($childNode, $dom, $props, $slotmode);
         }
     }
 
-    public function handle_component($tagname, DOMNode $node, $dom, $slotmode = false) {
+    public function handle_component($tagname, DOMNode $node, $dom, props $props, $slotmode = false) {
         // var_dump($this->engine);
         $component = $this->engine->get_component($tagname);
+        $component->propholder = $props;
         # print "\n=== +handle this {$this->name} compname {$component->name} start? -{$this->is_start}- layout? -{$this->is_layout}- slotmode? -{$slotmode}-\n";
+        $attrs = dom::attributes($node);
+        $attrs += $props->get($attrs['props'] ?? null);
+        // $node->hey();
 
-        $newdom = $component->run(dom::attributes($node), $node->childNodes);
+        #print_r($attrs);
+        #print_r($props);
+        // $props = $attrs + $node->data;
+
+
+        /*foreach ($props as $k => $v) {
+            if ($k[0] == ':') {
+                $props[ltrim($k, ':')] = $v;
+            }
+        }*/
+        $newdom = $component->run($attrs, $node->childNodes);
         // print_r($newdom);
         # print "\n=== -handle this {$this->name} compname {$component->name} start? -{$this->is_start}- layout? -{$this->is_layout}- slotmode? -{$slotmode}-\n";
 

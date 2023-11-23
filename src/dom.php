@@ -29,8 +29,13 @@ class dom {
         $node->setAttribute('class', $class);
     }
 
+    static function register_class($dom) {
+        $dom->registerNodeClass(DOMElement::class, custom_domelement::class);
+    }
+
     static function append_html(DOMNode $parent, $html) {
         $tmp = new DOMDocument();
+        self::register_class($tmp);
         @$tmp->loadHTML("<meta http-equiv='Content-Type' content='charset=utf-8' /><ok>$html</ok>");
 
         foreach ($tmp->getElementsByTagName('ok')->item(0)->childNodes as $node) {
@@ -41,14 +46,18 @@ class dom {
 
     static function get_document($html) {
         $document = new DOMDocument();
+        self::register_class($document);
+
         @$document->loadHTML($html);
         return $document;
     }
 
     static function get_fragment($html) {
         $document = new DOMDocument();
+        self::register_class($document);
         @$document->loadHTML("<meta http-equiv='Content-Type' content='charset=utf-8' /><ok>$html</ok>");
         $dom = new DOMDocument();
+        self::register_class($dom);
         $first_div = $document->getElementsByTagName('ok')[0];
         $first_div_node = $dom->importNode($first_div, true);
         $dom->appendChild($first_div_node);

@@ -9,6 +9,19 @@
   <link rel="stylesheet" href="/assets/mvp.css">
   <link rel="stylesheet" href="/assets/components.css">
   <title>{{ props.title }}</title>
+  <style>
+    nav {
+      margin-bottom: 1em;
+    }
+
+    header {
+      padding-bottom: 0;
+    }
+
+    main {
+      padding-top: 1em;
+    }
+  </style>
 </head>
 
 <body :class="bodyclass">
@@ -17,16 +30,16 @@
   <main>
     <h1>it's pure phuety {{smile}}</h1>
 
-    <article>
 
 
 
-      <p-userprofile dark userid="startuser"></p-userprofile>
 
-      <slot></slot>
+    <p-userprofile dark userid="startuser"></p-userprofile>
 
-      <p-userprofile userid="enduser"></p-userprofile>
-    </article>
+    <slot></slot>
+
+    <p-userprofile userid="enduser"></p-userprofile>
+
   </main>
 </body>
 

@@ -37,9 +37,9 @@ class dom_render {
         $this->expressionParser = new SMPLang(['strrev' => 'strrev']);
     }
 
-    public function render_page_dom($dom, array $data, array $methods = []) {
+    public function render_page_dom($dom, props $props, array $data, array $methods = []) {
         // $dom->is_page = true;
-        $this->handleNode($dom->documentElement, $data, $methods);
+        $this->handleNode($dom->documentElement, $data, $methods, $props);
         // return $dom;
     }
     /**
@@ -47,11 +47,11 @@ class dom_render {
      *
      * @return string HTML
      */
-    public function render_dom($dom, array $data, array $methods = []) {
+    public function render_dom($dom, props $props, array $data, array $methods = []) {
         #var_dump("render-dom");
         #var_dump($data);
         #var_dump($methods);
-        $this->handleNode($dom->documentElement, $data, $methods);
+        $this->handleNode($dom->documentElement, $data, $methods, $props);
         return;
     }
 
@@ -60,21 +60,21 @@ class dom_render {
      * @param DOMNode $node
      * @param array $data
      */
-    private function handleNode(DOMNode $node, array $data, array $methods = []) {
-        $this->replaceMustacheVariables($node, $data, $methods);
+    private function handleNode(DOMNode $node, array $data, array $methods, props $props) {
+        $this->replaceMustacheVariables($node, $data, $methods, $props);
 
         if (!$this->isTextNode($node)) {
             // $this->stripEventHandlers($node);
-            $this->handleIf($node->childNodes, $data, $methods);
-            $this->handleFor($node, $data, $methods);
+            $this->handleIf($node->childNodes, $data, $methods,  $props);
+            $this->handleFor($node, $data, $methods, $props);
 
-            $this->handleAttributeBinding($node, $data, $methods);
-            $this->handleRawHtml($node, $data, $methods);
+            $this->handleAttributeBinding($node, $data, $methods,  $props);
+            $this->handleRawHtml($node, $data, $methods, $props);
 
             if (!$this->isRemovedFromTheDom($node)) {
 
                 foreach (iterator_to_array($node->childNodes) as $childNode) {
-                    $this->handleNode($childNode, $data, $methods);
+                    $this->handleNode($childNode, $data, $methods, $props);
                 }
             }
         }
@@ -85,7 +85,7 @@ class dom_render {
      * @param DOMNode $node
      * @param array $data
      */
-    private function replaceMustacheVariables(DOMNode $node, array $data, array $methods = []) {
+    private function replaceMustacheVariables(DOMNode $node, array $data, array $methods, props $props) {
         // print_r($methods);
         if ($node instanceof DOMText) {
             $text = $node->wholeText;
@@ -107,8 +107,11 @@ class dom_render {
         }
     }
 
-    private function handleAttributeBinding(DOMElement $node, array $data, array $methods = []) {
+    private function handleAttributeBinding(DOMElement $node, array $data, array $methods, props $props) {
         /** @var DOMAttr $attribute */
+
+        // TODO: is_component?
+        $uid = 'userdata' . uniqid();
         foreach (iterator_to_array($node->attributes) as $attribute) {
             if (!preg_match('/^:[\w-]+$/', $attribute->name)) {
                 continue;
@@ -124,7 +127,19 @@ class dom_render {
                     $node->setAttribute($name, $name);
                 }
             } else {
-                $node->setAttribute($name, $value);
+                // postbone resolve till later (happens in components)
+                if (is_array($value) || is_object($value)) {
+
+                    $props->set($uid, $name, $value);
+                    //    $data[$uid] = $value;
+                    //    $node->setAttribute(':' . $name, $uid);
+                    // $node->data[$name] = $value;
+                    // print_r($name);
+                    // print_r($node->data);
+                    $node->setAttribute('props', $uid);
+                } else {
+                    $node->setAttribute($name, $value);
+                }
             }
             $node->removeAttribute($attribute->name);
         }
@@ -134,7 +149,7 @@ class dom_render {
      * @param DOMNodeList $nodes
      * @param array $data
      */
-    private function handleIf(DOMNodeList $nodes, array $data, array $methods = []) {
+    private function handleIf(DOMNodeList $nodes, array $data, array $methods, props $props) {
         // Iteration of iterator breaks if we try to remove items while iterating, so defer node
         // removing until finished iterating.
         $nodesToRemove = [];
@@ -181,7 +196,7 @@ class dom_render {
         }
     }
 
-    private function handleFor(DOMNode $node, array $data, array $methods = []) {
+    private function handleFor(DOMNode $node, array $data, array $methods, props $props) {
         if ($this->isTextNode($node)) {
             return;
         }
@@ -198,7 +213,7 @@ class dom_render {
                 $node->parentNode->insertBefore($newNode, $node);
                 //print "FOR nav";
                 //var_dump([$itemName => $item]);
-                $this->handleNode($newNode, array_merge($data, [$itemName => $item]), $methods);
+                $this->handleNode($newNode, array_merge($data, [$itemName => $item]), $methods, $props);
                 if ($node->tagName == 'template') {
                     dom::d('for-template', $node);
                     $this->replace_with_childs($newNode);
@@ -210,7 +225,7 @@ class dom_render {
     }
 
 
-    private function handleRawHtml(DOMNode $node, array $data, array $methods = []) {
+    private function handleRawHtml(DOMNode $node, array $data, array $methods, props $props) {
         if ($this->isTextNode($node)) {
             return;
         }
