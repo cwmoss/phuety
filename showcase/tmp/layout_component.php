@@ -4,7 +4,7 @@ use phuety\component;
 
 
 class layout_component extends component {
-    public string $uid = "layout-655f24d010d6f";
+    public string $uid = "layout-655f33f3a2299";
     public bool $is_layout = true;
     public string $name = "layout";
 

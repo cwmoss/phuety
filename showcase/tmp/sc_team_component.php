@@ -5,7 +5,7 @@ use Leaf\Fetch;
 
 
 class sc_team_component extends component {
-    public string $uid = "sc_team-655f24d011e77";
+    public string $uid = "sc_team-655f33f3a364e";
     public bool $is_layout = false;
     public string $name = "sc_team";
 
