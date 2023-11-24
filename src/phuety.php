@@ -20,11 +20,13 @@ class phuety {
     public function run_template_string(string $tpl, array $data) {
         $component = component::new_from_string($tpl, $this->cbase);
         $component->engine = $this;
+        $component->assetholder = new asset;
         return $component->start_running($data);
     }
 
     public function run(string $cname, array $data) {
         $component = $this->get_component($cname);
+        $data['$asset'] = new asset;
         return $component->start_running($data);
     }
 
@@ -88,6 +90,11 @@ location page-* => pages/* => pages/hello
         // $cname = str_replace('-', '_', $name); //  . '_component';
         $comp = component::load_class($name, $this->cbase);
         $comp->engine = $this;
+        if (!current($this->compiled)) {
+            $comp->assetholder = new asset;
+        } else {
+            $comp->assetholder = current($this->compiled)->assetholder;
+        }
         $this->compiled[$name] = $comp;
         return $comp;
     }

@@ -35,6 +35,7 @@ $the_route = match ([$http_method, $path]) {
 
 $phuety = new phuety\phuety(__DIR__ . '/templates', [
     'layout' => 'layout',
+    'phuety-*' => '*',
     'page-*' => 'pages/*',
     'form-*' => 'form/',
     'sc-*' => 'components/'

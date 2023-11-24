@@ -2,7 +2,8 @@
   "autoload": {
     "psr-4": {
       "phuety\\": "src",
-      "WMDE\\VueJsTemplating\\": "src/php-vuejs-templating/src"
+      "WMDE\\VueJsTemplating\\": "src/php-vuejs-templating/src",
+      "Le\\SMPLang\\": "src/smplang/src"
     }
   },
   "scripts": {
@@ -19,7 +20,6 @@
     "chillerlan/php-qrcode": "^4.3",
     "phpunit/phpunit": "^10.4",
     "symfony/expression-language": "^6.3",
-    "leongrdic/smplang": "^1.0",
     "leafs/fetch": "dev-main"
   }
 }

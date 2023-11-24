@@ -4,8 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js"></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css">
+  <phuety-assets header></phuety-assets>
   <link rel="stylesheet" href="/assets/mvp.css">
   <link rel="stylesheet" href="/assets/components.css">
   <title>{{ props.title }}</title>
@@ -41,6 +40,7 @@
     <p-userprofile userid="enduser"></p-userprofile>
 
   </main>
+  <phuety-assets></phuety-assets>
 </body>
 
 </html>

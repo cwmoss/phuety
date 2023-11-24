@@ -20,12 +20,15 @@ class component {
     public phuety $engine;
     public $dom = null;
     public ?props $propholder = null;
+    public ?asset $assetholder = null;
 
     public function __construct(public string $cbase, $tpl = null) {
         //   $this->uid = uniqid();
         $this->name = str_replace('_component', '', static::class);
-        if (!$tpl) $tpl = file_get_contents($cbase . '/' . $this->name . '.html');
-        $this->load_dom($tpl);
+        if ($this->has_template) {
+            if (!$tpl) $tpl = file_get_contents($cbase . '/' . $this->name . '.html');
+            $this->load_dom($tpl);
+        }
         $this->renderer = new dom_render('', ['strrev' => 'strrev']);
     }
 
@@ -59,8 +62,14 @@ class component {
             $this->propholder = new props;
         }
         $dom = $this->run($props);
-        if ($this->pagedom) return $this->pagedom->saveHTML();
-        if ($this->is_layout) return $dom->saveHTML();
+        if ($this->pagedom) {
+            $this->travel_phuety($this->pagedom, $this->propholder);
+            return $this->pagedom->saveHTML();
+        }
+        if ($this->is_layout) {
+            $this->travel_phuety($dom, $this->propholder);
+            return $dom->saveHTML();
+        }
         // fragment with "ok" root 
         return substr(trim($dom->saveHtml()), 4, -5);
     }
@@ -82,31 +91,44 @@ class component {
     }
 
     public function run(array $props = [], DOMNodeList $children = null) {
-        $dom = $this->dom->cloneNode(true);
-        dom::register_class($dom);
-        $result = $this->run_code($props);
-        #var_dump($result);
-        [$data, $methods] = $this->separate_functions($result);
-        #var_dump($data);
-
-        if ($this->is_layout) {
-            # $html = $this->renderer->render_page($data, $methods);
-            $this->renderer->render_page_dom($dom, $this->propholder, $data, $methods);
-        } else {
-            $this->renderer->render_dom($dom, $this->propholder, $data, $methods);
+        // push assets
+        foreach ($this->assets as $asset) {
+            $this->assetholder->push($this->uid, $asset);
         }
-
-        // var_dump($this->is_layout);
-        //print "html result: $html\n";
-        #print "slot?\n";
-        //print_r($children);
-        // layouts are different 
-        if ($this->is_layout) {
-            #    $dom = compiler::get_document($html);
+        //print_r($this->assetholder);
+        // renderless?
+        if (!$this->has_template) {
+            ob_start();
+            $this->run_code($props);
+            $html = ob_get_clean();
+            $dom = dom::get_fragment($html);
         } else {
-            #    $dom = compiler::get_fragment($html);
-        }
 
+            $dom = $this->dom->cloneNode(true);
+            dom::register_class($dom);
+            $result = $this->run_code($props);
+            #var_dump($result);
+            [$data, $methods] = $this->separate_functions($result);
+            #var_dump($data);
+
+            if ($this->is_layout) {
+                # $html = $this->renderer->render_page($data, $methods);
+                $this->renderer->render_page_dom($dom, $this->propholder, $data, $methods);
+            } else {
+                $this->renderer->render_dom($dom, $this->propholder, $data, $methods);
+            }
+
+            // var_dump($this->is_layout);
+            //print "html result: $html\n";
+            #print "slot?\n";
+            //print_r($children);
+            // layouts are different 
+            if ($this->is_layout) {
+                #    $dom = compiler::get_document($html);
+            } else {
+                #    $dom = compiler::get_fragment($html);
+            }
+        }
         $this->travel_nodes($dom->documentElement, $dom, $this->propholder);
         $this->replace_slot($dom, $children, $this->propholder);
         # compiler::d("after replace " . static::class, $dom);
@@ -172,6 +194,37 @@ class component {
         }
     }
 
+    public function travel_phuety(DOMNode $node, props $props) {
+        if ($node instanceof DOMNodeList) {
+            # print "travel list\n";
+            foreach (iterator_to_array($node) as $childNode) {
+                $this->travel_phuety($childNode, $props);
+            }
+        }
+        if ($node->nodeType == \XML_DOCUMENT_NODE) {
+            # print "travel doc\n";
+            foreach (iterator_to_array($node->childNodes) as $childNode) {
+                $this->travel_phuety($childNode, $props);
+            }
+            return;
+        }
+        if (!($node->nodeType == \XML_ELEMENT_NODE || $node->nodeType == \XML_TEXT_NODE)) {
+            # print "travel break\n";
+            return;
+        }
+
+        if (($node->tagName ?? null) && $this->engine->is_component($node->tagName)) {
+            # print "+++ handle component {$node->tagName}\n";
+            #if (str_starts_with($node->tagName, 'phuety-')) return;
+            $this->handle_component($node->tagName, $node, $node->ownerDocument, $props, false);
+            return;
+        };
+        foreach (iterator_to_array($node->childNodes) as $childNode) {
+            # print "travel child len {$node->childNodes->length}\n";
+            $this->travel_phuety($childNode, $props);
+        }
+    }
+
     public function travel_nodes(DOMNode $node, $dom, props $props, $slotmode = false) {
         # print("travel $node->nodeType \n");
         if ($node instanceof DOMNodeList) {
@@ -194,6 +247,7 @@ class component {
 
         if (($node->tagName ?? null) && $this->engine->is_component($node->tagName)) {
             # print "+++ handle component {$node->tagName}\n";
+            if (str_starts_with($node->tagName, 'phuety-')) return;
             $this->handle_component($node->tagName, $node, $dom, $props, $slotmode);
             return;
         };

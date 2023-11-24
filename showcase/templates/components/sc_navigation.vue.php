@@ -15,6 +15,11 @@
     }
 </style>
 
+<style global>
+    h1 {
+        color: magenta;
+    }
+</style>
 <?php
 
 $active = $props['path'] ?? '/';

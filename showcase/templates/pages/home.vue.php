@@ -11,11 +11,6 @@
   <p-userprofile dark v-if="ok" :userid="user"></p-userprofile>
 </layout>
 
-<style>
-  h2 {
-    color: magenta;
-  }
-</style>
 
 <?php
 

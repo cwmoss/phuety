@@ -252,7 +252,7 @@ class dom_render {
      */
     private function evaluateExpression($expression, array $data, array $methods = []) {
         return $this->expressionParser->evaluate($expression, $data + $methods);
-        return $this->expressionParser->parse($expression, $methods)->evaluate($data);
+        // return $this->expressionParser->parse($expression, $methods)->evaluate($data);
     }
 
     private function removeNode(DOMElement $node) {

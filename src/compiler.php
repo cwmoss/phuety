@@ -18,6 +18,8 @@ class compiler {
     }
 
     public function compile($name, $source) {
+        $splitter = new splitter($this->engine->opts);
+        [$source, $php] = $splitter->split_php($source);
         $is_layout = false;
         if (
             str_starts_with($source, '<html') || str_starts_with($source, '<!DOCTYPE') ||
@@ -29,8 +31,14 @@ class compiler {
         } else {
             $dom = dom::get_fragment($source);
         }
+        #if ($name == 'assets') {
+        #    dom::d("assets-source", $dom);
+        #}
 
-        $parts = $this->split_sfc($dom, $name, $is_layout);
+
+        $parts = $splitter->split_sfc($dom, $name, $is_layout);
+        $php = rtrim($php, '>?');
+        $parts['php'] = $php;
         $uid = $this->create_component($name, $parts);
         // $uid = component::create($name, $this->cbase, $parts);
         return $uid;
@@ -46,17 +54,35 @@ class compiler {
             'NAME' => $name, 'UID' => $parts['uid'],
             'ISLAYOUT' => $parts['is_layout'] ? 'true' : 'false',
             'PHPCODE' => $php,
-            'USESTATEMENTS' => $use
+            'USESTATEMENTS' => $use,
+            'HAS_TEMPLATE' => trim($parts['vue']) ? 'true' : 'false',
+            'HAS_STYLE' => trim($parts['css']) ? 'true' : 'false',
+            'HAS_CODE' => trim($php) ? 'true' : 'false',
+            'ASSETS' => var_export($parts['assets'], true)
         ];
 
         $tpl = str_replace(array_keys($repl), array_values($repl), $tpl);
         file_put_contents($dir . '/' . $name . '_component.php', $tpl);
-        $css = sprintf(".%s{\n%s\n}", $parts['uid'], $parts['css']);
-        file_put_contents($dir . '/' . $name . '.css', $css);
+        // print "hu";
+        if ($repl['HAS_STYLE'] == 'true') {
+            //print " style $name";
+            $css = sprintf(".%s{\n%s\n}", $parts['uid'], $parts['css']);
+            file_put_contents($dir . '/' . $name . '.css', $css);
+        } else {
+            // print "unlink style";
+            @unlink($dir . '/' . $name . '.css');
+        }
+
+        if ($repl['HAS_TEMPLATE'] == 'true') {
+            $vue = sprintf('%s', $parts['vue']);
+            file_put_contents($dir . '/' . $name . '.html', $vue);
+        } else {
+            @unlink($dir . '/' . $name . '.html');
+        }
+
         // $php = '<?php ' . $parts['php'];
         // file_put_contents($dir . '/' . $name . '.run.php', $php);
-        $vue = sprintf('%s', $parts['vue']);
-        file_put_contents($dir . '/' . $name . '.html', $vue);
+
         return $repl['UID'];
     }
 
@@ -67,80 +93,5 @@ class compiler {
         $use = join("\n", array_map(fn ($el) => $el[0], $mat));
         $code = preg_replace("/^\s*use\s+[^;]+;\s*$/ms", "", $code);
         return [$code, $use];
-    }
-
-    public function split_sfc(DOMDocument $dom, $name, $is_layout = false) {
-        $parts = ['php' => "", 'vue' => "", 'css' => "", 'uid' => $name . '-' . uniqid()];
-        // dom::d("split $name -- ", $dom);
-        if ($this->engine->opts['css'] == 'scoped_simple') {
-            $parts['uid'] = $name;
-        }
-        $remove = [];
-        if ($is_layout) {
-            // self::d("split layout", $dom);
-            $pis = (new DOMXPath($dom))
-                ->query('/processing-instruction("php")');
-            // var_dump($pis);
-            if ($pis->length > 0) {
-                $pi = $pis->item(0);
-                # var_dump($pi);
-                $parts['php'] = rtrim((string)  $pi->nodeValue, '? ');
-                $remove[] = $pi;
-            }
-        } else {
-
-            // self::d("split component", $dom);
-            $php = "";
-            $php_open = false;
-            foreach ($dom->documentElement->childNodes as $node) {
-                if ($node->nodeType == \XML_PI_NODE) {
-                    $phpcode = $node->nodeValue; #  rtrim((string) $node->nodeValue, '? ');
-                    #$dom->documentElement->removeChild($node);
-                    $lastchar = substr(rtrim($node->nodeValue), -1);
-                    $php_open = ($lastchar != ';' && $lastchar != '?');
-                    if ($lastchar == '?') {
-                        $phpcode = rtrim((string) $node->nodeValue, '? ');
-                    }
-                    $php = $phpcode;
-                    $remove[] = $node;
-                } elseif ($node->nodeType == \XML_TEXT_NODE && $php && $php_open) {
-                    $phpcode = $node->nodeValue;
-                    $lastchar = substr(rtrim($node->nodeValue), -1);
-                    $php_open = ($lastchar != ';' && $lastchar != '?');
-                    if ($lastchar == '?') {
-                        $phpcode = rtrim((string) $node->nodeValue, '? ');
-                    }
-                    $php .= '>' . $phpcode;
-                    $remove[] = $node;
-                } elseif ($node->nodeType == \XML_ELEMENT_NODE) {
-                    if ($node->tagName == 'style') {
-                        $parts['css'] = str_replace('root', '&.root', (string) $node->nodeValue);
-                        $remove[] = $node;
-                        #$dom->documentElement->removeChild($node);
-                    } else {
-                        // add class
-                        dom::add_class($node, $parts['uid'] . ' root');
-                    }
-                }
-            }
-            /* sometimes code ends with ?> */
-            $php = rtrim($php, '>?');
-            $parts['php'] = $php;
-        }
-        foreach ($remove as $node) {
-            //$dom->documentElement->removeChild($node);
-            $node->parentNode->removeChild($node);
-        }
-        if ($is_layout) {
-            $parts['vue'] = $dom->saveHtml();
-        } else {
-            // $parts['vue'] = $dom->saveHtml();
-            $parts['vue'] = substr(trim($dom->saveHtml()), 4, -5);
-        }
-
-        $parts['is_layout'] = $is_layout;
-        //if ($name == 'sc_navigation')
-        //    print_r($parts);
-        return $parts;
     }
 }
