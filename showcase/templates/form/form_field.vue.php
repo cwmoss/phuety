@@ -1,4 +1,5 @@
-<div :class="{has_error:error}">
+<div class="form-field" :class="{
+    has-error:error}">
     <label :for="name">{{label}}</label>
 
     <input v-if="type=='text'" type="text" :id="name" :name="name" :value="value">

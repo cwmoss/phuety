@@ -3,7 +3,9 @@
     <h1>You can contact us via this form</h1>
 
     <section v-if="success">
-        <h4>Thank you for your message!</h4>
+        <aside>
+            <h4>Thank you for your message!</h4>
+        </aside>
     </section>
 
     <form v-else action="/contact" method="POST">
