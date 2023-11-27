@@ -66,11 +66,12 @@ class dom_render {
         if (!$this->isTextNode($node)) {
             // $this->stripEventHandlers($node);
             $this->handleIf($node->childNodes, $data, $methods,  $props);
-            $this->handleFor($node, $data, $methods, $props);
+            $for = $this->handleFor($node, $data, $methods, $props);
 
-            $this->handleAttributeBinding($node, $data, $methods,  $props);
-            $this->handleRawHtml($node, $data, $methods, $props);
-
+            if ($for !== true) {
+                $this->handleAttributeBinding($node, $data, $methods,  $props);
+                $this->handleRawHtml($node, $data, $methods, $props);
+            }
             if (!$this->isRemovedFromTheDom($node)) {
 
                 foreach (iterator_to_array($node->childNodes) as $childNode) {
@@ -112,6 +113,7 @@ class dom_render {
 
         // TODO: is_component?
         $uid = 'userdata' . uniqid();
+        $attributes = dom::attributes($node);
         foreach (iterator_to_array($node->attributes) as $attribute) {
             if (!preg_match('/^:[\w-]+$/', $attribute->name)) {
                 continue;
@@ -119,26 +121,47 @@ class dom_render {
 
             // $value = $this->expressionParser->parse($attribute->value, $methods)
             //    ->evaluate($data);
+            // print_r($data);
             $value = $this->expressionParser->evaluate($attribute->value, $data + $methods);
             $name = substr($attribute->name, 1);
             //            print "attr {$attribute->name} => $name \n";
-            if (is_bool($value)) {
-                if ($value) {
-                    $node->setAttribute($name, $name);
-                }
-            } else {
-                // postbone resolve till later (happens in components)
-                if (is_array($value) || is_object($value)) {
-
-                    $props->set($uid, $name, $value);
-                    //    $data[$uid] = $value;
-                    //    $node->setAttribute(':' . $name, $uid);
-                    // $node->data[$name] = $value;
-                    // print_r($name);
-                    // print_r($node->data);
-                    $node->setAttribute('props', $uid);
+            if ($name == 'class') {
+                $class = $node->getAttribute('class');
+                if (!is_string($value)) $value = (array) $value;
+                if (is_array($value)) {
+                    foreach ($value as $k => $v) {
+                        if (is_numeric($k)) {
+                            $class .= " $v";
+                        } else {
+                            if ($v) {
+                                $class .= " $k";
+                            }
+                        }
+                    }
                 } else {
-                    $node->setAttribute($name, $value);
+                    $class .= " $value";
+                }
+                $class = trim($class);
+                $node->setAttribute('class', $class);
+            } else {
+                if (is_bool($value)) {
+                    if ($value) {
+                        $node->setAttribute($name, $name);
+                    }
+                } else {
+                    // postbone resolve till later (happens in components)
+                    if (is_array($value) || is_object($value)) {
+
+                        $props->set($uid, $name, $value);
+                        //    $data[$uid] = $value;
+                        //    $node->setAttribute(':' . $name, $uid);
+                        // $node->data[$name] = $value;
+                        // print_r($name);
+                        // print_r($node->data);
+                        $node->setAttribute('props', $uid);
+                    } else {
+                        $node->setAttribute($name, $value);
+                    }
                 }
             }
             $node->removeAttribute($attribute->name);
@@ -221,6 +244,7 @@ class dom_render {
             }
 
             $this->removeNode($node);
+            return true;
         }
     }
 
