@@ -28,7 +28,7 @@ $the_route = match ([$http_method, $path]) {
     ['POST', '/contact'] => ['contact', $_POST],
     ['GET', '/'] => ['home'],
     ['GET', '/about'] => ['about'],
-    ['GET', '/contact'] => ['contact'],
+    ['GET', '/contact'] => ['contact', $_GET],
         // ['POST', '/check_username'] => ['check_username', json_decode(file_get_contents('php://input'), true)],
     default => ['404']
 };
@@ -58,4 +58,9 @@ function d(...$args) {
         print_r($arg);
     }
     echo '</pre>';
+}
+
+function redirect($to) {
+    header("Location: $to");
+    exit;
 }

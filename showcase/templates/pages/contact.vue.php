@@ -2,7 +2,11 @@
 
     <h1>You can contact us via this form</h1>
 
-    <form action="/contact" method="POST">
+    <section v-if="success">
+        <h4>Thank you for your message!</h4>
+    </section>
+
+    <form v-else action="/contact" method="POST">
 
         <form-field name="name" label="Name" :value="input.name" :error="errors.name"></form-field>
         <form-field name="email" label="eMail Address" :value="input.email" :error="errors.email"></form-field>
@@ -20,8 +24,10 @@
 
 <?php
 
+$success = $props['success'] ?? false;
 $fields = ['email', 'name', 'found_via'];
 $input = array_reduce($fields, fn ($res, $field) => $res + [$field => $_POST[$field] ?? ""], []);
+
 
 $validation = [
     'email' => [
@@ -42,6 +48,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 break;
             }
         }
+    }
+    if (!trim(join("", $errors))) {
+        redirect('/contact?success=1');
     }
 }
 
