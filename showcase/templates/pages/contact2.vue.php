@@ -8,7 +8,7 @@
         </aside>
     </section>
 
-    <form v-else x-data="form()" x-validatetable="{lazy:true}" x-cloak novalidate action="/contact2" method="POST">
+    <form-alpine v-else action="/contact2">
 
         <form-field name="name" label="Name" :value="input.name" :error="errors.name"></form-field>
         <form-field name="email" label="eMail Address" :value="input.email" :error="errors.email"></form-field>
@@ -22,7 +22,7 @@
 
         <button type="submit">Send</button>
 
-    </form>
+    </form-alpine>
 </layout>
 
 <style>
@@ -31,8 +31,7 @@
     }
 </style>
 
-<script header type="module" src="/assets/form.js"></script>
-<script header src="//unpkg.com/alpinejs" defer></script>
+
 
 <?php
 $rules = [

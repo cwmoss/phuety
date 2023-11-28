@@ -177,7 +177,7 @@ class dom_render {
         // removing until finished iterating.
         $nodesToRemove = [];
         $nodesToReplace = [];
-
+        $previousIfCondition = null;
         foreach ($nodes as $node) {
             if ($this->isTextNode($node)) {
                 continue;
