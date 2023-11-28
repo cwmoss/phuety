@@ -128,7 +128,8 @@ export default class Validator {
     let ok = await this.validate_fields(fields);
     console.log("... all ok?", ok);
     // TODO: use fetch
-    if (ok === false) e.preventDefault();
+    if (ok === true) this.f.submit();
+    e.preventDefault();
   }
   validate_ev(e) {
     let el = e.target;

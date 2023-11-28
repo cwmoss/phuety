@@ -27,7 +27,8 @@ $active = $props['path'] ?? '/';
 $navpoints = [
     ['url' => '/', 'title' => 'Home'],
     ['url' => '/about', 'title' => 'About Us'],
-    ['url' => '/contact', 'title' => 'Contact']
+    ['url' => '/contact', 'title' => 'Contact'],
+    ['url' => '/contact2', 'title' => 'Contact (alpine)']
 ];
 
 
