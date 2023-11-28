@@ -2,7 +2,7 @@
 
     composer install
 
-    php -S localhost:4000 public/index.php
+    php -S localhost:4000 -t showcase/public/
 
 ## inspiration, copypaste, similar projects
 

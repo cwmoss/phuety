@@ -107,7 +107,9 @@ class splitter {
     }
 
     public function handle_link($node, &$parts) {
-        $parts['assets'][] = ['link', 'header', dom::attributes($node), $node->ownerDocument->saveHTML($node)];
+        $attrs = dom::attributes($node);
+        // if($attrs['href'])
+        $parts['assets'][] = ['link', 'header', $attrs, $node->ownerDocument->saveHTML($node)];
     }
 
     public function handle_script($node, &$parts) {
@@ -115,6 +117,10 @@ class splitter {
         $position = (isset($attrs['header']) ? 'header' : null);
         if (is_null($position)) $position = 'body';
         $node->removeAttribute('header');
+        // todo: cache buster
+        if ($attrs['src'] ?? null && $attrs['src'][0] == '/') {
+            $node->setAttribute('src', $attrs['src'] . '?' . time());
+        }
         $parts['assets'][] = ['script', $position, dom::attributes($node), $node->ownerDocument->saveHTML($node)];
     }
 

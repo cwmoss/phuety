@@ -4,14 +4,14 @@
 $http_method = $_SERVER['REQUEST_METHOD'];
 // $path = $_SERVER['REQUEST_URI'] ?: '/';
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-
+error_log("path: $path --");
 send_nocache();
 
 if ($_SERVER['REQUEST_URI'] == '/assets/mvp.css') {
     header("Content-Type: text/css");
     print file_get_contents(__DIR__ . '/public/assets/mvp.css');
     exit;
-} elseif ($_SERVER['REQUEST_URI'] == '/assets/components.css') {
+} elseif ($path == '/components-css') {
     header("Content-Type: text/css");
     foreach (glob(__DIR__ . '/tmp/*.css') as $f) {
         print file_get_contents($f);
@@ -25,10 +25,14 @@ if ($_SERVER['REQUEST_URI'] == '/assets/mvp.css') {
 
 // print file_get_contents('php://input');
 $the_route = match ([$http_method, $path]) {
+    ['POST', '/contact2'] => ['contact2', $_POST],
     ['POST', '/contact'] => ['contact', $_POST],
+
     ['GET', '/'] => ['home'],
     ['GET', '/about'] => ['about'],
+    ['GET', '/contact2'] => ['contact2', $_GET],
     ['GET', '/contact'] => ['contact', $_GET],
+
         // ['POST', '/check_username'] => ['check_username', json_decode(file_get_contents('php://input'), true)],
     default => ['404']
 };
