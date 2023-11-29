@@ -40,13 +40,21 @@ class phuety {
 
 tagname form-field
 cname form_field
-location form-* => form/ => form/form_field 
+
+#        rule-key    rule-value     component source file (.vue.php)
+location form-*   => form/       => form/form_field 
 
 tagname page-hello
 cname page_hello
 location page-* => pages/* => pages/hello
 
+tagname phuety-assets
+cname phuety-assets
+location phuety-* => * => assets
 
+tagname layout
+cname layout
+location layout => layout => layout
 */
     public function get_component_source_location($tagname) {
         if (isset($this->map[$tagname])) {

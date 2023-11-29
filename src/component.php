@@ -13,7 +13,14 @@ class component {
 
     public string $name;
     public string $uid;
+
     public bool $is_layout = false;
+
+    public bool $has_template = false;
+    public bool $has_code = false;
+    public bool $has_style = false;
+    public array $assets = [];
+
     public bool $is_start = false;
     public ?DOMDocument $pagedom = null;
     public dom_render $renderer;
@@ -131,35 +138,6 @@ class component {
         }
         $this->travel_nodes($dom->documentElement, $dom, $this->propholder);
         $this->replace_slot($dom, $children, $this->propholder);
-        # compiler::d("after replace " . static::class, $dom);
-        return $dom;
-    }
-
-
-    public function run0(array $props = [], DOMNodeList $children = null) {
-        // print "\nrunning... " . static::class . "\n";
-        $file = $this->cbase . '/' . $this->name . '.run.php';
-        include($file);
-        $result = get_defined_vars();
-        if ($this->is_layout) {
-            $html = $this->renderer->render_page($result);
-        } else {
-            $html = $this->renderer->render($result);
-        }
-
-
-        #print "html result: $html\n";
-        #print "slot?\n";
-        //print_r($children);
-        // layouts are different 
-        if ($this->is_layout) {
-            $dom = dom::get_document($html);
-        } else {
-            $dom = dom::get_fragment($html);
-        }
-
-        $this->travel_nodes($dom->documentElement, $dom);
-        $this->replace_slot($dom, $children);
         # compiler::d("after replace " . static::class, $dom);
         return $dom;
     }

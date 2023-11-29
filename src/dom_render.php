@@ -24,6 +24,13 @@ class dom_render {
      */
     private $template;
 
+    public $lang_attrs = [
+        'if' => 'v-if',
+        'else' => 'v-else',
+        'for' => 'v-for',
+        'html' => 'v-html',
+        'bind' => ':'
+    ];
 
     private SMPLang $expressionParser;
 
@@ -114,8 +121,9 @@ class dom_render {
         // TODO: is_component?
         $uid = 'userdata' . uniqid();
         $attributes = dom::attributes($node);
+        $bind = $this->lang_attrs['bind'];
         foreach (iterator_to_array($node->attributes) as $attribute) {
-            if (!preg_match('/^:[\w-]+$/', $attribute->name)) {
+            if (!preg_match('/^' . $bind . '[\w-]+$/', $attribute->name)) {
                 continue;
             }
 
@@ -123,7 +131,8 @@ class dom_render {
             //    ->evaluate($data);
             // print_r($data);
             $value = $this->expressionParser->evaluate($attribute->value, $data + $methods);
-            $name = substr($attribute->name, 1);
+            // 
+            $name = substr($attribute->name, strlen($bind));
             //            print "attr {$attribute->name} => $name \n";
             if ($name == 'class') {
                 $class = $node->getAttribute('class');
@@ -175,6 +184,9 @@ class dom_render {
     private function handleIf(DOMNodeList $nodes, array $data, array $methods, props $props) {
         // Iteration of iterator breaks if we try to remove items while iterating, so defer node
         // removing until finished iterating.
+        $if = $this->lang_attrs['if'];
+        $else = $this->lang_attrs['else'];
+
         $nodesToRemove = [];
         $nodesToReplace = [];
         $previousIfCondition = null;
@@ -184,9 +196,9 @@ class dom_render {
             }
             if ($node->nodeType == 7) continue;
             /** @var DOMElement $node */
-            if ($node->hasAttribute('v-if')) {
-                $conditionString = $node->getAttribute('v-if');
-                $node->removeAttribute('v-if');
+            if ($node->hasAttribute($if)) {
+                $conditionString = $node->getAttribute($if);
+                $node->removeAttribute($if);
                 $condition = $this->evaluateExpression($conditionString, $data, $methods);
 
                 if (!$condition) {
@@ -198,8 +210,8 @@ class dom_render {
                 }
 
                 $previousIfCondition = $condition;
-            } elseif ($node->hasAttribute('v-else')) {
-                $node->removeAttribute('v-else');
+            } elseif ($node->hasAttribute($else)) {
+                $node->removeAttribute($else);
 
                 if ($previousIfCondition) {
                     $nodesToRemove[] = $node;
@@ -223,11 +235,11 @@ class dom_render {
         if ($this->isTextNode($node)) {
             return;
         }
-
+        $for = $this->lang_attrs['for'];
         /** @var DOMElement $node */
-        if ($node->hasAttribute('v-for')) {
-            list($itemName, $listName) = explode(' in ', $node->getAttribute('v-for'));
-            $node->removeAttribute('v-for');
+        if ($node->hasAttribute($for)) {
+            list($itemName, $listName) = explode(' in ', $node->getAttribute($for));
+            $node->removeAttribute($for);
             // $value = $this->expressionParser->parse($listName, $methods)
             //    ->evaluate($data);
             $value = $this->expressionParser->evaluate($listName, $data + $methods);
@@ -253,12 +265,13 @@ class dom_render {
         if ($this->isTextNode($node)) {
             return;
         }
+        $html = $this->lang_attrs['html'];
 
         /** @var DOMElement $node */
-        if ($node->hasAttribute('v-html')) {
-            $variableName = $node->getAttribute('v-html');
+        if ($node->hasAttribute($html)) {
+            $variableName = $node->getAttribute($html);
             $value = $this->expressionParser->evaluate($variableName, $data);
-            $node->removeAttribute('v-html');
+            $node->removeAttribute($html);
 
             $newNode = $node->cloneNode(true);
             #dom::d("v-html", $newNode);
