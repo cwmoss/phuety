@@ -179,7 +179,7 @@ class component {
                 $this->travel_phuety($childNode, $props);
             }
         }
-        if ($node->nodeType == \XML_DOCUMENT_NODE) {
+        if ($node->nodeType == \XML_DOCUMENT_NODE || $node->nodeType == \XML_HTML_DOCUMENT_NODE) {
             # print "travel doc\n";
             foreach (iterator_to_array($node->childNodes) as $childNode) {
                 $this->travel_phuety($childNode, $props);
@@ -211,7 +211,7 @@ class component {
                 $this->travel_nodes($childNode, $dom, $props, $slotmode);
             }
         }
-        if ($node->nodeType == \XML_DOCUMENT_NODE) {
+        if ($node->nodeType == \XML_DOCUMENT_NODE || $node->nodeType == \XML_HTML_DOCUMENT_NODE) {
             # print "travel doc\n";
             foreach (iterator_to_array($node->childNodes) as $childNode) {
                 $this->travel_nodes($childNode, $dom, $props, $slotmode);
