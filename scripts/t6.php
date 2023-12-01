@@ -1,13 +1,19 @@
 <?php
 
+use Symfony\Component\ExpressionLanguage\SyntaxError;
+
+use function PHPUnit\Framework\throwException;
+
 error_reporting(E_ALL);
 
 class tokenstream {
+    public string $source;
     public array $data;
     public int $index = -1;
     public int $maxindex = 0;
     public function __construct($code) {
         // remove spaces & php start tag
+        $this->source = $code;
         $this->data =  array_values(array_filter(PhpToken::tokenize('<?php ' . $code), fn ($tok) => !in_array($tok->id, [392, 389])));
         $this->maxindex = (count($this->data) - 1);
     }
@@ -81,6 +87,8 @@ class node {
 
 $test = "req.method == 'GET'";
 $test = "req.method == 'GET' && date < now || has_feature || is_good || is_notbad";
+$test = "req.method == 'GET' && date < now && (has_feature || is_good)";
+$test = "req.method == 'GET' && enddate ~ now && (date < now && ! (has_feature ||is_good)";
 // $test = "has_feature == true";
 // $test = "5+ 13 & 4^2+1";
 $stream = new tokenstream($test);
@@ -89,7 +97,9 @@ print_r($stream);
 
 $prec = [
     '==' => 10,
+    '!=' => 10,
     '<' => 10,
+    '!' => 5,
     '&&' => 2,
     '||' => 1
 ];
@@ -172,7 +182,25 @@ function parse($stream, $minprec, $prec) {
     while ($stream->more()) {
 
         $peek = $stream->peek();
-
+        if ($node == ')') {
+            return $node;
+        }
+        if ($node == '(') {
+            $rval = parse($stream, 0, $prec);
+            // $node = [$op, $node, $rval];
+            $chk = $stream->next();
+            if (($chk->text ?? null) != ')') {
+                throw new SyntaxException("missing closing brackets", $left, $stream->source);
+            }
+            return $rval;
+        }
+        if ($node == '!') {
+            $op = '!';
+            $rval = parse($stream, 0, $prec);
+            $node = [$op, $rval, null];
+            // return $rval;
+            break;
+        }
         if ($left->id == 262) {
             while (is_var($peek, $left->text)) {
                 [$prev, $left, $peek] = $stream->foreward();
@@ -180,13 +208,24 @@ function parse($stream, $minprec, $prec) {
             }
         }
 
+        if ($peek->text == ')') {
+            break;
+        }
         $op_prec = $prec[$peek->text];
         if ($op_prec < $minprec) {
             break;
         }
+        $opt = $stream->next();
+        $op = $opt->text;
+        if ($op == '~') {
+            throw new SyntaxException("unkown operator", $opt, $stream->source);
+        }
+        #if ($op == ')') {
+        #    return $node;
+        #}
 
-        $op = $stream->next()->text;
         $rval = parse($stream, $op_prec, $prec);
+
         $node = [$op, $node, $rval];
     }
     print "$count\n";
@@ -200,6 +239,9 @@ function to_php($tree) {
     }
     if (is_array($rgt)) {
         $rgt = '(' . to_php($rgt) . ')';
+    }
+    if ($op == '!') {
+        return  $op . '(' . $lft . ')';
     }
     return $lft . ' ' . $op . ' ' . $rgt;
 }
@@ -272,4 +314,20 @@ function parse0($stream, $root, $current = null) {
         $root->leaf($current);
     }
     return $root;
+}
+
+class SyntaxException extends Exception {
+    private $token;
+    private $src;
+
+    public function __construct($message, $token, $src) {
+        $this->token = $token;
+        $this->src = $src;
+        parent::__construct($this->make_message($message, $token, $src));
+    }
+
+    public function make_message($message, $token, $sourcecode) {
+        $msg = "syntax error\n" . $sourcecode . "\n" . str_repeat(' ', ($token->pos - 6)) . '^ ' . $message;
+        return $msg;
+    }
 }
