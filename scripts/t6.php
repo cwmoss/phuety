@@ -86,9 +86,9 @@ class node {
 }
 
 $test = "req.method == 'GET'";
-$test = "req.method == 'GET' && date < now || has_feature || is_good || is_notbad";
-$test = "req.method == 'GET' && date < now && (has_feature || is_good)";
-$test = "req.method == 'GET' && enddate ~ now && (date < now && ! (has_feature ||is_good)";
+$test = "req.method == 'GET' && date < now || has_feature || !is_good || is_notbad";
+#$test = "req.method == 'GET' && date < now && (has_feature || is_good)";
+#$test = "req.method == 'GET' && enddate < now && (date < now && ! (has_feature ||is_good))";
 // $test = "has_feature == true";
 // $test = "5+ 13 & 4^2+1";
 $stream = new tokenstream($test);
@@ -196,7 +196,7 @@ function parse($stream, $minprec, $prec) {
         }
         if ($node == '!') {
             $op = '!';
-            $rval = parse($stream, 0, $prec);
+            $rval = parse($stream, 5, $prec);
             $node = [$op, $rval, null];
             // return $rval;
             break;
