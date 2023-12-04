@@ -5,6 +5,7 @@ namespace phuety\expression;
 class parser {
 
     public $prec = [
+        'in' => 10,
         '==' => 10,
         '!=' => 10,
         '<' => 10,
@@ -41,12 +42,6 @@ class parser {
                 $node = [$op, $rval, null];
                 // return $rval;
                 break;
-            }
-            if ($left->id == 262) {
-                while ($this->is_var($peek, $left->text)) {
-                    [$prev, $left, $peek] = $this->stream->foreward();
-                    $node .= ($left->text);
-                }
             }
 
             if ($peek->text == ')') {
