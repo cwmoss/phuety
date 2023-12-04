@@ -9,6 +9,7 @@ class parser {
         '==' => 10,
         '!=' => 10,
         '<' => 10,
+        '>' => 10,
         '!' => 5,
         '&&' => 2,
         '||' => 1
@@ -20,26 +21,42 @@ class parser {
 
     public function parse(int $minprec = 0) {
         $left = $this->stream->next();
-        $node = $left->text;
+        // $node = $left->text;
+        $node = new leaf('', $left->text);
         while ($this->stream->more()) {
 
             $peek = $this->stream->peek();
-            if ($node == ')') {
+            if ($peek->text == ',') {
+                $this->stream->next();
                 return $node;
             }
-            if ($node == '(') {
-                $rval = $this->parse(0);
-                // $node = [$op, $node, $rval];
-                $chk = $this->stream->next();
-                if (($chk->text ?? null) != ')') {
-                    throw new syntax_exception("missing closing brackets", $left, $this->stream->source);
+            if ($node->value == ')') {
+                return $node;
+            }
+            // method?
+            if ($peek->text == '(') {
+                print "++call++";
+                $node = node::new_call($node);
+                helper::dbg($node);
+                $this->stream->next();
+                $peek = $this->stream->peek();
+                while ($peek->text != ')') {
+                    $node->n[] = $this->parse(0);
+                    $peek = $this->stream->peek();
                 }
+                helper::dbg("++call+++", $node, $peek);
+                $this->stream->next();
+                continue;
+            }
+            if ($node->value == '(') {
+                print "start bracket\n";
+                $rval = $this->parse(0);
                 return $rval;
             }
-            if ($node == '!') {
+            if ($node->value == '!') {
                 $op = '!';
                 $rval = $this->parse(0);
-                $node = [$op, $rval, null];
+                $node = new node($op, $rval);
                 // return $rval;
                 break;
             }
@@ -49,6 +66,7 @@ class parser {
             }
             $op_prec = $this->prec[$peek->text] ?? null;
             if ($op_prec == null) {
+                helper::dbg('+ op failed', $node);
                 throw new syntax_exception("unkown operator", $peek, $this->stream->source);
             }
             if ($op_prec < $minprec) {
@@ -63,7 +81,7 @@ class parser {
 
             $rval = $this->parse($op_prec);
 
-            $node = [$op, $node, $rval];
+            $node = new node($op, $node, $rval);
         }
         return $node;
     }

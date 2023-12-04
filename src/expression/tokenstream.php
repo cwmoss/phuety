@@ -87,6 +87,9 @@ class tokenstream {
         $this->index++;
         return $this->data[$this->index] ?? null;
     }
+    public function current() {
+        return $this->data[$this->index] ?? null;
+    }
     public function peek() {
         return $this->data[$this->index + 1] ?? null;
     }
