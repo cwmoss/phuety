@@ -25,16 +25,18 @@ class data {
         # if ($is_iteral) return $val;
 
         if (!is_array($path)) $path = explode('.', $path);
+        #print_r($path);
         $val = $this->data;
         foreach ($path as $key) {
             if (is_array($val)) {
                 if (!isset($val[$key])) {
+                    #print "not-set $key";
                     return $default;
                 } else {
+                    #print "set $key";
                     $val = $val[$key];
                 }
-            }
-            if (is_object($val)) {
+            } elseif (is_object($val)) {
                 if (!isset($val->$key)) {
                     return $default;
                 } else {
@@ -42,10 +44,21 @@ class data {
                 }
             }
         }
+        #print "data.get";
+        #var_dump($val);
         return $val;
     }
 
-    public function call($leaf, $default) {
+    public function call($meth, $args, $default = null) {
+        #print "data call $meth\n";
+        #print_r($this->data);
+        $meth = $this->get_value($meth);
+        #var_dump($meth);
+        if (!is_callable($meth)) return $default;
+        return $meth(...$args);
+    }
+
+    public function xcall($leaf, $default) {
         $meth = $leaf->value;
         if (!is_callable($meth)) return $default;
         return $meth(...array_map(fn ($e) => $this->get($e), $leaf->n));

@@ -19,7 +19,19 @@ class node {
     }
 
     public static function new_call(leaf $leaf) {
-        $node = new self('call', $leaf->value);
+        $node = new self('call', null, $leaf->value);
+        $node->n = [];
+        return $node;
+    }
+
+    public static function new_object(leaf $leaf) {
+        $node = new self('object');
+        $node->n = [];
+        return $node;
+    }
+
+    public static function new_array(leaf $leaf) {
+        $node = new self('array');
         $node->n = [];
         return $node;
     }

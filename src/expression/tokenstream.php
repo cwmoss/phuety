@@ -20,6 +20,8 @@ class tokenstream {
 
     public function tokenize(string $code) {
         $toks = PhpToken::tokenize('<?php ' . $code);
+        // print_r($toks);
+        // T_ENCAPSED_AND_WHITESPACE ``
         $result = [];
         $br_symbols = [40 => 41, 123 => 125, 91 => 93]; // () {} []
         $br_open = array_keys($br_symbols);

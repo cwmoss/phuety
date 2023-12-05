@@ -23,7 +23,9 @@ class evaluator {
         if ($exp instanceof leaf) {
             return $exp;
         }
-        if ($exp->value instanceof node) {
+        if (is_array($exp->n)) {
+            $lft = array_map(fn ($n) => $this->evaluate($n, $data), $exp->n);
+        } elseif ($exp->value instanceof node) {
             $lft = $this->evaluate($exp->value, $data);
         } else {
             $lft = $exp->value;
@@ -51,9 +53,34 @@ class evaluator {
             "||" => $data->get($lft) > $data->get($rgt),
             "!" => !$data->get($lft),
             "in" => in_array($data->get($lft), $data->get($rgt, [])),
+            "~" => $data->get($lft) . $data->get($rgt),
+            ":" => [$lft->value, $data->get($rgt)],
+            "call" => $this->eval_call($rgt, $lft, $data),
+            "array" => $this->eval_array($lft, $data),
+            "object" => $this->eval_object($lft, $data)
         };
     }
 
+    public function eval_array($items, $data) {
+        $res = array_map(fn ($e) => $data->get($e), $items);
+        print_r($res);
+        return $res;
+    }
+
+    public function eval_call($meth, $args, $data) {
+        print "calling $meth\n";
+        $args = array_map(fn ($e) => $data->get($e), $args);
+        return $data->call($meth, $args);
+    }
+
+    public function eval_object($els, $data) {
+        // var_dump($els);
+        $o = [];
+        foreach ($els as $l) {
+            $o[$l[0]] = $l[1];
+        }
+        return $o;
+    }
     public function xevaluate($exp, $data) {
         [$op, $lft, $rgt] = $exp;
         if (is_array($lft)) {
