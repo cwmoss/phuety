@@ -39,25 +39,36 @@ class evaluator {
         }
         //var_dump(['op', $exp->op, $lft, $rgt]);
         $res = $this->eval_op($exp->op, $lft, $rgt, $data);
-        //var_dump(['res', $exp->op, $res]);
+        // var_dump(['res', $exp->op, $res]);
         return $res;
     }
 
     public function eval_op($op, $lft, $rgt, $data) {
+        // $lft = $data->get($lft);
+
         return match ($op) {
             "==" => $data->get($lft) == $data->get($rgt),
+            "===" => $data->get($lft) === $data->get($rgt),
             "!=" => $data->get($lft) != $data->get($rgt),
             "<" => $data->get($lft) < $data->get($rgt),
             ">" => $data->get($lft) > $data->get($rgt),
+            "<=" => $data->get($lft) <= $data->get($rgt),
+            ">=" => $data->get($lft) >= $data->get($rgt),
             "&&" => $data->get($lft) && $data->get($rgt),
-            "||" => $data->get($lft) > $data->get($rgt),
+            "||" => $data->get($lft) || $data->get($rgt),
             "!" => !$data->get($lft),
             "in" => in_array($data->get($lft), $data->get($rgt, [])),
             "~" => $data->get($lft) . $data->get($rgt),
             ":" => [$lft->value, $data->get($rgt)],
             "call" => $this->eval_call($rgt, $lft, $data),
             "array" => $this->eval_array($lft, $data),
-            "object" => $this->eval_object($lft, $data)
+            "object" => $this->eval_object($lft, $data),
+            "+" => $data->get($lft) + $data->get($rgt),
+            "-" => $data->get($lft) - $data->get($rgt),
+            "*" => $data->get($lft) * $data->get($rgt),
+            "/" => $data->get($lft) / $data->get($rgt),
+            "%" => $data->get($lft) % $data->get($rgt),
+            "**" => $data->get($lft) ** $data->get($rgt),
         };
     }
 
@@ -74,7 +85,7 @@ class evaluator {
     }
 
     public function eval_object($els, $data) {
-        // var_dump($els);
+        var_dump($els);
         $o = [];
         foreach ($els as $l) {
             $o[$l[0]] = $l[1];

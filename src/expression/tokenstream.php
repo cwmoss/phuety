@@ -27,10 +27,41 @@ class tokenstream {
         $br_open = array_keys($br_symbols);
         $br_close = array_values($br_symbols);
         $brackets = [];
+        $previous = null;
         while ($tok = array_shift($toks)) {
+
             // remove white space & php start tag
-            if (in_array($tok->id, [392, 389])) continue;
-            if ($tok->id == 262) {
+            if (in_array($tok->id, [\T_WHITESPACE, \T_OPEN_TAG])) continue; #392, 389
+
+            if ($tok->text == '-' && $toks && in_array($toks[0]->id, [\T_DNUMBER, \T_LNUMBER])) {
+                print "number?";
+                // -number?
+                // if (in_array($tok->text, ['+', '-', '*', '/', '%', '**'])) {}
+                if (!$result || !in_array($result[count($result) - 1]->id, [\T_DNUMBER, \T_LNUMBER, \T_STRING])) {
+                    // array_shift($toks);
+                    $toks[0]->text = '-' . $toks[0]->text;
+                    continue;
+                }
+            }
+            /* expr starts with - */
+            #} elseif (!$result && $tok->text == '-' && isset($toks[0]) && in_array($toks[0]->id, [\T_DNUMBER, \T_LNUMBER])) {
+            #    $toks[0]->text = '-' . $toks[0]->text;
+            #    continue;
+            #}
+            // backtick 96 UNKOWN
+            // TODO: interpolation
+            if ($tok->text == '`') {
+                $vartok = $tok;
+                $tok = array_shift($toks);
+                while ($toks && $tok->text != '`') {
+                    $vartok->text .= $tok->text;
+                    $tok = array_shift($toks);
+                }
+                $vartok->text .= $tok->text;
+                $result[] = $vartok;
+                continue;
+            }
+            if ($tok->id == \T_STRING) { # 262
                 $vartok = $tok;
                 while ($toks && $this->is_var($toks[0], $tok->text)) {
                     $tok = array_shift($toks);
@@ -39,8 +70,9 @@ class tokenstream {
                 $result[] = $vartok;
                 continue;
             }
+
             // number with dots to range? 1...10 => 1. . .3 => 1 ... 3
-            if ($tok->id == '261') {
+            if ($tok->id == \T_DNUMBER) { # 261
                 if (
                     substr($tok->text, -1) == '.' &&
                     $toks[0] && $toks[0]->text == '.' &&

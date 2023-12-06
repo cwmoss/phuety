@@ -15,8 +15,27 @@ $test = "count(people, max(n, 99, 'ok')) > 5";
 #print_r(new tokenstream($test));
 #exit;
 #$test = "{name: 'otto', tags: ['light', 'dark'], big: count('all', max)>5,  age: \$age}";
-$test = "tag in ['spring', 'sum' ~ 'mer', season()]";
-$test = '`dreimal hoch auf ${name} juhu.`';
+#$test = "tag in ['spring', 'sum' ~ 'mer', season()]";
+#$test = '`dreimal hoch auf ${name} juhu.`';
+#$test = '`eins zwo drei`';
+#$test = "`eins zwo drei`";
+#$test = '"foo"~1+2~`baz`';
+$test = '(number - 10 * 4 / 2 - 3) % 10';
+$test = '(100 + number * 1 <= 200 || number <-1) === negative';
+$test = '(100 + number * 1 <= 200 || number <-1) === negative';
+$test = 'true';
+$test = '((true)&&false&&false||true&&true)';
+$test = '((true)&&false&&false||true&&true)';
+$test = 'true && false && (false || true) && true';
+$test = 'true && false && false || true && true';
+$test = '!false && !true && (false || !false) && true';
+$test = '{first: "one", second: "two", key: 23}';
+#$test = '(a || b) && c';
+#$test = "5-3-2";
+print $test . "\n";
+print_r(new tokenstream($test));
+
+
 $parser = new parser(new tokenstream($test));
 
 $res = $parser->parse();
@@ -26,6 +45,8 @@ print_r($res);
 
 $eval = new evaluator($res);
 $data = new data([
+    'number' => 123,
+    'negative' => false,
     'req' => ['method' => "GET"],
     'date' => 4,
     'now' => 5,
