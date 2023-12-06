@@ -19,6 +19,7 @@ class phuety {
 
     public function run_template_string(string $tpl, array $data) {
         $component = component::new_from_string($tpl, $this->cbase);
+        var_dump($component);
         $component->engine = $this;
         $component->assetholder = new asset;
         return $component->start_running($data);

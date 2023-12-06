@@ -34,7 +34,7 @@ class tokenstream {
             if (in_array($tok->id, [\T_WHITESPACE, \T_OPEN_TAG])) continue; #392, 389
 
             if ($tok->text == '-' && $toks && in_array($toks[0]->id, [\T_DNUMBER, \T_LNUMBER])) {
-                print "number?";
+                //print "number?";
                 // -number?
                 // if (in_array($tok->text, ['+', '-', '*', '/', '%', '**'])) {}
                 if (!$result || !in_array($result[count($result) - 1]->id, [\T_DNUMBER, \T_LNUMBER, \T_STRING])) {

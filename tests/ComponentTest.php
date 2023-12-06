@@ -53,7 +53,7 @@ class ComponentTest extends TestCase {
     }
 
     private function render_string(string $template, array $data) {
-        $runner = new phuety(__DIR__ . '/fixtures', ['css' => 'scoped_simple']);
+        $runner = new phuety(__DIR__ . '/fixtures', [], '', ['css' => 'scoped_simple']);
         return $runner->run_template_string($template, $data);
     }
 

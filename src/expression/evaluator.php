@@ -74,18 +74,18 @@ class evaluator {
 
     public function eval_array($items, $data) {
         $res = array_map(fn ($e) => $data->get($e), $items);
-        print_r($res);
+        // print_r($res);
         return $res;
     }
 
     public function eval_call($meth, $args, $data) {
-        print "calling $meth\n";
+        // print "calling $meth\n";
         $args = array_map(fn ($e) => $data->get($e), $args);
         return $data->call($meth, $args);
     }
 
     public function eval_object($els, $data) {
-        var_dump($els);
+        // var_dump($els);
         $o = [];
         foreach ($els as $l) {
             $o[$l[0]] = $l[1];
