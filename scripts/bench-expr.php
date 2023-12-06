@@ -33,9 +33,19 @@ for ($i = 0; $i < 1000; $i++) {
 print_r(benchmark_time($t1));
 print "memory: " . hum_size(memory_get_usage()) . "\n";
 
-
 print "\n--\n";
 print "eval expr with phuety\n";
+$t1 = microtime(true);
+
+for ($i = 0; $i < 1000; $i++) {
+    $exp = parser::new_from_string($test);
+    $exp->evaluate($test, $data);
+}
+print_r(benchmark_time($t1));
+print "memory: " . hum_size(memory_get_usage()) . "\n";
+
+print "\n--\n";
+print "eval expr with phuety (cached expression)\n";
 $t1 = microtime(true);
 // $exp = new parser;
 $exp = parser::new_from_string($test);
@@ -52,9 +62,20 @@ print "memory: " . hum_size(memory_get_usage()) . "\n";
 print "\n--\n";
 print "eval expr with symfony\n";
 $t1 = microtime(true);
+#$exp = new ExpressionLanguage();
+for ($i = 0; $i < 1000; $i++) {
+    $exp = new ExpressionLanguage();
+    $exp->evaluate($test, $data);
+}
+print_r(benchmark_time($t1));
+print "memory: " . hum_size(memory_get_usage()) . "\n";
+// var_dump($exp);
+
+print "\n--\n";
+print "eval expr with symfony (cached expression)\n";
+$t1 = microtime(true);
 $exp = new ExpressionLanguage();
 for ($i = 0; $i < 1000; $i++) {
-    # $exp = new ExpressionLanguage();
     $exp->evaluate($test, $data);
 }
 print_r(benchmark_time($t1));

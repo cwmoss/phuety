@@ -21,9 +21,9 @@ class parser {
         '>' => 10,
         '>=' => 10,
         '!' => 35,
-        '&&' => 2,
-        '||' => 1,
-        ':' => 0
+        '&&' => 4,
+        '||' => 3,
+        ':' => 1
     ];
 
     public function __construct(public ?tokenstream $stream = null, public array $data = []) {
@@ -48,7 +48,7 @@ class parser {
         $left = $this->stream->next();
         // $node = $left->text;
         $node = leaf::new_from_token($left);
-        print "parse-start -- $level -- {$left->text}\n";
+        #print "parse-start -- $level -- {$left->text}\n";
         // start with operator?
         if ($left->text == '!') {
             # $minprec = $this->prec['!'];
@@ -62,14 +62,14 @@ class parser {
             #    return $node;
             #}
             // for method args
-            print "peek00: {$peek->text}\n";
+            #print "peek00: {$peek->text}\n";
             if ($peek->text === ',') {
                 # $this->stream->next();
                 return $node;
             }
             if ($node->value === ')') {
-                print_r($node);
-                print "return0 from )\n";
+                #print_r($node);
+                #print "return0 from )\n";
                 return $node;
             }
             if ($node->value === '!') {
@@ -82,72 +82,72 @@ class parser {
             // array?
             if ($node->value === '[') {
                 $node = node::new_array($node);
-                print "array start\n";
+                #print "array start\n";
                 while ($peek->text !== ']') {
                     $node->n[] = $this->parse(0, $level + 1);
-                    print "object -- current:" . $this->stream->current() . "\n";
+                    #print "object -- current:" . $this->stream->current() . "\n";
                     $peek = $this->stream->next();
                     // $peek = $this->stream->peek();
                 }
-                helper::dbg("++array+++", $node, $peek);
+                #helper::dbg("++array+++", $node, $peek);
                 // $this->stream->next();
                 continue;
             }
             // object?
             if ($node->value === '{') {
                 $node = node::new_object($node);
-                print "object start\n";
+                #print "object start\n";
                 while ($peek->text != '}') {
                     $node->n[] = $this->parse(0, $level + 1);
-                    print "object -- current:" . $this->stream->current() . "\n";
+                    #print "object -- current:" . $this->stream->current() . "\n";
                     $peek = $this->stream->next();
                     // $peek = $this->stream->peek();
                 }
-                helper::dbg("++call+++", $node, $peek);
+                #helper::dbg("++call+++", $node, $peek);
                 $this->stream->next();
                 continue;
             }
             // method?
             if ($peek->text === '(' && $node->value !== '(') {
-                print "++call++";
-                print_r($node);
+                #print "++call++";
+                #print_r($node);
                 $node = node::new_call($node);
-                helper::dbg($node);
+                #helper::dbg($node);
                 $this->stream->next();
                 $peek = $this->stream->peek();
                 while ($peek->text != ')') {
                     $node->n[] = $this->parse(0, $level + 1);
                     // $peek = $this->stream->next();
                     $peek = $this->stream->peek();
-                    print "method -- peek:{$peek->text}\n";
+                    #print "method -- peek:{$peek->text}\n";
                     if ($peek->text == ',') {
                         $this->stream->next();
                         $peek = $this->stream->peek();
                     }
                 }
-                helper::dbg("++call+++", $node, $peek);
+                #helper::dbg("++call+++", $node, $peek);
                 $this->stream->next();
-                print "continue from method)\n";
+                #print "continue from method)\n";
                 continue;
             }
             if ($node->value === '(') {
-                print "start bracket $level\n";
+                #print "start bracket $level\n";
                 $node = $this->parse(0, $level + 1);
-                print "end bracket $level\n";
-                print_r($node);
+                #print "end bracket $level\n";
+                #print_r($node);
                 $this->stream->next();
                 continue;
             }
 
 
-            print "peek: {$peek->text}\n";
+            #print "peek: {$peek->text}\n";
             if ($peek->text === ')' || $peek->text === '}' || $peek->text === ']') {
-                print "break from ) $level\n";
+                #print "break from ) $level\n";
                 break;
             }
             $op_prec = $this->prec[$peek->text] ?? null;
             if ($op_prec === null) {
-                helper::dbg('+ op failed', $node);
+                #helper::dbg('+ op failed', $node);
                 throw new syntax_exception("unkown operator ({$peek->text})", $peek, $this->stream->source);
             }
             if ($op_prec <= $minprec) {
@@ -163,9 +163,9 @@ class parser {
             #if ($op == ')') {
             #    return $node;
             #}
-            print "peek2: {$peek->text}\n";
+            #print "peek2: {$peek->text}\n";
             $rval = $this->parse($op_prec, $level + 1);
-            print "peek3: {$peek->text}\n";
+            #print "peek3: {$peek->text}\n";
             $node = new node($op, $node, $rval);
         }
         return $node;

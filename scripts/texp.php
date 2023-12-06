@@ -30,6 +30,7 @@ $test = 'true && false && (false || true) && true';
 $test = 'true && false && false || true && true';
 $test = '!false && !true && (false || !false) && true';
 $test = '{first: "one", second: "two", key: 23}';
+$test = 'object.method(10)';
 #$test = '(a || b) && c';
 #$test = "5-3-2";
 print $test . "\n";
@@ -60,7 +61,12 @@ $data = new data([
     'season' => function () {
         print "season is winter\n";
         return 'winter';
-    }
+    },
+    'object' => new class() {
+        public function method(int $number): int {
+            return $number * 100;
+        }
+    },
 ]);
 
 // print_r($data->get('req.method'));

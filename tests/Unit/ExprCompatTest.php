@@ -118,7 +118,146 @@ test('array and object definitions', function () {
 
     #assertEquals($smpl->evaluate('{}'), (object) []);
     #assertEquals($smpl->evaluate('{ "one", "two", 23, }'), (object) ["one", "two", 23]);
-    assertEquals($smpl->evaluate('{first: "one", second: "two", key: 23}'), (object) ["first" => "one", "second" => "two", "key" => 23]);
+
+    #assertEquals($smpl->evaluate('{first: "one", second: "two", key: 23}'), (object) ["first" => "one", "second" => "two", "key" => 23]);
+    assertEquals($smpl->evaluate('{first: "one", second: "two", key: 23}'), ["first" => "one", "second" => "two", "key" => 23]);
+
     #assertEquals($smpl->evaluate('{array: ["foo", `bar`]}'), (object) ["array" => ["foo", "bar"]]);
+    assertEquals($smpl->evaluate('{array: ["foo", `bar`]}'),  ["array" => ["foo", "bar"]]);
     #assertEquals($smpl->evaluate('{array: {\'foo\', "bar",},}'), (object) ["array" => (object) ["foo", "bar"]]);
+
+    # TODO
+    # assertEquals($smpl->evaluate('{array: {\'foo\', "bar",},}'), ["array" => (object) ["foo", "bar"]]);
+});
+
+test('access array elements', function () {
+    $smpl = new parser(null, [
+        'hash' => ['first' => 'same', 'second' => 'different', 'third' => 'same', 'another' => ['deep' => 'text']],
+        'key' => 'first'
+    ]);
+
+    assertEquals($smpl->evaluate('hash.second'), 'different');
+    #assertEquals($smpl->evaluate('hash["second"]'), 'different');
+    #assertEquals($smpl->evaluate('hash[key]'), 'same');
+    assertEquals($smpl->evaluate('hash.another'), ['deep' => 'text']);
+
+    assertEquals($smpl->evaluate('hash.another.deep'), 'text');
+    #assertEquals($smpl->evaluate('hash["another"]["deep"]'), 'text');
+    #assertEquals($smpl->evaluate("hash['another']['deep']"), 'text');
+    #assertEquals($smpl->evaluate('hash[`another`][`deep`]'), 'text');
+});
+
+
+test('equal comparisons', function () {
+    $smpl = new parser();
+
+    assertFalse($smpl->evaluate('true == false'));
+    assertFalse($smpl->evaluate('true==false'));
+    assertFalse($smpl->evaluate('true === false'));
+    assertFalse($smpl->evaluate('true===false'));
+
+    assertTrue($smpl->evaluate('true == true'));
+    assertTrue($smpl->evaluate('true === true'));
+
+    assertTrue($smpl->evaluate('false == false'));
+    assertTrue($smpl->evaluate('false === false'));
+
+    assertTrue($smpl->evaluate('"" == false'));
+    assertFalse($smpl->evaluate('"" === false'));
+    assertTrue($smpl->evaluate('0 == false'));
+    assertFalse($smpl->evaluate('0 === false'));
+
+    assertTrue($smpl->evaluate('"sth" == true'));
+    assertFalse($smpl->evaluate('"sth" === true'));
+    assertTrue($smpl->evaluate('1 == true'));
+    assertFalse($smpl->evaluate('1 === true'));
+});
+
+
+test('closure calls', function () {
+    $smpl = new parser(null, [
+        'param' => ['hello'],
+        'params' => ['hello', 'world'],
+        'named_params' => ['a' => 'hello', 'b' => 'world'],
+        'simple' => fn ($a, $b) => $a . '-' . $b,
+        'nested' => ['closure' => fn ($a) => fn (string $b): string => "you said: $a then $b"],
+        'returns_array' => fn ($value) => ['key' => $value],
+    ]);
+
+    assertEquals($smpl->evaluate('simple("hello", `world`)'), 'hello-world');
+    # assertEquals($smpl->evaluate('simple(a: "hello", b: `world`)'), 'hello-world');
+    #assertEquals($smpl->evaluate('simple(...params)'), 'hello-world');
+    #assertEquals($smpl->evaluate('simple(...named_params)'), 'hello-world');
+    #assertEquals($smpl->evaluate('simple(...param, \'world\')'), 'hello-world');
+
+    #assertEquals($smpl->evaluate('nested.closure("hello")(`world`)'), 'you said: hello then world');
+    #assertEquals($smpl->evaluate('nested[`closure`]("hello")(`world`)'), 'you said: hello then world');
+
+    # todo: support this?
+    #assertEquals($smpl->evaluate('returns_array("foo").key'), 'foo');
+    #assertEquals($smpl->evaluate('returns_array("foo")["key"]'), 'foo');
+});
+
+test('object property', function () {
+    $smpl = new parser(null, [
+        'object' => new class() {
+            public string $name = 'John';
+        },
+        'prop_name' => 'name',
+    ]);
+
+    assertEquals($smpl->evaluate('object.name'), 'John');
+    #assertEquals($smpl->evaluate('object["name"]'), 'John');
+    #assertEquals($smpl->evaluate("object['name']"), 'John');
+    #assertEquals($smpl->evaluate('object[`name`]'), 'John');
+    #assertEquals($smpl->evaluate('object[prop_name]'), 'John');
+    #assertEquals($smpl->evaluate('object[ prop_name ]'), 'John');
+});
+
+test('object method', function () {
+    $smpl = new parser(null, [
+        'object' => new class() {
+            public function method(int $number): int {
+                return $number * 100;
+            }
+        },
+        'method_name' => 'method',
+        'number' => 12
+    ]);
+
+    assertEquals($smpl->evaluate("object.method(10)"), 1000);
+    assertEquals($smpl->evaluate("object.method( 10 )"), 1000);
+    #assertEquals($smpl->evaluate("object['method']( 10 )"), 1000);
+    #assertEquals($smpl->evaluate("object[method_name](10)"), 1000);
+
+    assertEquals($smpl->evaluate("object.method( number )"), 1200);
+    #assertEquals($smpl->evaluate("object[method_name](number)"), 1200);
+});
+
+
+test('ternary', function () {
+    $smpl = new parser();
+
+    #assertEquals($smpl->evaluate("true?'yes':'no'"), 'yes');
+    #assertEquals($smpl->evaluate("true ? 'yes' : 'no'"), 'yes');
+
+    #assertEquals($smpl->evaluate("false?'yes':'no'"), 'no');
+    #assertEquals($smpl->evaluate("false ? 'yes' : 'no'"), 'no');
+});
+
+test('short ternary', function () {
+    $smpl = new parser();
+
+    #assertEquals($smpl->evaluate("true?'yes'"), 'yes');
+    #assertEquals($smpl->evaluate("true ? 'yes'"), 'yes');
+
+    #assertNull($smpl->evaluate("false?'yes'"));
+    #assertNull($smpl->evaluate("false ? 'yes'"));
+
+
+    #assertEquals($smpl->evaluate("'yes'?:'no'"), 'yes');
+    #assertEquals($smpl->evaluate("'yes' ?: 'no'"), 'yes');
+
+    #assertEquals($smpl->evaluate("false?:'no'"), 'no');
+    #assertEquals($smpl->evaluate("false ?: 'no'"), 'no');
 });

@@ -37,10 +37,12 @@ class data {
                     $val = $val[$key];
                 }
             } elseif (is_object($val)) {
-                if (!isset($val->$key)) {
-                    return $default;
-                } else {
+                if (property_exists($val, $key) || method_exists($val, '__get')) {
                     $val = $val->$key;
+                } elseif (method_exists($val, $key) || method_exists($val, '__call')) {
+                    $val = \Closure::fromCallable([$val, $key]);
+                } else {
+                    return $default;
                 }
             }
         }
@@ -52,6 +54,7 @@ class data {
     public function call($meth, $args, $default = null) {
         #print "data call $meth\n";
         #print_r($this->data);
+        # $path = explode('.', $meth);
         $meth = $this->get_value($meth);
         #var_dump($meth);
         if (!is_callable($meth)) return $default;
