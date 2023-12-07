@@ -5,6 +5,10 @@ namespace phuety\expression;
 use PhpParser\Node\Stmt\Continue_;
 use PhpToken;
 
+class my_token extends PhpToken {
+    public $leaf;
+}
+
 class tokenstream {
     public string $source;
     public array $data;
@@ -20,6 +24,7 @@ class tokenstream {
 
     public function tokenize(string $code) {
         $toks = PhpToken::tokenize('<?php ' . $code);
+        # $toks = my_token::tokenize('<?php ' . $code);
         // print_r($toks);
         // T_ENCAPSED_AND_WHITESPACE ``
         $result = [];
@@ -33,6 +38,7 @@ class tokenstream {
             // remove white space & php start tag
             if (in_array($tok->id, [\T_WHITESPACE, \T_OPEN_TAG])) continue; #392, 389
 
+
             if ($tok->text == '-' && $toks && in_array($toks[0]->id, [\T_DNUMBER, \T_LNUMBER])) {
                 //print "number?";
                 // -number?
@@ -43,6 +49,7 @@ class tokenstream {
                     continue;
                 }
             }
+
             /* expr starts with - */
             #} elseif (!$result && $tok->text == '-' && isset($toks[0]) && in_array($toks[0]->id, [\T_DNUMBER, \T_LNUMBER])) {
             #    $toks[0]->text = '-' . $toks[0]->text;
