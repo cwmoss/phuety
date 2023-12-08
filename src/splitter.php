@@ -109,7 +109,7 @@ class splitter {
     public function handle_link($node, &$parts) {
         $attrs = dom::attributes($node);
         // if($attrs['href'])
-        $parts['assets'][] = ['link', 'header', $attrs, $node->ownerDocument->saveHTML($node)];
+        $parts['assets'][] = ['link', 'head', $attrs, $node->ownerDocument->saveHTML($node)];
     }
 
     public function handle_script($node, &$parts) {

@@ -270,7 +270,7 @@ class dom_render {
         /** @var DOMElement $node */
         if ($node->hasAttribute($html)) {
             $variableName = $node->getAttribute($html);
-            $value = $this->expressionParser->evaluate($variableName, $data);
+            $value = $this->expressionParser->evaluate($variableName, $data + $methods);
             $node->removeAttribute($html);
 
             $newNode = $node->cloneNode(true);

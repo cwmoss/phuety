@@ -1,22 +1,19 @@
 <layout :title="title" :path="props.path">
 
-  <p-qrcode data="i love you"></p-qrcode>
+  <sc-qrcode data="i love you"></sc-qrcode>
 
-  <p-userprofile userid="favuser" size="3"></p-userprofile>
+  <h2 v-if="ok">hello {{ strrev(name) }}</h2>
 
-  <h2>hello {{ strrev(name) }}</h2>
+  <sc-code file="pages/home.vue.php"></sc-code>
 
-  <p-userprofile dark v-if="ok" userid="bad"></p-userprofile>
+  <sc-code file="components/sc_qrcode.vue.php"></sc-code>
 
-  <p-userprofile dark v-if="ok" :userid="user"></p-userprofile>
+  <sc-code file="layout.vue.php"></sc-code>
+
 </layout>
 
 
 <?php
-
-
-$title = "startseite!";
+$title = "Homepage!";
 $name = "welt";
 $ok = true;
-$user = '1234';
-?>

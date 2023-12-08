@@ -1,6 +1,6 @@
 <layout title="Contact Us" :path="props.path">
 
-    <h1>You can contact us via this form</h1>
+    <h1>You can contact us via this form -- <span v-html="hello()"></span></h1>
 
     <section v-if="success">
         <aside>
@@ -52,6 +52,9 @@ $success = $props['success'] ?? false;
 $fields = ['email', 'name', 'found_via'];
 $input = array_reduce($fields, fn ($res, $field) => $res + [$field => $_POST[$field] ?? ""], []);
 
+$hello = function () {
+    return  "hi i am a " . $_SERVER['REQUEST_METHOD'];
+};
 
 $validation = [
     'email' => [

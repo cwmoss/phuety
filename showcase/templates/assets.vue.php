@@ -1,7 +1,7 @@
 
 <?php
 
-$position = isset($props['header']) ? 'header' : 'body';
+$position = isset($props['head']) ? 'head' : 'body';
 // print $this->assets->get($position);
 // print $props['$asset']->get($position);
 print $this->assetholder->get($position);

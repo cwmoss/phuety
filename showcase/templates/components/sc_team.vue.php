@@ -12,7 +12,7 @@
     </div>
 </section>
 
-<script header src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js"></script>
+<script head src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css">
 
 <script>
@@ -32,8 +32,3 @@
 
     }
 </style>
-
-<?php
-
-$id = $this->uid;
-?>

@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <phuety-assets header></phuety-assets>
+  <phuety-assets head></phuety-assets>
   <link rel="stylesheet" href="/assets/mvp.css">
   <link rel="stylesheet" href="/components-css">
   <title>{{ props.title }}</title>
@@ -24,21 +24,14 @@
 </head>
 
 <body :class="bodyclass">
-
   <header><sc-navigation :path="props.path"></sc-navigation></header>
   <main>
     <h1>it's pure phuety {{smile}}</h1>
-
-
-
-
-
     <p-userprofile dark userid="startuser"></p-userprofile>
 
     <slot></slot>
 
     <p-userprofile userid="enduser"></p-userprofile>
-
   </main>
   <phuety-assets></phuety-assets>
 </body>
@@ -48,4 +41,3 @@
 <?php
 $bodyclass = ''; // $props['class'] ?? '';
 $smile = "😃";
-?>

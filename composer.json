@@ -2,6 +2,7 @@
   "autoload": {
     "psr-4": {
       "phuety\\": "src",
+      "showcase\\": "showcase/templates/lib",
       "WMDE\\VueJsTemplating\\": "src/php-vuejs-templating/src",
       "Le\\SMPLang\\": "src/smplang/src"
     }

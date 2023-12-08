@@ -2,5 +2,5 @@
     <slot></slot>
 </form>
 
-<script header type="module" src="/assets/form.js"></script>
-<script header src="//unpkg.com/alpinejs" defer></script>
+<script head type="module" src="/assets/form.js"></script>
+<script head src="//unpkg.com/alpinejs" defer></script>

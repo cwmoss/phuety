@@ -3,7 +3,9 @@
     <h1>Our Team</h1>
     <sc-team :persons="res.data.results"></sc-team>
 
+    <sc-code file="components/sc_team.vue.php"></sc-code>
 </layout>
+
 
 <style>
     h1 {
