@@ -23,3 +23,4 @@
 - https://github.com/wmde/php-vuejs-templating
 - https://github.com/ctxcode/vue-pre
 - https://github.com/php-templates/php-templates
+- https://github.com/leongrdic/php-smplang
