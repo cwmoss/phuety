@@ -6,16 +6,18 @@
 
 ## todo
 
-- component for client-only processing
-- attribute for client-only processing
-- client-only :bind (::bind? -- alpine, vue, ...)
-- dynamic component <component :is="input_type"></component>
-- defered component (like <assets> via attribute)
-- teleport? component or attribute?
-- assets: automatic extend to file (or leave embeded)
-- assets: cache buster dev, cache buster prod
-- compile to php-string-templates
-- rewrite expression parser
+o component for client-only processing
+o attribute for client-only processing
+o client-only :bind (::bind? -- alpine, vue, ...)
+o dynamic component <component :is="input_type"></component>
+
+o defered component (like <assets> via attribute)
+o teleport? component or attribute?
+x assets: automatic write js to file (or leave embeded)
+
+o assets: cache buster dev, cache buster prod
+o compile to php-string-templates
+o rewrite expression parser
 
 ## inspiration, copypaste, similar projects
 

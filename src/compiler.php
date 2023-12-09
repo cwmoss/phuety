@@ -18,7 +18,7 @@ class compiler {
     }
 
     public function compile($name, $source) {
-        $splitter = new splitter($this->engine->opts);
+        $splitter = new splitter($this->engine->opts, $this->engine->asset_base());
         [$source, $php] = $splitter->split_php($source);
         $is_layout = false;
         if (
@@ -80,12 +80,22 @@ class compiler {
             @unlink($dir . '/' . $name . '.html');
         }
 
+        $this->write_js($name, $parts['js']);
         // $php = '<?php ' . $parts['php'];
         // file_put_contents($dir . '/' . $name . '.run.php', $php);
 
         return $repl['UID'];
     }
 
+    public function write_js(string $name, array $js) {
+        $gendir = $this->engine->asset_base() . '/generated';
+        foreach (glob("{$gendir}/{$name}---*.js") as $fname) {
+            unlink($fname);
+        }
+        foreach ($js as $fname => $code) {
+            file_put_contents($gendir . '/' . $fname, $code);
+        }
+    }
     public function get_use_statements($code) {
         $use = preg_match_all("/^\s*use\s+[^;]+;\s*$/ms", $code, $mat, \PREG_SET_ORDER);
         if (!$mat) return [$code, ""];

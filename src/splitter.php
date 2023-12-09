@@ -9,7 +9,7 @@ use function PHPUnit\Framework\isNull;
 
 class splitter {
 
-    public function __construct(public array $opts = []) {
+    public function __construct(public array $opts = [], public string $assets_base) {
     }
 
     /*
@@ -23,9 +23,9 @@ class splitter {
     }
     public function split_sfc(DOMDocument $dom, $name, $is_layout = false) {
         $parts = [
-            'php' => "", 'vue' => "", 'css' => "",
+            'php' => "", 'vue' => "", 'css' => "", 'js' => [],
             'assets' => [],
-            'uid' => $name . '-' . uniqid()
+            'uid' => $name . '---' . uniqid()
         ];
         // dom::d("split $name -- ", $dom);
         if ($this->opts['css'] == 'scoped_simple') {
@@ -117,9 +117,17 @@ class splitter {
         $position = (isset($attrs['head']) ? 'head' : null);
         if (is_null($position)) $position = 'body';
         $node->removeAttribute('head');
-        // todo: cache buster
-        if ($attrs['src'] ?? null && $attrs['src'][0] == '/') {
-            $node->setAttribute('src', $attrs['src'] . '?' . time());
+        // convert embeded to external?
+        if (!isset($attrs['src'])) {
+            $name = $parts['uid'] . '-' . count($parts['js']) . '.js';
+            $parts['js'][$name] = (string) $node->nodeValue;
+            $node->nodeValue = null;
+            $node->setAttribute('src', '/assets/generated/' . $name);
+        } else {
+            // todo: cache buster
+            if ($attrs['src'] ?? null && $attrs['src'][0] == '/') {
+                $node->setAttribute('src', $attrs['src'] . '?' . time());
+            }
         }
         $parts['assets'][] = ['script', $position, dom::attributes($node), $node->ownerDocument->saveHTML($node)];
     }

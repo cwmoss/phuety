@@ -17,6 +17,9 @@ class phuety {
         $this->compiler = new compiler($this);
     }
 
+    public function asset_base(): string {
+        return $this->base . '/../public/assets';
+    }
     public function run_template_string(string $tpl, array $data) {
         $component = component::new_from_string($tpl, $this->cbase);
         var_dump($component);
