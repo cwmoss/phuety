@@ -114,9 +114,9 @@ class splitter {
 
     public function handle_script($node, &$parts) {
         $attrs = dom::attributes($node);
-        $position = (isset($attrs['header']) ? 'header' : null);
+        $position = (isset($attrs['head']) ? 'head' : null);
         if (is_null($position)) $position = 'body';
-        $node->removeAttribute('header');
+        $node->removeAttribute('head');
         // todo: cache buster
         if ($attrs['src'] ?? null && $attrs['src'][0] == '/') {
             $node->setAttribute('src', $attrs['src'] . '?' . time());
@@ -130,7 +130,7 @@ class splitter {
             $parts['css'] = str_replace('root', '&.root', (string) $node->nodeValue);
         } else {
             $node->removeAttribute('global');
-            $parts['assets'][] = ['style', 'header', dom::attributes($node), $node->ownerDocument->saveHTML($node)];
+            $parts['assets'][] = ['style', 'head', dom::attributes($node), $node->ownerDocument->saveHTML($node)];
         }
     }
 }

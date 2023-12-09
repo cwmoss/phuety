@@ -25,15 +25,16 @@ if ($_SERVER['REQUEST_URI'] == '/assets/mvp.css') {
 
 // print file_get_contents('php://input');
 $the_route = match ([$http_method, $path]) {
-    ['POST', '/contact'] => ['contact', $_POST],
-    // ['POST', '/contact'] => ['contact', $_POST],
-
     ['GET', '/'] => ['home'],
     ['GET', '/about'] => ['about'],
     ['GET', '/forms'] => ['forms', $_GET],
-    ['GET', '/form'] => ['form', $_GET],
-    ['GET', '/form-webco'] => ['form-webco', $_GET],
-    ['GET', '/form-alpine'] => ['form-alpine', $_GET],
+    ['GET', '/demo-form'] => ['demoform', $_GET],
+    ['GET', '/demo-webco'] => ['demowebco', $_GET],
+    ['GET', '/demo-alpine'] => ['demoalpine', $_GET],
+
+    ['POST', '/demo-form'] => ['demoform', $_POST],
+    ['POST', '/demo-webco'] => ['demowebco', $_POST],
+    ['POST', '/demo-alpine'] => ['demoalpine', $_POST],
 
         // ['POST', '/check_username'] => ['check_username', json_decode(file_get_contents('php://input'), true)],
     default => ['404']

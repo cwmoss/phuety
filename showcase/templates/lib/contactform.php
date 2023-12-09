@@ -4,10 +4,34 @@ namespace showcase;
 
 class contactform {
 
-    function handle() {
+    public array $fields = ['email', 'name', 'found_via'];
+    public array $via = [
+        'friends',
+        'family',
+        'ads',
+    ];
+
+    public function rules(): array {
+        return [
+            'email' => [
+                fn ($val) => trim($val) ? '' : 'please enter your email',
+                fn ($val) => preg_match("/@/", $val) ? '' : "this is not an email address",
+            ],
+            'name' => [fn ($val) => trim($val) ? '' : 'please enter your name']
+        ];
+    }
+
+    function handle(string $path) {
+        $input = array_reduce(
+            $this->fields,
+            fn ($res, $field) => $res + [$field => $_POST[$field] ?? ""],
+            []
+        );
+        $errors = array_map(fn ($field) => "", $input);
+
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
-            foreach ($validation as $name => $rules) {
+            foreach ($this->rules() as $name => $rules) {
                 foreach ($rules as $rule) {
                     $msg = $rule($input[$name]);
                     if ($msg) {
@@ -31,31 +55,10 @@ class contactform {
             } else {
 
                 if (!trim(join("", $errors))) {
-                    redirect('/contact?success=1');
+                    redirect("$path?success=1");
                 }
             }
         }
-    }
-
-    function use() {
-        $fields = ['email', 'name', 'found_via'];
-        $input = array_reduce($fields, fn ($res, $field) => $res + [$field => $_POST[$field] ?? ""], []);
-        // print_r($_SERVER);
-
-        $validation = [
-            'email' => [
-                fn ($val) => trim($val) ? '' : 'please enter your email',
-                fn ($val) => preg_match("/@/", $val) ? '' : "this is not an email address",
-            ],
-            'name' => [fn ($val) => trim($val) ? '' : 'please enter your name']
-        ];
-
-        $errors = array_map(fn ($field) => "", $input);
-
-        $via = [
-            'friends',
-            'family',
-            'ads',
-        ];
+        return [$input, $errors];
     }
 }

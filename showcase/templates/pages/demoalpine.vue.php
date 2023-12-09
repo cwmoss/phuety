@@ -8,11 +8,11 @@
         </aside>
     </section>
 
-    <form-alpine v-else action="/contact2">
+    <form-alpine v-else :action="props.path">
 
         <form-field name="name" label="Name" :value="input.name" :error="errors.name"></form-field>
         <form-field name="email" label="eMail Address" :value="input.email" :error="errors.email"></form-field>
-        <form-field name="found_via" label="How Do You Know Us" :value="input.found_via" :error="errors.found_via" type="select" :options="via"></form-field>
+        <form-field name="found_via" label="How Do You Know Us" :value="input.found_via" :error="errors.found_via" type="select" :options="form.via"></form-field>
 
         <template x-if="isopen">
             <div>Sending...</div>
@@ -31,9 +31,14 @@
     }
 </style>
 
-
-
 <?php
+
+use showcase\contactform;
+
+$success = $props['success'] ?? false;
+$form = new contactform;
+[$input, $errors] = $form->handle($props['path']);
+
 $rules = [
     'email' => [
         'required', 'email'
@@ -47,44 +52,7 @@ $messages = [
     'nickname' => ['required' => 'Because we are your friends, we need to know your nickname']
 ];
 $js_rules = json_encode(['r' => $rules, 'm' => $messages]);
-$time = fn () => time();
-$success = $props['success'] ?? false;
-$fields = ['email', 'name', 'found_via'];
-$input = array_reduce($fields, fn ($res, $field) => $res + [$field => $_POST[$field] ?? ""], []);
 
 $hello = function () {
     return  "hi i am a " . $_SERVER['REQUEST_METHOD'];
 };
-
-$validation = [
-    'email' => [
-        fn ($val) => trim($val) ? '' : 'please enter your email',
-        fn ($val) => preg_match("/@/", $val) ? '' : "this is not an email address",
-    ],
-    'name' => [fn ($val) => trim($val) ? '' : 'please enter your name']
-];
-
-$errors = array_map(fn ($field) => "", $input);
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-
-    foreach ($validation as $name => $rules) {
-        foreach ($rules as $rule) {
-            $msg = $rule($input[$name]);
-            if ($msg) {
-                $errors[$name] = $msg;
-                break;
-            }
-        }
-    }
-    if (!trim(join("", $errors))) {
-        redirect('/contact2?success=1');
-    }
-}
-
-$via = [
-    'friends',
-    'family',
-    'ads',
-];
-
-?>

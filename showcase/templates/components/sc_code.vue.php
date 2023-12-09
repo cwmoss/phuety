@@ -13,8 +13,9 @@
     hljs.highlightAll();
 </script>
 <style>
-    .code {
-        background-color: #fafafa;
+    .code,
+    code {
+        background-color: #f0f0f0;
         color: black;
         padding: 0;
         display: block;
@@ -22,13 +23,17 @@
     }
 
     .hljs {
-        background-color: #fafafa;
+        background-color: #f0f0f0;
     }
 
     .code p.label {
         background-color: white;
         display: inline-block;
         width: auto;
+        padding: 0 1em;
+        margin-top: 0;
+        border: 1px solid #666;
+        /* border-left: 1px solid #666; */
     }
 
     pre {

@@ -48,8 +48,8 @@
                     .catch(err => {
                         // Unlock form elements
                         Array.from(form.elements).forEach(field => field.disabled = false);
-                        // Show error message
-                        form.querySelector('[role=alert]').hidden = false;
+                        // Show error message for failed requests
+                        // form.querySelector('[role=alert]').hidden = false;
                     })
                     .finally(() => {
                         Array.from(form.elements).forEach(field => field.disabled = false);
