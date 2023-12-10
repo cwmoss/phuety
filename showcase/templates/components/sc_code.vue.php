@@ -1,9 +1,10 @@
 <div>
 
-    <section class="code">
-        <p class="label"><em>{{file}}</em></p>
+    <details class="code">
+        <summary>{{file}}</summary>
+
         <pre><code class="">{{code}}</code></pre>
-    </section>
+    </details>
 
 </div>
 
@@ -13,11 +14,16 @@
     hljs.highlightAll();
 </script>
 <style>
+    details {
+        padding: 1em;
+
+    }
+
     .code,
     code {
         background-color: #f0f0f0;
         color: black;
-        padding: 0;
+        /* padding: 0; */
         display: block;
         justify-content: left;
     }
