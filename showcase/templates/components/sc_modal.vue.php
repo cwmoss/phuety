@@ -22,8 +22,8 @@
     }
 </style>
 <?php
-
 /*
+https://www.smashingmagazine.com/2022/04/cta-modal-build-web-component/
 https://host.sonspring.com/cta-modal/
 */
 $title = $props['title'] ?? '';

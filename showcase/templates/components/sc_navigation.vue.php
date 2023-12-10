@@ -28,6 +28,7 @@ $subnav = $props['subnav'] ?? false;
 
 $top = [
     ['url' => '/', 'title' => 'Home'],
+    ['url' => '/blog', 'title' => 'Blog'],
     ['url' => '/about', 'title' => 'About Us'],
     ['url' => '/forms', 'title' => 'Forms']
 ];

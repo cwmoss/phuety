@@ -625,3 +625,81 @@ button{
     border-radius: 50%;
     animation: button-loading-spinner 1s ease infinite;
 }
+
+article {
+    max-width: 600px;
+}
+
+.loader {
+    width: 48px;
+    height: 48px;
+    border: 5px solid #000;
+    border-bottom-color: transparent;
+    border-radius: 50%;
+    display: inline-block;
+    box-sizing: border-box;
+    
+    animation: rotation 1s linear infinite;
+    }
+
+    @keyframes rotation {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+    } 
+
+/* loader-ellips
+------------------------- */
+
+.loader-ellips {
+    font-size: 20px;
+    position: relative;
+    width: 4em;
+    height: 1em;
+    margin: 10px auto;
+  }
+  
+  .loader-ellips__dot {
+    display: block;
+    width: 1em;
+    height: 1em;
+    border-radius: 0.5em;
+    background: #333;
+    position: absolute;
+    animation-duration: 0.5s;
+    animation-timing-function: ease;
+    animation-iteration-count: infinite;
+  }
+  
+  .loader-ellips__dot--1,
+  .loader-ellips__dot--2 {
+    left: 0;
+  }
+  .loader-ellips__dot--3 { left: 1.5em; }
+  .loader-ellips__dot--4 { left: 3em; }
+  
+  @keyframes reveal {
+    from { transform: scale(0.001); }
+    to { transform: scale(1); }
+  }
+  
+  @keyframes slide {
+    to { transform: translateX(1.5em) }
+  }
+  
+  .loader-ellips__dot--1 {
+    animation-name: reveal;
+  }
+  
+  .loader-ellips__dot--2,
+  .loader-ellips__dot--3 {
+    animation-name: slide;
+  }
+  
+  .loader-ellips__dot--4 {
+    animation-name: reveal;
+    animation-direction: reverse;
+  }

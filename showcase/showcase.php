@@ -28,6 +28,7 @@ $the_route = match ([$http_method, $path]) {
     ['GET', '/'] => ['home'],
     ['GET', '/about'] => ['about'],
     ['GET', '/forms'] => ['forms', $_GET],
+    ['GET', '/blog'] => ['blog', $_GET],
     ['GET', '/demo-form'] => ['demoform', $_GET],
     ['GET', '/demo-webco'] => ['demowebco', $_GET],
     ['GET', '/demo-alpine'] => ['demoalpine', $_GET],
