@@ -4,6 +4,10 @@
 
   <h2 v-if="ok">hello {{ strrev(name) }}</h2>
 
+  <sc-modal title="Content In Modal For Some Reasons" open="Can I Have Modals?">
+    <p>Why? But yeah.</p>
+  </sc-modal>
+
   <sc-code file="pages/home.vue.php"></sc-code>
 
   <sc-code file="components/sc_qrcode.vue.php"></sc-code>
