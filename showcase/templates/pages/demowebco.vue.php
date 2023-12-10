@@ -1,5 +1,6 @@
-<layout title="Contact Us" :path="props.path">
+<layout title="Contact Us" path="/forms">
 
+    <sc-navigation subnav="forms" :path="props.path"></sc-navigation>
     <h1>You can contact us via this form</h1>
 
     <form-webco success="Thank you!">

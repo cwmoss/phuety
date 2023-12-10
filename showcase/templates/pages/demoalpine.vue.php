@@ -1,5 +1,6 @@
-<layout title="Contact Us" :path="props.path">
+<layout title="Contact Us" path="/forms">
 
+    <sc-navigation subnav="forms" :path="props.path"></sc-navigation>
     <h1>You can contact us via this form -- <span v-html="hello()"></span></h1>
 
     <section v-if="success">
