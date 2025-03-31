@@ -1,5 +1,7 @@
 <?php
 // php -S localhost:4000 showcase/public/index.php
+ini_set("error_reporting", E_ALL);
+ini_set("display_errors", 0);
 
 $http_method = $_SERVER['REQUEST_METHOD'];
 // $path = $_SERVER['REQUEST_URI'] ?: '/';
@@ -37,7 +39,7 @@ $the_route = match ([$http_method, $path]) {
     ['POST', '/demo-webco'] => ['demowebco', $_POST],
     ['POST', '/demo-alpine'] => ['demoalpine', $_POST],
 
-        // ['POST', '/check_username'] => ['check_username', json_decode(file_get_contents('php://input'), true)],
+    // ['POST', '/check_username'] => ['check_username', json_decode(file_get_contents('php://input'), true)],
     default => ['404']
 };
 

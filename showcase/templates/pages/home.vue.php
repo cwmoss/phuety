@@ -8,6 +8,7 @@
     <p>Why? But yeah.</p>
   </sc-modal>
 
+  <sc-code file="components/sc_modal.vue.php"></sc-code>
   <sc-code file="pages/home.vue.php"></sc-code>
 
   <sc-code file="components/sc_qrcode.vue.php"></sc-code>

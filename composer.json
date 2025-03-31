@@ -9,7 +9,7 @@
   },
   "scripts": {
     "post-update-cmd": "@setup",
-    "setup": "mkdir -p compiled",
+    "setup": "mkdir -p compiled; mkdir -p showcase/public/assets/generated",
     "test": [
       "@phpunit"
     ],
