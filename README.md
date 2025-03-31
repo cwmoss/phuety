@@ -1,4 +1,6 @@
-    php 8.1, 8.2
+## this is the version with old dom extension (< php8.4)
+
+    php 8.1, 8.2, 8.3
 
     composer install
 
