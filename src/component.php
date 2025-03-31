@@ -3,9 +3,10 @@
 namespace phuety;
 
 use Closure;
-use DOMNode;
-use DOMNodeList;
-use DOMDocument;
+use Dom\Document;
+use Dom\NodeList;
+use Dom\Node;
+
 use WMDE\VueJsTemplating\Component as vcomponent;
 
 
@@ -22,7 +23,7 @@ class component {
     public array $assets = [];
 
     public bool $is_start = false;
-    public ?DOMDocument $pagedom = null;
+    public ?Document $pagedom = null;
     public dom_render $renderer;
     public phuety $engine;
     public $dom = null;
@@ -56,7 +57,7 @@ class component {
         if ($this->is_layout) {
             $dom = dom::get_document($html);
         } else {
-            $dom = dom::get_fragment($html);
+            $dom = dom::get_template_fragment($html);
         }
         $this->dom = $dom;
     }
@@ -77,8 +78,10 @@ class component {
             $this->travel_phuety($dom, $this->propholder);
             return $dom->saveHTML();
         }
+
+        return $dom->saveHTML();
         // fragment with "ok" root 
-        return substr(trim($dom->saveHtml()), 4, -5);
+        // return substr(trim($dom->saveHtml()), 4, -5);
     }
 
     public function separate_functions($input) {
@@ -97,7 +100,7 @@ class component {
         return ['props' => $props] + $props;
     }
 
-    public function run(array $props = [], DOMNodeList $children = null) {
+    public function run(array $props = [], ?NodeList $children = null) {
         // push assets
         foreach ($this->assets as $asset) {
             $this->assetholder->push($this->uid, $asset);
@@ -108,7 +111,7 @@ class component {
             ob_start();
             $this->run_code($props);
             $html = ob_get_clean();
-            $dom = dom::get_fragment($html);
+            $dom = dom::get_template_fragment($html);
         } else {
 
             $dom = $this->dom->cloneNode(true);
@@ -144,17 +147,18 @@ class component {
 
     public function replace_slot($dom, $children, props $props) {
         if (!$children) return;
-        $ndom = new DOMDocument();
-        $ndom->registerNodeClass("DOMElement", custom_domelement::class);
+        $ndom = dom::get_empty_doc();
+        dbg("ndom", $ndom->body);
+        // $ndom->registerNodeClass("DOMElement", custom_domelement::class);
         foreach ($children as $ch) {
             # print "+++ children import " . ($ch->tagName ?? null) . " \n";
             $nch = $ndom->importNode($ch, true);
-            $ndom->appendChild($nch);
+            $ndom->body->appendChild($nch);
         }
 
         # compiler::d('-new dom before travel-', $ndom);
         // print_r($ndom->documentElement);
-        $this->travel_nodes($ndom, $ndom, $props, true);
+        $this->travel_nodes($ndom->body, $ndom, $props, true);
         # compiler::d('-new dom after travel-', $ndom);
         // print $ndom->saveHTML();
         $slottags = $dom->getElementsByTagName('slot');
@@ -163,8 +167,9 @@ class component {
         if ($slottags->length == 1) {
             #    print "+++ slot REPLACE\n";
             $slot = $slottags->item(0);
-            foreach ($ndom->childNodes as $c) {
+            foreach ($ndom->body->childNodes as $c) {
                 $slotdom = $dom->importNode($c, true);
+                dbg("++ slotnode", $c->tagName ?? "noname");
                 $slot->parentNode->insertBefore($slotdom, $slot);
             }
             $slot->parentNode->removeChild($slot);
@@ -172,8 +177,8 @@ class component {
         }
     }
 
-    public function travel_phuety(DOMNode $node, props $props) {
-        if ($node instanceof DOMNodeList) {
+    public function travel_phuety(Node $node, props $props) {
+        if ($node instanceof NodeList) {
             # print "travel list\n";
             foreach (iterator_to_array($node) as $childNode) {
                 $this->travel_phuety($childNode, $props);
@@ -192,8 +197,8 @@ class component {
         }
 
         if (($node->tagName ?? null) && $this->engine->is_component($node->tagName)) {
-            # print "+++ handle component {$node->tagName}\n";
-            #if (str_starts_with($node->tagName, 'phuety-')) return;
+            dbg("+++ handle component {$node->tagName}");
+            // if (str_starts_with($node->localName, 'phuety-')) return;
             $this->handle_component($node->tagName, $node, $node->ownerDocument, $props, false);
             return;
         };
@@ -203,9 +208,10 @@ class component {
         }
     }
 
-    public function travel_nodes(DOMNode $node, $dom, props $props, $slotmode = false) {
+    public function travel_nodes(Node $node, $dom, props $props, $slotmode = false) {
         # print("travel $node->nodeType \n");
-        if ($node instanceof DOMNodeList) {
+
+        if ($node instanceof NodeList) {
             # print "travel list\n";
             foreach (iterator_to_array($node) as $childNode) {
                 $this->travel_nodes($childNode, $dom, $props, $slotmode);
@@ -223,10 +229,13 @@ class component {
             return;
         }
 
+        dbg("travelx", $node->nodeType, $node->localName ?? "--");
+
         if (($node->tagName ?? null) && $this->engine->is_component($node->tagName)) {
-            # print "+++ handle component {$node->tagName}\n";
-            if (str_starts_with($node->tagName, 'phuety-')) return;
-            $this->handle_component($node->tagName, $node, $dom, $props, $slotmode);
+            # print "+++ handle component => {$node->tagName}\n";
+            dbg("component?", $node->localName);
+            if (str_starts_with($node->localName, 'phuety-')) return;
+            $this->handle_component($node->localName, $node, $dom, $props, $slotmode);
             return;
         };
         foreach (iterator_to_array($node->childNodes) as $childNode) {
@@ -235,7 +244,7 @@ class component {
         }
     }
 
-    public function handle_component($tagname, DOMNode $node, $dom, props $props, $slotmode = false) {
+    public function handle_component($tagname, Node $node, $dom, props $props, $slotmode = false) {
         // var_dump($this->engine);
         $component = $this->engine->get_component($tagname);
         $component->propholder = $props;

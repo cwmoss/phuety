@@ -70,6 +70,10 @@ function d(...$args) {
     echo '</pre>';
 }
 
+function dbg(...$args) {
+    error_log(json_encode($args), 4);
+}
+
 function redirect($to) {
     header("Location: $to");
     exit;

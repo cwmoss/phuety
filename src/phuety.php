@@ -14,6 +14,7 @@ class phuety {
         if (!$map) {
             $this->map = ['layout' => 'layout'];
         }
+        dbg("start");
         $this->compiler = new compiler($this);
     }
 
@@ -35,6 +36,7 @@ class phuety {
     }
 
     public function is_component($tagname) {
+        $tagname = strtolower($tagname);
         if ($this->get_component_source_location($tagname) === false) {
             return false;
         }

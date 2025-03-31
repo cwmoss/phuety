@@ -29,13 +29,13 @@ class compiler {
             // $dom = compiler::get_document($html);
             $dom = dom::get_document($source);
         } else {
-            $dom = dom::get_fragment($source);
+            $dom = dom::get_template_fragment($source);
         }
         #if ($name == 'assets') {
         #    dom::d("assets-source", $dom);
         #}
 
-
+        // var_dump($dom);
         $parts = $splitter->split_sfc($dom, $name, $is_layout);
         $php = rtrim($php, '>?');
         $parts['php'] = $php;
@@ -45,17 +45,19 @@ class compiler {
     }
 
     public function create_component($name, $parts) {
+        dbg("create component", $name, $parts);
         # print "create component $name";
         // print_r($parts);
         $tpl = file_get_contents(__DIR__ . '/_component.php');
         $dir = $this->cbase;
         [$php, $use] = $this->get_use_statements($parts['php']);
         $repl = [
-            'NAME' => $name, 'UID' => $parts['uid'],
+            'NAME' => $name,
+            'UID' => $parts['uid'],
             'ISLAYOUT' => $parts['is_layout'] ? 'true' : 'false',
             'PHPCODE' => $php,
             'USESTATEMENTS' => $use,
-            'HAS_TEMPLATE' => trim($parts['vue']) ? 'true' : 'false',
+            'HAS_TEMPLATE' => $parts['html'] ? 'true' : 'false',
             'HAS_STYLE' => trim($parts['css']) ? 'true' : 'false',
             'HAS_CODE' => trim($php) ? 'true' : 'false',
             'ASSETS' => var_export($parts['assets'], true)
@@ -74,8 +76,8 @@ class compiler {
         }
 
         if ($repl['HAS_TEMPLATE'] == 'true') {
-            $vue = sprintf('%s', $parts['vue']);
-            file_put_contents($dir . '/' . $name . '.html', $vue);
+            $html = sprintf('%s', $parts['html']->saveHTML());
+            file_put_contents($dir . '/' . $name . '.html', $html);
         } else {
             @unlink($dir . '/' . $name . '.html');
         }
@@ -100,7 +102,7 @@ class compiler {
         $use = preg_match_all("/^\s*use\s+[^;]+;\s*$/ms", $code, $mat, \PREG_SET_ORDER);
         if (!$mat) return [$code, ""];
 
-        $use = join("\n", array_map(fn ($el) => $el[0], $mat));
+        $use = join("\n", array_map(fn($el) => $el[0], $mat));
         $code = preg_replace("/^\s*use\s+[^;]+;\s*$/ms", "", $code);
         return [$code, $use];
     }

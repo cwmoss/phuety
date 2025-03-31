@@ -17,7 +17,9 @@
 
 </layout>
 
-
+<script>
+  console.log("hey")
+</script>
 <?php
 $title = "Homepage!";
 $name = "welt";

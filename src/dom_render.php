@@ -2,20 +2,16 @@
 
 namespace phuety;
 
-use DOMAttr;
-use DOMCharacterData;
-use DOMDocument;
-use DOMElement;
-use DOMNode;
-use DOMNodeList;
-use DOMText;
-use Exception;
+use Dom\Element;
+use Dom\Node;
+use Dom\NodeList;
+use Dom\CharacterData;
+use DOM\Attr;
+use Dom\Text;
+use Dom\Document;
+
 use Le\SMPLang\SMPLang;
-use LibXMLError;
-use phuety\compiler;
-use WMDE\VueJsTemplating\JsParsing\BasicJsExpressionParser;
-use WMDE\VueJsTemplating\JsParsing\CachingExpressionParser;
-use WMDE\VueJsTemplating\JsParsing\JsExpressionParser;
+
 
 class dom_render {
 
@@ -44,7 +40,7 @@ class dom_render {
         $this->expressionParser = new SMPLang(['strrev' => 'strrev']);
     }
 
-    public function render_page_dom($dom, props $props, array $data, array $methods = []) {
+    public function render_page_dom(Document $dom, props $props, array $data, array $methods = []) {
         // $dom->is_page = true;
         $this->handleNode($dom->documentElement, $data, $methods, $props);
         // return $dom;
@@ -54,7 +50,8 @@ class dom_render {
      *
      * @return string HTML
      */
-    public function render_dom($dom, props $props, array $data, array $methods = []) {
+    public function render_dom(Document $dom, props $props, array $data, array $methods = []) {
+        dbg("render dom", $dom);
         #var_dump("render-dom");
         #var_dump($data);
         #var_dump($methods);
@@ -67,7 +64,7 @@ class dom_render {
      * @param DOMNode $node
      * @param array $data
      */
-    private function handleNode(DOMNode $node, array $data, array $methods, props $props) {
+    private function handleNode(Node $node, array $data, array $methods, props $props) {
         $this->replaceMustacheVariables($node, $data, $methods, $props);
 
         if (!$this->isTextNode($node)) {
@@ -93,9 +90,9 @@ class dom_render {
      * @param DOMNode $node
      * @param array $data
      */
-    private function replaceMustacheVariables(DOMNode $node, array $data, array $methods, props $props) {
+    private function replaceMustacheVariables(Element|Text $node, array $data, array $methods, props $props) {
         // print_r($methods);
-        if ($node instanceof DOMText) {
+        if ($node instanceof Text) {
             $text = $node->wholeText;
 
             $regex = '/\{\{(?P<expression>.*?)\}\}/x';
@@ -115,8 +112,8 @@ class dom_render {
         }
     }
 
-    private function handleAttributeBinding(DOMElement $node, array $data, array $methods, props $props) {
-        /** @var DOMAttr $attribute */
+    private function handleAttributeBinding(Element $node, array $data, array $methods, props $props) {
+        /** @var Attr $attribute */
 
         // TODO: is_component?
         $uid = 'userdata' . uniqid();
@@ -181,7 +178,7 @@ class dom_render {
      * @param DOMNodeList $nodes
      * @param array $data
      */
-    private function handleIf(DOMNodeList $nodes, array $data, array $methods, props $props) {
+    private function handleIf(NodeList $nodes, array $data, array $methods, props $props) {
         // Iteration of iterator breaks if we try to remove items while iterating, so defer node
         // removing until finished iterating.
         $if = $this->lang_attrs['if'];
@@ -194,8 +191,8 @@ class dom_render {
             if ($this->isTextNode($node)) {
                 continue;
             }
-            if ($node->nodeType == 7) continue;
-            /** @var DOMElement $node */
+            if ($node->nodeType == \XML_PI_NODE) continue;
+            /** @var Element $node */
             if ($node->hasAttribute($if)) {
                 $conditionString = $node->getAttribute($if);
                 $node->removeAttribute($if);
@@ -231,12 +228,12 @@ class dom_render {
         }
     }
 
-    private function handleFor(DOMNode $node, array $data, array $methods, props $props) {
+    private function handleFor(Element $node, array $data, array $methods, props $props) {
         if ($this->isTextNode($node)) {
             return;
         }
         $for = $this->lang_attrs['for'];
-        /** @var DOMElement $node */
+        /** @var Element $node */
         if ($node->hasAttribute($for)) {
             list($itemName, $listName) = explode(' in ', $node->getAttribute($for));
             $node->removeAttribute($for);
@@ -261,13 +258,13 @@ class dom_render {
     }
 
 
-    private function handleRawHtml(DOMNode $node, array $data, array $methods, props $props) {
+    private function handleRawHtml(Element $node, array $data, array $methods, props $props) {
         if ($this->isTextNode($node)) {
             return;
         }
         $html = $this->lang_attrs['html'];
 
-        /** @var DOMElement $node */
+        /** @var Element $node */
         if ($node->hasAttribute($html)) {
             $variableName = $node->getAttribute($html);
             $value = $this->expressionParser->evaluate($variableName, $data + $methods);
@@ -292,11 +289,11 @@ class dom_render {
         // return $this->expressionParser->parse($expression, $methods)->evaluate($data);
     }
 
-    private function removeNode(DOMElement $node) {
+    private function removeNode(Element $node) {
         $node->parentNode->removeChild($node);
     }
 
-    public function replace_with_childs(DOMElement $node) {
+    public function replace_with_childs(Element $node) {
         $node->replaceWith(...$node->childNodes);
     }
     /**
@@ -304,11 +301,12 @@ class dom_render {
      *
      * @return bool
      */
-    private function isTextNode(DOMNode $node) {
-        return $node instanceof DOMCharacterData;
+    private function isTextNode(Node $node) {
+        // return $node->nodeType == \XML_TEXT_NODE;
+        return $node instanceof CharacterData;
     }
 
-    private function isRemovedFromTheDom(DOMNode $node) {
+    private function isRemovedFromTheDom(Node $node) {
         return $node->parentNode === null;
     }
 }

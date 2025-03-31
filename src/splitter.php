@@ -3,13 +3,14 @@
 namespace phuety;
 
 use DOMXPath;
-use DOMDocument;
+use DOM\Document;
+use Dom\Element;
 
 use function PHPUnit\Framework\isNull;
 
 class splitter {
 
-    public function __construct(public array $opts = [], public string $assets_base) {
+    public function __construct(public array $opts = [], public string $assets_base = "") {
     }
 
     /*
@@ -21,9 +22,12 @@ class splitter {
         [$sfc, $php] = explode('<?php', $source, 2) + [1 => ""];
         return [$sfc, $php];
     }
-    public function split_sfc(DOMDocument $dom, $name, $is_layout = false) {
+    public function split_sfc(Document $dom, $name, $is_layout = false) {
         $parts = [
-            'php' => "", 'vue' => "", 'css' => "", 'js' => [],
+            'php' => "",
+            'html' => "",
+            'css' => "",
+            'js' => [],
             'assets' => [],
             'uid' => $name . '---' . uniqid()
         ];
@@ -34,49 +38,46 @@ class splitter {
         $remove = [];
         if ($is_layout) {
             // self::d("split layout", $dom);
-            $pis = (new DOMXPath($dom))
-                ->query('/processing-instruction("php")');
-            // var_dump($pis);
-            if ($pis->length > 0) {
-                $pi = $pis->item(0);
-                # var_dump($pi);
-                $parts['php'] = rtrim((string)  $pi->nodeValue, '? ');
-                $remove[] = $pi;
+            // var_dump(iterator_to_array($dom->childNodes));
+            // die();
+            dbg("split layout", iterator_to_array($dom->childNodes));
+            foreach ($dom->childNodes as $node) {
+                if ($node->nodeType == \XML_COMMENT_NODE && str_starts_with($node->textContent, "?php")) {
+                    $phpcode = substr($node->textContent, 4);
+                    $parts['php'] = $phpcode;
+                    $remove[] = $node;
+                }
             }
+            // var_dump(iterator_to_array($dom->childNodes));
+            // die();
         } else {
 
             // self::d("split component", $dom);
             $php = "";
             $php_open = false;
-            foreach ($dom->documentElement->childNodes as $node) {
-                if ($node->nodeType == \XML_PI_NODE) {
-                    $phpcode = $node->nodeValue; #  rtrim((string) $node->nodeValue, '? ');
+            foreach ($dom->childNodes as $node) {
+                // print_r($node);
+                if ($node->nodeType == \XML_COMMENT_NODE && str_starts_with($node->textContent, "?php")) {
+                    $phpcode = substr($node->textContent, 4); #  rtrim((string) $node->nodeValue, '? ');
                     #$dom->documentElement->removeChild($node);
-                    $lastchar = substr(rtrim($node->nodeValue), -1);
-                    $php_open = ($lastchar != ';' && $lastchar != '?');
-                    if ($lastchar == '?') {
-                        $phpcode = rtrim((string) $node->nodeValue, '? ');
-                    }
+                    //$lastchar = substr(rtrim($node->nodeValue), -1);
+                    //$php_open = ($lastchar != ';' && $lastchar != '?');
+                    //if ($lastchar == '?') {
+                    //    $phpcode = rtrim((string) $node->nodeValue, '? ');
+                    //}
                     $php = $phpcode;
                     $remove[] = $node;
-                } elseif ($node->nodeType == \XML_TEXT_NODE && $php && $php_open) {
-                    $phpcode = $node->nodeValue;
-                    $lastchar = substr(rtrim($node->nodeValue), -1);
-                    $php_open = ($lastchar != ';' && $lastchar != '?');
-                    if ($lastchar == '?') {
-                        $phpcode = rtrim((string) $node->nodeValue, '? ');
-                    }
-                    $php .= '>' . $phpcode;
-                    $remove[] = $node;
-                } elseif ($node->nodeType == \XML_ELEMENT_NODE) {
-                    if ($node->tagName == 'style') {
+                    continue;
+                }
+                if ($node->nodeType == \XML_ELEMENT_NODE) {
+                    if ($node->tagName == 'STYLE') {
                         $this->handle_css($node, $parts);
                         $remove[] = $node;
                         #$dom->documentElement->removeChild($node);
-                    } else if ($node->tagName == 'script') {
+                    } else if ($node->tagName == 'SCRIPT') {
                         $this->handle_script($node, $parts);
                         $remove[] = $node;
-                    } else if ($node->tagName == 'link') {
+                    } else if ($node->tagName == 'LINK') {
                         $this->handle_link($node, $parts);
                         $remove[] = $node;
                     } else {
@@ -86,7 +87,7 @@ class splitter {
                 }
             }
             /* sometimes code ends with ?> */
-            $php = rtrim($php, '>?');
+            // $php = rtrim($php, '>?');
             $parts['php'] = $php;
         }
         foreach ($remove as $node) {
@@ -94,10 +95,10 @@ class splitter {
             $node->parentNode->removeChild($node);
         }
         if ($is_layout) {
-            $parts['vue'] = $dom->saveHtml();
+            $parts['html'] = $dom;
         } else {
             // $parts['vue'] = $dom->saveHtml();
-            $parts['vue'] = substr(trim($dom->saveHtml()), 4, -5);
+            $parts['html'] = $dom;
         }
 
         $parts['is_layout'] = $is_layout;
@@ -112,7 +113,7 @@ class splitter {
         $parts['assets'][] = ['link', 'head', $attrs, $node->ownerDocument->saveHTML($node)];
     }
 
-    public function handle_script($node, &$parts) {
+    public function handle_script(Element $node, &$parts) {
         $attrs = dom::attributes($node);
         $position = (isset($attrs['head']) ? 'head' : null);
         if (is_null($position)) $position = 'body';
@@ -121,7 +122,7 @@ class splitter {
         if (!isset($attrs['src'])) {
             $name = $parts['uid'] . '-' . count($parts['js']) . '.js';
             $parts['js'][$name] = (string) $node->nodeValue;
-            $node->nodeValue = null;
+            $node->textContent = null;
             $node->setAttribute('src', '/assets/generated/' . $name);
         } else {
             // todo: cache buster
@@ -132,7 +133,7 @@ class splitter {
         $parts['assets'][] = ['script', $position, dom::attributes($node), $node->ownerDocument->saveHTML($node)];
     }
 
-    public function handle_css($node, &$parts) {
+    public function handle_css(Element $node, &$parts) {
         $attrs = dom::attributes($node);
         if (!isset($attrs['global'])) {
             $parts['css'] = str_replace('root', '&.root', (string) $node->nodeValue);

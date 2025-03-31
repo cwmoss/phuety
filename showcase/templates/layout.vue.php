@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <phuety-assets head></phuety-assets>
+
   <link rel="stylesheet" href="/assets/mvp.css">
   <link rel="stylesheet" href="/components-css">
   <title>{{ props.title }}</title>
