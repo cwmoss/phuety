@@ -5,9 +5,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <link rel="assets" head>
+
   <link rel="stylesheet" href="/assets/mvp.css">
   <link rel="stylesheet" href="/components-css">
-  <title>{{ props.title }}</title>
+  <title v-html="props.title"></title>
   <style>
     nav {
       margin-bottom: 1em;
@@ -27,13 +29,14 @@
   <header><sc-navigation :path="props.path"></sc-navigation></header>
   <main>
     <h1>it's pure phuety {{smile}}</h1>
-    <p-userprofile dark userid="startuser"></p-userprofile>
+    <p11-userprofile ?dark={a||b} userid="startuser"></p11-userprofile>
 
     <slot></slot>
 
-    <p-userprofile userid="enduser"></p-userprofile>
+    <Userprofile userid="enduser"></Userprofile>
   </main>
-  <phuety-assets></phuety-assets>
+
+  <link rel="assets" body>
 </body>
 
 </html>
@@ -41,3 +44,6 @@
 <?php
 $bodyclass = ''; // $props['class'] ?? '';
 $smile = "😃";
+
+$head = $this->assetholder->get("head");
+$body = $this->assetholder->get("body");

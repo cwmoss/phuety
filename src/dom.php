@@ -47,7 +47,7 @@ class dom {
 
     static function get_empty_doc() {
         // return HTMLDocument::createEmpty();
-        return HTMLDocument::createFromString("<body></body>");
+        return HTMLDocument::createFromString("<!DOCTYPE html><body>");
     }
 
     static function get_document($html) {

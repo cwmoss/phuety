@@ -20,9 +20,9 @@ class splitter {
     */
     public function split_php($source) {
         [$sfc, $php] = explode('<?php', $source, 2) + [1 => ""];
-        return [$sfc, $php];
+        return [trim($sfc), $php];
     }
-    public function split_sfc(Document $dom, $name, $is_layout = false) {
+    public function split_sfc(Document|string|null $dom, $name, $is_layout = false) {
         $parts = [
             'php' => "",
             'html' => "",
@@ -36,59 +36,61 @@ class splitter {
             $parts['uid'] = $name;
         }
         $remove = [];
-        if ($is_layout) {
-            // self::d("split layout", $dom);
-            // var_dump(iterator_to_array($dom->childNodes));
-            // die();
-            dbg("split layout", iterator_to_array($dom->childNodes));
-            foreach ($dom->childNodes as $node) {
-                if ($node->nodeType == \XML_COMMENT_NODE && str_starts_with($node->textContent, "?php")) {
-                    $phpcode = substr($node->textContent, 4);
-                    $parts['php'] = $phpcode;
-                    $remove[] = $node;
-                }
-            }
-            // var_dump(iterator_to_array($dom->childNodes));
-            // die();
-        } else {
-
-            // self::d("split component", $dom);
-            $php = "";
-            $php_open = false;
-            foreach ($dom->childNodes as $node) {
-                // print_r($node);
-                if ($node->nodeType == \XML_COMMENT_NODE && str_starts_with($node->textContent, "?php")) {
-                    $phpcode = substr($node->textContent, 4); #  rtrim((string) $node->nodeValue, '? ');
-                    #$dom->documentElement->removeChild($node);
-                    //$lastchar = substr(rtrim($node->nodeValue), -1);
-                    //$php_open = ($lastchar != ';' && $lastchar != '?');
-                    //if ($lastchar == '?') {
-                    //    $phpcode = rtrim((string) $node->nodeValue, '? ');
-                    //}
-                    $php = $phpcode;
-                    $remove[] = $node;
-                    continue;
-                }
-                if ($node->nodeType == \XML_ELEMENT_NODE) {
-                    if ($node->tagName == 'STYLE') {
-                        $this->handle_css($node, $parts);
+        if ($dom) {
+            if ($is_layout) {
+                // self::d("split layout", $dom);
+                // var_dump(iterator_to_array($dom->childNodes));
+                // die();
+                dbg("split layout", iterator_to_array($dom->childNodes));
+                foreach ($dom->childNodes as $node) {
+                    if ($node->nodeType == \XML_COMMENT_NODE && str_starts_with($node->textContent, "?php")) {
+                        $phpcode = substr($node->textContent, 4);
+                        $parts['php'] = $phpcode;
                         $remove[] = $node;
-                        #$dom->documentElement->removeChild($node);
-                    } else if ($node->tagName == 'SCRIPT') {
-                        $this->handle_script($node, $parts);
-                        $remove[] = $node;
-                    } else if ($node->tagName == 'LINK') {
-                        $this->handle_link($node, $parts);
-                        $remove[] = $node;
-                    } else {
-                        // add class
-                        dom::add_class($node, $parts['uid'] . ' root');
                     }
                 }
+                // var_dump(iterator_to_array($dom->childNodes));
+                // die();
+            } else {
+
+                // self::d("split component", $dom);
+                $php = "";
+                $php_open = false;
+                foreach ($dom->childNodes as $node) {
+                    // print_r($node);
+                    if ($node->nodeType == \XML_COMMENT_NODE && str_starts_with($node->textContent, "?php")) {
+                        $phpcode = substr($node->textContent, 4); #  rtrim((string) $node->nodeValue, '? ');
+                        #$dom->documentElement->removeChild($node);
+                        //$lastchar = substr(rtrim($node->nodeValue), -1);
+                        //$php_open = ($lastchar != ';' && $lastchar != '?');
+                        //if ($lastchar == '?') {
+                        //    $phpcode = rtrim((string) $node->nodeValue, '? ');
+                        //}
+                        $php = $phpcode;
+                        $remove[] = $node;
+                        continue;
+                    }
+                    if ($node->nodeType == \XML_ELEMENT_NODE) {
+                        if ($node->tagName == 'STYLE') {
+                            $this->handle_css($node, $parts);
+                            $remove[] = $node;
+                            #$dom->documentElement->removeChild($node);
+                        } else if ($node->tagName == 'SCRIPT') {
+                            $this->handle_script($node, $parts);
+                            $remove[] = $node;
+                        } else if ($node->tagName == 'LINK') {
+                            $this->handle_link($node, $parts);
+                            $remove[] = $node;
+                        } else {
+                            // add class
+                            dom::add_class($node, $parts['uid'] . ' root');
+                        }
+                    }
+                }
+                /* sometimes code ends with ?> */
+                // $php = rtrim($php, '>?');
+                $parts['php'] = $php;
             }
-            /* sometimes code ends with ?> */
-            // $php = rtrim($php, '>?');
-            $parts['php'] = $php;
         }
         foreach ($remove as $node) {
             //$dom->documentElement->removeChild($node);
