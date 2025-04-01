@@ -39,11 +39,19 @@ class compiler {
         $parts = $splitter->split_sfc($dom, $name, $is_layout);
         $php = rtrim($php, '>?');
         $parts['php'] = $php;
+
+        $parts["render"] = $this->compile_dom($name, $parts);
         $uid = $this->create_component($name, $parts);
+
         // $uid = component::create($name, $this->cbase, $parts);
         return $uid;
     }
 
+    public function compile_dom($name, $parts) {
+        $compiler = new dom_compiler($parts["html"], []);
+        $res = $compiler->compile();
+        return $res;
+    }
     public function create_component($name, $parts) {
         dbg("create component", $name, $parts);
         # print "create component $name";
@@ -60,7 +68,8 @@ class compiler {
             'HAS_TEMPLATE' => $parts['html'] ? 'true' : 'false',
             'HAS_STYLE' => trim($parts['css']) ? 'true' : 'false',
             'HAS_CODE' => trim($php) ? 'true' : 'false',
-            'ASSETS' => var_export($parts['assets'], true)
+            'ASSETS' => var_export($parts['assets'], true),
+            'RENDER' => join("\n", $parts["render"])
         ];
 
         $tpl = str_replace(array_keys($repl), array_values($repl), $tpl);

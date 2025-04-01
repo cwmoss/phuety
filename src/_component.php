@@ -16,4 +16,8 @@ class NAME_component extends component {
         PHPCODE
         return get_defined_vars() + $props;
     }
+
+    function render($__expr, $__data){?>
+        RENDER
+    <?}
 }
