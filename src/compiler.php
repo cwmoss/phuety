@@ -21,6 +21,7 @@ class compiler {
         $splitter = new splitter($this->engine->opts, $this->engine->asset_base());
         [$source, $php] = $splitter->split_php($source);
         $is_layout = false;
+        $dom = null;
         if (
             str_starts_with($source, '<html') || str_starts_with($source, '<!DOCTYPE') ||
             str_starts_with($source, '<root') || str_starts_with($source, '<head') || str_starts_with($source, '<x-page')
@@ -28,7 +29,7 @@ class compiler {
             $is_layout = true;
             // $dom = compiler::get_document($html);
             $dom = dom::get_document($source);
-        } else {
+        } elseif ($source) {
             $dom = dom::get_template_fragment($source);
         }
         #if ($name == 'assets') {

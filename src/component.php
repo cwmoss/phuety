@@ -4,6 +4,8 @@ namespace phuety;
 
 use Closure;
 use Dom\Document;
+use Dom\Element;
+use Dom\HTMLDocument;
 use Dom\NodeList;
 use Dom\Node;
 
@@ -71,11 +73,13 @@ class component {
         }
         $dom = $this->run($props);
         if ($this->pagedom) {
-            $this->travel_phuety($this->pagedom, $this->propholder);
+            // $this->travel_phuety($this->pagedom, $this->propholder);
+            $this->post_components($this->pagedom, $this->propholder);
             return $this->pagedom->saveHTML();
         }
         if ($this->is_layout) {
-            $this->travel_phuety($dom, $this->propholder);
+            // $this->travel_phuety($dom, $this->propholder);
+            $this->post_components($dom, $this->propholder);
             return $dom->saveHTML();
         }
 
@@ -177,6 +181,11 @@ class component {
         }
     }
 
+    public function post_components(HTMLDocument $dom, $props) {
+        foreach ($dom->querySelectorAll("link[rel=assets]") as $anode) {
+            $this->handle_component("phuety-assets", $anode, $anode->ownerDocument, $props, false);
+        }
+    }
     public function travel_phuety(Node $node, props $props) {
         if ($node instanceof NodeList) {
             # print "travel list\n";
@@ -199,7 +208,7 @@ class component {
         if (($node->tagName ?? null) && $this->engine->is_component($node->tagName)) {
             dbg("+++ handle component {$node->tagName}");
             // if (str_starts_with($node->localName, 'phuety-')) return;
-            $this->handle_component($node->tagName, $node, $node->ownerDocument, $props, false);
+            $this->handle_component($node->localName, $node, $node->ownerDocument, $props, false);
             return;
         };
         foreach (iterator_to_array($node->childNodes) as $childNode) {
@@ -246,6 +255,7 @@ class component {
 
     public function handle_component($tagname, Node $node, $dom, props $props, $slotmode = false) {
         // var_dump($this->engine);
+        dbg("handle component", $tagname);
         $component = $this->engine->get_component($tagname);
         $component->propholder = $props;
         # print "\n=== +handle this {$this->name} compname {$component->name} start? -{$this->is_start}- layout? -{$this->is_layout}- slotmode? -{$slotmode}-\n";
