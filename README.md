@@ -81,6 +81,7 @@ look into `showcase/` dir
 
 ## todo
 
+- [ ] resolve paths at compile time
 - [ ] component for client-only processing?
 - [ ] attribute for client-only processing?
 - [ ] client-only :bind (::bind? -- alpine, vue, ...)?
