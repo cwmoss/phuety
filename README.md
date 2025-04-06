@@ -14,6 +14,8 @@ phuety are vue inspired component/dom based templates run by php
 
 components have a dot in it's name.
 
+the name is all lowercase. it must start with a letter and can contain numbers. it must contain at least one dot (.). don't use dashes as they are reserved for web components.
+
 ### v-if
 
 ### v-else
