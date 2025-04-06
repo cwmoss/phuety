@@ -58,7 +58,7 @@ class dom {
 
     static function get_template_fragment(string $html) {
         $parserFlags = LIBXML_HTML_NOIMPLIED | LIBXML_NOERROR; // | Dom\HTML_NO_DEFAULT_NS
-        $document = HTMLDocument::createFromString("$html", $parserFlags);
+        $document = HTMLDocument::createFromString("<template.>$html</template.>", $parserFlags);
         // $f = $document->createDocumentFragment();
 
         // var_dump($document->documentElement);

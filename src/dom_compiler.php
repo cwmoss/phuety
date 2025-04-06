@@ -9,9 +9,18 @@ use Dom\CharacterData;
 use DOM\Attr;
 use Dom\Text;
 use Dom\Document;
-
+use Dom\HTMLDocument;
+use Exception;
 use Le\SMPLang\SMPLang;
 
+/*
+TODO: 
+    - named slots
+    - bindings
+    - classmap
+    - stylemap
+    - p.template
+*/
 
 class dom_compiler {
 
@@ -35,12 +44,12 @@ class dom_compiler {
      * @param string $template HTML
      * @param callable[] $methods
      */
-    public function __construct(public Document $dom, array $methods) {
+    public function __construct(public Document $dom, array $methods, public ?Document $head = null) {
         // $this->expressionParser = new CachingExpressionParser(new BasicJsExpressionParser($methods));
         $this->expressionParser = new SMPLang(['strrev' => 'strrev']);
     }
 
-    public function render_page_dom(Document $dom, props $props, array $data, array $methods = []) {
+    public function render_page_dom(HTMLDocument $dom, props $props, array $data, array $methods = []) {
         // $dom->is_page = true;
         $this->handleNode($dom->documentElement, $data, $methods, $props);
         // return $dom;
@@ -51,241 +60,168 @@ class dom_compiler {
      * @return string HTML
      */
     public function compile() {
-        $this->handleNode($this->dom->documentElement);
-        return $this->result;
+        if ($this->dom->doctype) {
+            $this->result[] = ["doctype", $this->dom->saveHtml($this->dom->doctype)];
+        }
+        $this->walk_nodes($this->dom->documentElement);
+        // var_dump($this->result);
+        return $this->generate_php_code();
     }
 
-
-    /**
-     * @param DOMNode $node
-     * @param array $data
-     */
-    private function handleNode(Node $node) {
-        $this->result[] = $this->replaceMustacheVariables($node);
-
-        if (!$this->isTextNode($node)) {
-            // $this->stripEventHandlers($node);
-            $this->handleIf($node->childNodes);
-            # $for = $this->handleFor($node, $data, $methods, $props);
-
-            # if ($for !== true) {
-            #     $this->handleAttributeBinding($node, $data, $methods,  $props);
-            #    $this->handleRawHtml($node, $data, $methods, $props);
-            # }
-            if (!$this->isRemovedFromTheDom($node)) {
-
-                foreach (iterator_to_array($node->childNodes) as $childNode) {
-                    $this->handleNode($childNode);
-                }
-            }
+    private function walk_nodes(Element $node, $block = "") {
+        $name = strtolower($node->nodeName);
+        if ($node->hasAttribute($this->lang_attrs['else'])) {
+            throw new Exception("else without if on $name on line " . $node->getLineNo());
         }
-    }
+        $check = $this->lang_attrs['if'];
+        if ($attr = $this->check_and_remove_attribute($node, $check)) {
+            $this->result[] = ["if", $attr];
+            $this->walk_nodes($node, "if");
 
-
-    /**
-     * @param DOMNode $node
-     * @param array $data
-     */
-    private function replaceMustacheVariables(Element|Text $node) {
-        // print_r($methods);
-        if ($node instanceof Text) {
-            $text = $node->wholeText;
-
-            $regex = '/\{\{(?P<expression>.*?)\}\}/x';
-            preg_match_all($regex, $text, $matches);
-
-            foreach ($matches['expression'] as $index => $expression) {
-                //$value = $this->expressionParser->parse($expression, $methods)
-                //    ->evaluate($data, $methods);
-                // $value = $this->expressionParser->evaluate($expression, $data + $methods);
-                $value = $this->php_replace_mustache($expression);
-                $text = str_replace($matches[0][$index], $value, $text);
+            $check = $this->lang_attrs['else'];
+            if (
+                $node->nextElementSibling &&
+                ($attr = $this->check_and_remove_attribute($node->nextElementSibling, $check))
+            ) {
+                $this->result[] = ["else", $attr];
+                $this->walk_nodes($node->nextElementSibling, "else");
             }
-            return $text;
-
-            if ($text !== $node->wholeText) {
-                $newNode = $node->ownerDocument->createTextNode($text);
-                $node->parentNode->replaceChild($newNode, $node);
-            }
-        }
-    }
-
-    function php_replace_mustache($expression) {
-        return sprintf('<?= $__expr->evaluate("%s", $__data) ?>', $expression);
-    }
-
-    private function handleAttributeBinding(Element $node, array $data, array $methods, props $props) {
-        /** @var Attr $attribute */
-
-        // TODO: is_component?
-        $uid = 'userdata' . uniqid();
-        $attributes = dom::attributes($node);
-        $bind = $this->lang_attrs['bind'];
-        foreach (iterator_to_array($node->attributes) as $attribute) {
-            if (!preg_match('/^' . $bind . '[\w-]+$/', $attribute->name)) {
-                continue;
-            }
-
-            // $value = $this->expressionParser->parse($attribute->value, $methods)
-            //    ->evaluate($data);
-            // print_r($data);
-            $value = $this->expressionParser->evaluate($attribute->value, $data + $methods);
-            // 
-            $name = substr($attribute->name, strlen($bind));
-            //            print "attr {$attribute->name} => $name \n";
-            if ($name == 'class') {
-                $class = $node->getAttribute('class');
-                if (!is_string($value)) $value = (array) $value;
-                if (is_array($value)) {
-                    foreach ($value as $k => $v) {
-                        if (is_numeric($k)) {
-                            $class .= " $v";
-                        } else {
-                            if ($v) {
-                                $class .= " $k";
-                            }
-                        }
-                    }
-                } else {
-                    $class .= " $value";
-                }
-                $class = trim($class);
-                $node->setAttribute('class', $class);
-            } else {
-                if (is_bool($value)) {
-                    if ($value) {
-                        $node->setAttribute($name, $name);
-                    }
-                } else {
-                    // postbone resolve till later (happens in components)
-                    if (is_array($value) || is_object($value)) {
-
-                        $props->set($uid, $name, $value);
-                        //    $data[$uid] = $value;
-                        //    $node->setAttribute(':' . $name, $uid);
-                        // $node->data[$name] = $value;
-                        // print_r($name);
-                        // print_r($node->data);
-                        $node->setAttribute('props', $uid);
-                    } else {
-                        $node->setAttribute($name, $value);
-                    }
-                }
-            }
-            $node->removeAttribute($attribute->name);
-        }
-    }
-
-    /**
-     * @param DOMNodeList $nodes
-     * @param array $data
-     */
-    private function handleIf(NodeList $nodes) {
-        // Iteration of iterator breaks if we try to remove items while iterating, so defer node
-        // removing until finished iterating.
-        $if = $this->lang_attrs['if'];
-        $else = $this->lang_attrs['else'];
-
-        $nodesToRemove = [];
-        $nodesToReplace = [];
-        $previousIfCondition = null;
-        foreach ($nodes as $node) {
-            if ($this->isTextNode($node)) {
-                continue;
-            }
-            if ($node->nodeType == \XML_PI_NODE) continue;
-            /** @var Element $node */
-            if ($node->hasAttribute($if)) {
-                $conditionString = $node->getAttribute($if);
-                $node->removeAttribute($if);
-                $condition = $this->evaluateExpression($conditionString, $data, $methods);
-
-                if (!$condition) {
-                    $nodesToRemove[] = $node;
-                } else {
-                    if ($node->tagName == 'template') {
-                        $nodesToReplace[] = $node;
-                    }
-                }
-
-                $previousIfCondition = $condition;
-            } elseif ($node->hasAttribute($else)) {
-                $node->removeAttribute($else);
-
-                if ($previousIfCondition) {
-                    $nodesToRemove[] = $node;
-                } else {
-                    if ($node->tagName == 'template') {
-                        $nodesToReplace[] = $node;
-                    }
-                }
-            }
-        }
-
-        foreach ($nodesToRemove as $node) {
-            $this->removeNode($node);
-        }
-        foreach ($nodesToReplace as $node) {
-            $this->replace_with_childs($node);
-        }
-    }
-
-    private function handleFor(Element $node, array $data, array $methods, props $props) {
-        if ($this->isTextNode($node)) {
+            $this->result[] = ["endif"];
             return;
         }
-        $for = $this->lang_attrs['for'];
-        /** @var Element $node */
-        if ($node->hasAttribute($for)) {
-            list($itemName, $listName) = explode(' in ', $node->getAttribute($for));
-            $node->removeAttribute($for);
-            // $value = $this->expressionParser->parse($listName, $methods)
-            //    ->evaluate($data);
-            $value = $this->expressionParser->evaluate($listName, $data + $methods);
-            foreach ($value as $item) {
-                $newNode = $node->cloneNode(true);
-                $node->parentNode->insertBefore($newNode, $node);
-                //print "FOR nav";
-                //var_dump([$itemName => $item]);
-                $this->handleNode($newNode, array_merge($data, [$itemName => $item]), $methods, $props);
-                if ($node->tagName == 'template') {
-                    dom::d('for-template', $node);
-                    $this->replace_with_childs($newNode);
-                }
-            }
-
-            $this->removeNode($node);
-            return true;
-        }
-    }
-
-
-    private function handleRawHtml(Element $node, array $data, array $methods, props $props) {
-        if ($this->isTextNode($node)) {
+        $check = $this->lang_attrs['for'];
+        if ($attr = $this->check_and_remove_attribute($node, $check)) {
+            list($item, $list) = explode(' in ', $attr);
+            $this->result[] = ["foreach", $item, $list];
+            $this->walk_nodes($node, "foreach");
+            $this->result[] = ["endforeach", $item];
             return;
         }
-        $html = $this->lang_attrs['html'];
 
-        /** @var Element $node */
-        if ($node->hasAttribute($html)) {
-            $variableName = $node->getAttribute($html);
-            $value = $this->expressionParser->evaluate($variableName, $data + $methods);
-            $node->removeAttribute($html);
-
-            $newNode = $node->cloneNode(true);
-            #dom::d("v-html", $newNode);
-            dom::append_html($newNode, $value);
-
-            $node->parentNode->replaceChild($newNode, $node);
+        // TODO: check allowed tags
+        $check = $this->lang_attrs['html'];
+        if ($attr = $this->check_and_remove_attribute($node, $check)) {
+            $tag = tag::new_from_dom_element($node);
+            $this->result[] = ["tag", $tag];
+            $this->result[] = ["html", $attr];
+            // ignore children
+            $this->result[] = ["endtag", $tag];
+            return;
         }
+
+        $tag = tag::new_from_dom_element($node);
+        // dbg("++ path", $node->getNodePath());
+        $this->result[] = ["tag", $tag];
+        if ($name == "head" && $this->head) {
+            $this->walk_nodes($this->head->documentElement);
+        }
+        foreach ($node->childNodes as $cnode) {
+            // dbg("+++ is textnode?", $cnode->nodeName);
+            if ($this->isTextNode($cnode)) {
+                // dbg("++yes");
+                $this->result[] = [strtolower($cnode->nodeName), $name, $cnode->textContent];
+                continue;
+            }
+            //dbg("++no");
+            $this->walk_nodes($cnode);
+        }
+
+        $this->result[] = ["endtag", $tag];
     }
 
-    /**
-     * @param string $expression
-     * @param array $data
-     *
-     * @return bool
-     */
+    private function generate_php_code(): string {
+        $code = [];
+        foreach ($this->result as $stack_code) {
+            $c = $stack_code[0];
+            $php = match (true) {
+                $c == "if" => sprintf('<?php if($this->ep->evaluate("%s", $__blockdata + $__data)){ ?>', $stack_code[1]),
+                $c == "foreach" => $this->php_foreach($stack_code[1], $stack_code[2]),
+                $c == "#text" => $stack_code[1] == "script" ? $stack_code[2] : $this->php_replace_mustache($stack_code[2]),
+                $c == "html" => sprintf('<?= $this->ep->evaluate("%s", $__blockdata + $__data) ?>', $stack_code[1]),
+                $c == "endif" => '<?php } ?>',
+                $c == "endforeach" => $this->php_foreach($stack_code[1]),
+                $c == "else" => '<?php } else { ?>',
+                $c == "tag" => $this->php_element($stack_code[1]),
+                $c == "endtag" => $this->php_element_end($stack_code[1]),
+                $c == "doctype" => $stack_code[1],
+                default => "default-$c"
+            };
+            $code[] = $php;
+        }
+        return join("", $code);
+    }
+
+    function php_element(tag $tag): string {
+        if ($tag->tagname == "template.") return "";
+        if ($tag->is_slot) {
+            return sprintf('<?=$this->slot?>');
+        }
+        if ($tag->is_component) {
+            return $tag->has_children ? sprintf('<?php ob_start(); ?>') : '';
+        }
+        // if ($tag->is_asset) {
+        //     return sprintf('< ?=$this->assetholder->get("%s")? >', $tag->attrs["position"]);
+        // }
+        if ($tag->tagname == "xead") $tag->tagname = "head";
+        if (!$tag->bindings) return $tag->open();
+        return sprintf(
+            '<?= tag::tag_open_merged_attrs("%s", %s, %s)?>',
+            $tag->tagname,
+            $this->php_bindings($tag),
+            var_export($tag->attrs, true)
+        );
+    }
+
+    function php_element_end(tag $tag): string {
+        if ($tag->tagname == "template.") return "";
+        if ($tag->is_slot) return "";
+        if ($tag->tagname == "xead") $tag->tagname = "head";
+        // TODO: empty slots
+        if ($tag->is_component) {
+            return sprintf(
+                '<?=$this->engine->get_component("%s")%s->run(%s + %s); ?>',
+                $tag->tagname,
+                $tag->has_children ? '->slot(ob_get_clean())' : '',
+                $this->php_bindings($tag),
+                var_export($tag->attrs, true)
+            );
+        }
+        return tag::tag_close($tag->tagname); // sprintf('</%s>', $tag->tagname);
+    }
+
+    function php_bindings(tag $tag) {
+        $php = [];
+        foreach ($tag->bindings as $name => $expression) {
+            $php[] = sprintf('"%s"=>$this->ep->evaluate("%s", $__blockdata + $__data)', $name, $expression);
+        }
+        return '[' . join(", ", $php) . ']';
+    }
+
+    function php_foreach($item, $list = null): string {
+        if (is_null($list)) {
+            // endforeach
+            return sprintf('<?php unset($__blockdata["%s"]);} ?>', $item);
+        }
+        return sprintf(
+            '<?php foreach($this->ep->evaluate("%s", $__blockdata + $__data) as $%s){$__blockdata["%s"]=$%s; ?>',
+            $list,
+            $item,
+            $item,
+            $item
+        );
+    }
+
+    function php_replace_mustache($text): string {
+        $regex = '/\{\{(?P<expression>.*?)\}\}/x';
+        preg_match_all($regex, $text, $matches);
+
+        foreach ($matches['expression'] as $index => $expression) {
+            $value = sprintf('<?= tag::h($this->ep->evaluate("%s", $__blockdata + $__data)) ?>', $expression);
+            $text = str_replace($matches[0][$index], $value, $text);
+        }
+        return $text;
+    }
+
     private function evaluateExpression($expression, array $data, array $methods = []) {
         return $this->expressionParser->evaluate($expression, $data + $methods);
         // return $this->expressionParser->parse($expression, $methods)->evaluate($data);
@@ -298,17 +234,19 @@ class dom_compiler {
     public function replace_with_childs(Element $node) {
         $node->replaceWith(...$node->childNodes);
     }
-    /**
-     * @param DOMNode $node
-     *
-     * @return bool
-     */
-    private function isTextNode(Node $node) {
+
+    private function isTextNode(Node $node): bool {
         // return $node->nodeType == \XML_TEXT_NODE;
         return $node instanceof CharacterData;
     }
 
-    private function isRemovedFromTheDom(Node $node) {
+    private function check_and_remove_attribute(Element $node, string $attr): bool|string {
+        if (!$node->hasAttribute($attr)) return false;
+        $attribute = $node->getAttribute($attr);
+        $node->removeAttribute($attr);
+        return $attribute;
+    }
+    private function isRemovedFromTheDom(Node $node): bool {
         return $node->parentNode === null;
     }
 }

@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
+<head class="light">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <link rel="assets" head>
+  <app.assets head></app.assets>
 
   <link rel="stylesheet" href="/assets/mvp.css">
   <link rel="stylesheet" href="/components-css">
@@ -26,17 +26,19 @@
 </head>
 
 <body :class="bodyclass">
-  <header><sc-navigation :path="props.path"></sc-navigation></header>
+  <header>
+    <sc.navigation :path="props.path"></sc.navigation>
+  </header>
   <main>
     <h1>it's pure phuety {{smile}}</h1>
     <p11-userprofile ?dark={a||b} userid="startuser"></p11-userprofile>
 
-    <slot></slot>
+    <slot.></slot.>
 
     <Userprofile userid="enduser"></Userprofile>
   </main>
 
-  <link rel="assets" body>
+  <app.assets body />
 </body>
 
 </html>
@@ -45,5 +47,5 @@
 $bodyclass = ''; // $props['class'] ?? '';
 $smile = "😃";
 
-$head = $this->assetholder->get("head");
-$body = $this->assetholder->get("body");
+// $head = $this->assetholder->get("head");
+// $body = $this->assetholder->get("body");

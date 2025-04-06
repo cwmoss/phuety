@@ -1,21 +1,24 @@
-<layout :title="title" :path="props.path">
+<app.layout :title="title" :path="props.path">
 
-  <sc-qrcode data="i love you"></sc-qrcode>
+  <sc.qrcode data="i love you"></sc.qrcode>
 
   <h2 v-if="ok">hello {{ strrev(name) }}</h2>
 
-  <sc-modal title="Content In Modal For Some Reasons" open="Can I Have Modals?">
+  <sc.modal title="Content In Modal For Some Reasons" open="Can I Have Modals?">
     <p>Why? But yeah.</p>
-  </sc-modal>
 
-  <sc-code file="components/sc_modal.vue.php"></sc-code>
-  <sc-code file="pages/home.vue.php"></sc-code>
+    <em>ok</em>
 
-  <sc-code file="components/sc_qrcode.vue.php"></sc-code>
+  </sc.modal>
 
-  <sc-code file="layout.vue.php"></sc-code>
+  <sc.code file="components/sc_modal.vue.php"></sc.code>
+  <sc.code file="pages/home.vue.php"></sc.code>
 
-</layout>
+  <sc.code file="components/sc_qrcode.vue.php"></sc.code>
+
+  <sc.code file="layout.vue.php"></sc.code>
+
+</app.layout>
 
 <script>
   console.log("hey")

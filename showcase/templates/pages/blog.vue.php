@@ -1,4 +1,4 @@
-<layout title="Blog" :path="props.path">
+<app.layout title="Blog" :path="props.path">
 
     <h1>Blog</h1>
 
@@ -7,7 +7,7 @@
 
 
 
-    <sc-infinitescroll>
+    <sc.infinitescroll>
 
         <article v-for="article in res.data">
             <header>
@@ -16,11 +16,11 @@
             <p>{{article.body}}</p>
         </article>
 
-    </sc-infinitescroll>
+    </sc.infinitescroll>
 
-    <sc-code file="pages/blog.vue.php"></sc-code>
-    <sc-code file="components/sc_infinitescroll.vue.php"></sc-code>
-</layout>
+    <sc.code file="pages/blog.vue.php"></sc.code>
+    <sc.code file="components/sc_infinitescroll.vue.php"></sc.code>
+</app.layout>
 
 
 <style>
@@ -37,5 +37,5 @@ $page = $props['page'] ?? 1;
 $res = Fetch::get("https://jsonplaceholder.typicode.com/posts?_limit=10&_page=" . $page);
 // print_r($res);
 
-sleep(1);
+// sleep(1);
 ?>

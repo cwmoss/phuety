@@ -6,7 +6,7 @@
 
     <div slot="modal">
         <h2 v-if="title">{{title}}</h2>
-        <slot></slot>
+        <slot.></slot.>
         <p>
             <button class="cta-modal-toggle" type="button">{{close}}</button>
         </p>

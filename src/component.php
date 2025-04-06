@@ -24,22 +24,27 @@ class component {
     public bool $has_style = false;
     public array $assets = [];
 
+    public $slot;
+
     public bool $is_start = false;
     public ?Document $pagedom = null;
     public dom_render $renderer;
     public phuety $engine;
+    // expression parser
+    public $ep;
     public $dom = null;
     public ?props $propholder = null;
     public ?asset $assetholder = null;
 
-    public function __construct(public string $cbase, $tpl = null) {
+    public function __construct(public string $cbase) {
         //   $this->uid = uniqid();
         $this->name = str_replace('_component', '', static::class);
-        if ($this->has_template) {
+        /*if ($this->has_template) {
             if (!$tpl) $tpl = file_get_contents($cbase . '/' . $this->name . '.html');
             $this->load_dom($tpl);
         }
         $this->renderer = new dom_render('', ['strrev' => 'strrev']);
+        */
     }
 
     static function new_from_string(string $tpl, string $cbase): component {
@@ -48,23 +53,28 @@ class component {
 
     static function load_class($name, $dir) {
 
-        $cname = $name . '_component';
+        $cname = "$name" . '_component';
+        $classname = "compiled\\$name" . '_component';
         require_once($dir . '/' . $cname . '.php');
-        $comp = new $cname($dir);
+        $comp = new $classname($dir);
         // $comp->load_dom();
         return $comp;
     }
 
-    public function load_dom($html) {
-        if ($this->is_layout) {
-            $dom = dom::get_document($html);
-        } else {
-            $dom = dom::get_template_fragment($html);
-        }
-        $this->dom = $dom;
+    public function slot(string $buffer) {
+        $this->slot = $buffer;
+        return $this;
     }
-
-    public function start_running(array $props = []) {
+    public function run(array $props) {
+        // TODO: optimize
+        foreach ($this->assets as $asset) {
+            $this->assetholder->push($this->uid, $asset);
+        }
+        $props = $this->run_code($props);
+        $res = $this->render($props);
+        return $res;
+    }
+    public function xstart_running(array $props = []) {
         // dom::d("start run dom", $this->dom);
         #var_dump($props);
         $this->is_start = true;
@@ -104,7 +114,11 @@ class component {
         return ['props' => $props] + $props;
     }
 
-    public function run(array $props = [], ?NodeList $children = null) {
+    public function render(array $__data = [], $__blockdata = []): void {
+        // return "";
+    }
+
+    public function xrun(array $props = [], ?NodeList $children = null) {
         // push assets
         foreach ($this->assets as $asset) {
             $this->assetholder->push($this->uid, $asset);
@@ -184,72 +198,6 @@ class component {
     public function post_components(HTMLDocument $dom, $props) {
         foreach ($dom->querySelectorAll("link[rel=assets]") as $anode) {
             $this->handle_component("phuety-assets", $anode, $anode->ownerDocument, $props, false);
-        }
-    }
-    public function travel_phuety(Node $node, props $props) {
-        if ($node instanceof NodeList) {
-            # print "travel list\n";
-            foreach (iterator_to_array($node) as $childNode) {
-                $this->travel_phuety($childNode, $props);
-            }
-        }
-        if ($node->nodeType == \XML_DOCUMENT_NODE || $node->nodeType == \XML_HTML_DOCUMENT_NODE) {
-            # print "travel doc\n";
-            foreach (iterator_to_array($node->childNodes) as $childNode) {
-                $this->travel_phuety($childNode, $props);
-            }
-            return;
-        }
-        if (!($node->nodeType == \XML_ELEMENT_NODE || $node->nodeType == \XML_TEXT_NODE)) {
-            # print "travel break\n";
-            return;
-        }
-
-        if (($node->tagName ?? null) && $this->engine->is_component($node->tagName)) {
-            dbg("+++ handle component {$node->tagName}");
-            // if (str_starts_with($node->localName, 'phuety-')) return;
-            $this->handle_component($node->localName, $node, $node->ownerDocument, $props, false);
-            return;
-        };
-        foreach (iterator_to_array($node->childNodes) as $childNode) {
-            # print "travel child len {$node->childNodes->length}\n";
-            $this->travel_phuety($childNode, $props);
-        }
-    }
-
-    public function travel_nodes(Node $node, $dom, props $props, $slotmode = false) {
-        # print("travel $node->nodeType \n");
-
-        if ($node instanceof NodeList) {
-            # print "travel list\n";
-            foreach (iterator_to_array($node) as $childNode) {
-                $this->travel_nodes($childNode, $dom, $props, $slotmode);
-            }
-        }
-        if ($node->nodeType == \XML_DOCUMENT_NODE || $node->nodeType == \XML_HTML_DOCUMENT_NODE) {
-            # print "travel doc\n";
-            foreach (iterator_to_array($node->childNodes) as $childNode) {
-                $this->travel_nodes($childNode, $dom, $props, $slotmode);
-            }
-            return;
-        }
-        if (!($node->nodeType == \XML_ELEMENT_NODE || $node->nodeType == \XML_TEXT_NODE)) {
-            # print "travel break\n";
-            return;
-        }
-
-        dbg("travelx", $node->nodeType, $node->localName ?? "--");
-
-        if (($node->tagName ?? null) && $this->engine->is_component($node->tagName)) {
-            # print "+++ handle component => {$node->tagName}\n";
-            dbg("component?", $node->localName);
-            if (str_starts_with($node->localName, 'phuety-')) return;
-            $this->handle_component($node->localName, $node, $dom, $props, $slotmode);
-            return;
-        };
-        foreach (iterator_to_array($node->childNodes) as $childNode) {
-            # print "travel child len {$node->childNodes->length}\n";
-            $this->travel_nodes($childNode, $dom, $props, $slotmode);
         }
     }
 

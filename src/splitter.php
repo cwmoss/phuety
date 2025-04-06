@@ -41,7 +41,7 @@ class splitter {
                 // self::d("split layout", $dom);
                 // var_dump(iterator_to_array($dom->childNodes));
                 // die();
-                dbg("split layout", iterator_to_array($dom->childNodes));
+                // dbg("split layout", iterator_to_array($dom->childNodes));
                 foreach ($dom->childNodes as $node) {
                     if ($node->nodeType == \XML_COMMENT_NODE && str_starts_with($node->textContent, "?php")) {
                         $phpcode = substr($node->textContent, 4);
@@ -56,7 +56,7 @@ class splitter {
                 // self::d("split component", $dom);
                 $php = "";
                 $php_open = false;
-                foreach ($dom->childNodes as $node) {
+                foreach ($dom->documentElement->childNodes as $node) {
                     // print_r($node);
                     if ($node->nodeType == \XML_COMMENT_NODE && str_starts_with($node->textContent, "?php")) {
                         $phpcode = substr($node->textContent, 4); #  rtrim((string) $node->nodeValue, '? ');
@@ -71,6 +71,7 @@ class splitter {
                         continue;
                     }
                     if ($node->nodeType == \XML_ELEMENT_NODE) {
+                        dbg("++ splitter", $node->tagName);
                         if ($node->tagName == 'STYLE') {
                             $this->handle_css($node, $parts);
                             $remove[] = $node;
@@ -122,8 +123,10 @@ class splitter {
         $node->removeAttribute('head');
         // convert embeded to external?
         if (!isset($attrs['src'])) {
+            dbg("++ js embed => external");
             $name = $parts['uid'] . '-' . count($parts['js']) . '.js';
-            $parts['js'][$name] = (string) $node->nodeValue;
+            $parts['js'][$name] = (string) $node->textContent;
+            dbg("+++ embed js $name", $parts['js'][$name]);
             $node->textContent = null;
             $node->setAttribute('src', '/assets/generated/' . $name);
         } else {
@@ -138,7 +141,7 @@ class splitter {
     public function handle_css(Element $node, &$parts) {
         $attrs = dom::attributes($node);
         if (!isset($attrs['global'])) {
-            $parts['css'] = str_replace('root', '&.root', (string) $node->nodeValue);
+            $parts['css'] = str_replace('root', '&.root', (string) $node->textContent);
         } else {
             $node->removeAttribute('global');
             $parts['assets'][] = ['style', 'head', dom::attributes($node), $node->ownerDocument->saveHTML($node)];

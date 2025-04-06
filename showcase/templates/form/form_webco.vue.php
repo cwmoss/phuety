@@ -2,7 +2,7 @@
     <section class="result-success hdn"></section>
 
 
-    <slot></slot>
+    <slot.></slot.>
 
 
 </webco-form>

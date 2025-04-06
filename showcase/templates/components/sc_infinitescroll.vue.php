@@ -1,5 +1,5 @@
 <div class="ifs-container">
-    <slot></slot>
+    <slot.></slot.>
 </div>
 
 <div class="page-load-status">

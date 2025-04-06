@@ -26,33 +26,34 @@ if ($_SERVER['REQUEST_URI'] == '/assets/mvp.css') {
 }
 
 // print file_get_contents('php://input');
-$the_route = match ([$http_method, $path]) {
-    ['GET', '/'] => ['home'],
-    ['GET', '/about'] => ['about'],
-    ['GET', '/forms'] => ['forms', $_GET],
-    ['GET', '/blog'] => ['blog', $_GET],
-    ['GET', '/demo-form'] => ['demoform', $_GET],
-    ['GET', '/demo-webco'] => ['demowebco', $_GET],
-    ['GET', '/demo-alpine'] => ['demoalpine', $_GET],
+$the_route = match ("$http_method $path") {
+    'GET /' => ['home'],
+    'GET /about' => ['about'],
+    'GET /forms' => ['forms', $_GET],
+    'GET /blog' => ['blog', $_GET],
+    'GET /demo-form' => ['demoform', $_GET],
+    'GET /demo-webco' => ['demowebco', $_GET],
+    'GET /demo-alpine' => ['demoalpine', $_GET],
 
-    ['POST', '/demo-form'] => ['demoform', $_POST],
-    ['POST', '/demo-webco'] => ['demowebco', $_POST],
-    ['POST', '/demo-alpine'] => ['demoalpine', $_POST],
+    'POST /demo-form' => ['demoform', $_POST],
+    'POST /demo-webco' => ['demowebco', $_POST],
+    'POST /demo-alpine' => ['demoalpine', $_POST],
 
     // ['POST', '/check_username'] => ['check_username', json_decode(file_get_contents('php://input'), true)],
     default => ['404']
 };
 
 $phuety = new phuety\phuety(__DIR__ . '/templates', [
-    'layout' => 'layout',
+    'app.layout' => 'layout',
+    'app.assets' => 'assets',
     'phuety-*' => '*',
-    'page-*' => 'pages/*',
-    'form-*' => 'form/',
-    'sc-*' => 'components/'
+    'page.*' => 'pages/*',
+    'form.*' => 'form/',
+    'sc.*' => 'components/'
 ], __DIR__ . '/tmp');
 
 
-print $phuety->run('page-' . $the_route[0], ($the_route[1] ?? []) + ['path' => $path]);
+print $phuety->run('page.' . $the_route[0], ($the_route[1] ?? []) + ['path' => $path]);
 
 
 function send_nocache() {
@@ -71,7 +72,7 @@ function d(...$args) {
 }
 
 function dbg(...$args) {
-    error_log(json_encode($args), 4);
+    error_log(json_encode($args, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), 4);
 }
 
 function redirect($to) {

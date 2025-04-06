@@ -1,6 +1,9 @@
 <?php
+namespace compiled;
 
 use phuety\component;
+use phuety\tag;
+
 USESTATEMENTS
 
 class NAME_component extends component {
@@ -13,11 +16,18 @@ class NAME_component extends component {
     public array $assets = ASSETS;
 
     function run_code($props){
+        // dbg("++ props for component", $this->name, $props);
         PHPCODE
         return get_defined_vars() + $props;
     }
 
-    function render($__expr, $__data){?>
+    function render(array $__data=[], $__blockdata=[]):void {
+        // ob_start();
+        // if($this->is_layout) print '<!DOCTYPE html>';
+        ?>
+
         RENDER
-    <?}
+        <?php // return ob_get_clean();
+        dbg("+++ assetsholder ", $this->is_start, $this->assetholder);
+    }
 }

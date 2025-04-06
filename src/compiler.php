@@ -22,13 +22,21 @@ class compiler {
         [$source, $php] = $splitter->split_php($source);
         $is_layout = false;
         $dom = null;
+        $head = null;
         if (
             str_starts_with($source, '<html') || str_starts_with($source, '<!DOCTYPE') ||
             str_starts_with($source, '<root') || str_starts_with($source, '<head') || str_starts_with($source, '<x-page')
         ) {
             $is_layout = true;
             // $dom = compiler::get_document($html);
+            // $source = str_replace(["<head", "</head>"], ["<xead", "</xead>"], $source);
+            if (preg_match("~(<head.*?>)(.*?)</head>~ism", $source, $mat)) {
+                dbg("++ found head", $mat);
+                $source = str_replace($mat[0], $mat[1] . '', $source);
+                $head = dom::get_template_fragment($mat[2]);
+            }
             $dom = dom::get_document($source);
+            dbg("++ doctype", $dom->saveHtml($dom->doctype));
         } elseif ($source) {
             $dom = dom::get_template_fragment($source);
         }
@@ -40,8 +48,8 @@ class compiler {
         $parts = $splitter->split_sfc($dom, $name, $is_layout);
         $php = rtrim($php, '>?');
         $parts['php'] = $php;
-
-        $parts["render"] = $this->compile_dom($name, $parts);
+        $parts['head'] = $head;
+        $parts["render"] = $dom ? $this->compile_dom($name, $parts) : "";
         $uid = $this->create_component($name, $parts);
 
         // $uid = component::create($name, $this->cbase, $parts);
@@ -49,12 +57,12 @@ class compiler {
     }
 
     public function compile_dom($name, $parts) {
-        $compiler = new dom_compiler($parts["html"], []);
+        $compiler = new dom_compiler($parts["html"], [], $parts["head"]);
         $res = $compiler->compile();
         return $res;
     }
     public function create_component($name, $parts) {
-        dbg("create component", $name, $parts);
+        // dbg("create component", $name, $parts);
         # print "create component $name";
         // print_r($parts);
         $tpl = file_get_contents(__DIR__ . '/_component.php');
@@ -70,7 +78,7 @@ class compiler {
             'HAS_STYLE' => trim($parts['css']) ? 'true' : 'false',
             'HAS_CODE' => trim($php) ? 'true' : 'false',
             'ASSETS' => var_export($parts['assets'], true),
-            'RENDER' => join("\n", $parts["render"])
+            'RENDER' => $parts["render"]
         ];
 
         $tpl = str_replace(array_keys($repl), array_values($repl), $tpl);

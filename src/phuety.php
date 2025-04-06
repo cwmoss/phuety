@@ -2,12 +2,17 @@
 
 namespace phuety;
 
+use Le\SMPLang\SMPLang;
+
 class phuety {
 
 
     public compiler $compiler;
+    public SMPLang $expression_parser;
+
     public array $compiled = [];
 
+    public string $component_name_separator = ".";
 
     public function __construct(public string $base, public array $map = [], public string $cbase = "", public array $opts = ['css' => 'scope']) {
         if (!$cbase) $this->cbase = $base . '/../compiled';
@@ -16,6 +21,7 @@ class phuety {
         }
         dbg("start");
         $this->compiler = new compiler($this);
+        $this->expression_parser = new SMPLang(['strrev' => 'strrev']);
     }
 
     public function asset_base(): string {
@@ -25,17 +31,21 @@ class phuety {
         $component = component::new_from_string($tpl, $this->cbase);
         var_dump($component);
         $component->engine = $this;
+        $component->ep = $this->expression_parser;
         $component->assetholder = new asset;
-        return $component->start_running($data);
+        return $component->run($data);
     }
 
     public function run(string $cname, array $data) {
-        $component = $this->get_component($cname);
+        $component = $this->get_component($cname, true);
         $data['$asset'] = new asset;
-        return $component->start_running($data);
+        return $component->run($data);
     }
 
     public function is_component($tagname) {
+        return str_contains($tagname, $this->component_name_separator);
+
+        // alternative: look for prefixes
         $tagname = strtolower($tagname);
         if ($this->get_component_source_location($tagname) === false) {
             return false;
@@ -66,15 +76,15 @@ location layout => layout => layout
         if (isset($this->map[$tagname])) {
             return $this->map[$tagname];
         }
-        [$prefix, $name] = explode('-', $tagname) + [1 => null];
+        [$prefix, $name] = explode($this->component_name_separator, $tagname) + [1 => null];
         if (!$name) return false;
-        if (isset($this->map[$prefix . '-*'])) {
-            $cname = str_replace('-', '_', $tagname);
-            $path = $this->map[$prefix . '-*'];
+        if (isset($this->map[$prefix . $this->component_name_separator . '*'])) {
+            $cname = str_replace($this->component_name_separator, '_', $tagname);
+            $path = $this->map[$prefix . $this->component_name_separator . '*'];
             if (str_ends_with($path, '/')) {
                 $path .= $cname;
             } else {
-                $path = str_replace('*', str_replace('-', '_', $name), $path);
+                $path = str_replace('*', str_replace($this->component_name_separator, '_', $name), $path);
             }
             return $path;
         }
@@ -87,14 +97,15 @@ location layout => layout => layout
         return file_get_contents($this->base . '/' . $path . '.vue.php');
     }
 
-    public function get_component($tagname): component {
-        $cname = str_replace('-', '_', $tagname);
+    public function get_component($tagname, $start = false): component {
+        $cname = str_replace($this->component_name_separator, '_', $tagname);
         if ($this->compiled[$cname] ?? null) {
             $comp = $this->compiled[$cname];
         } else {
             $uid = $this->compiler->compile($cname, $this->get_component_source($tagname));
             $comp = $this->load_component($cname);
         }
+        if ($start) $comp->is_start = true;
         return $comp;
     }
 
@@ -104,6 +115,7 @@ location layout => layout => layout
         // $cname = str_replace('-', '_', $name); //  . '_component';
         $comp = component::load_class($name, $this->cbase);
         $comp->engine = $this;
+        $comp->ep = $this->expression_parser;
         if (!current($this->compiled)) {
             $comp->assetholder = new asset;
         } else {

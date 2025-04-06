@@ -1,21 +1,94 @@
-    php 8.4
+## start
+
+    install php 8.4
 
     composer install
 
     php -S localhost:4000 -t showcase/public/
 
+## what?
+
+phuety are vue inspired component/dom based templates run by php
+
+## syntax
+
+components have a dot in it's name.
+
+### v-if
+
+### v-else
+
+### v-for
+
+### v-html
+
+### :binding
+
+### :class
+
+:class binding is merged with class attribute
+
+### <template.></template>
+
+for wrapping multiple elements with v-if/v-else/v-for
+
+### <slot.>
+
+default slot in component code
+
+### <app.assets head|body />
+
+links to css/js files
+
+## single file components (sfc)
+
+single file components can contain template code, script code, style code and php code (must be the very last section).
+
+## component map
+
+it needs a prefix based map to find the components in your project.
+
+    $map = [
+        // <app.layout> => layout.vue.php
+        'app.layout' => 'layout',
+        // <app.assets> => assets.vue.php
+        'app.assets' => 'assets',
+        'phuety-*' => '*',
+        // page.contact => pages/contact.vue.php
+        'page.*' => 'pages/*',
+        // form.field => form/form_field.vue.php
+        'form.*' => 'form/',
+        // sc.qrcode => components/sc_qrcode.vue.php
+        'sc.*' => 'components/'
+    ];
+
+## api
+
+    $phuety = new phuety\phuety(
+        // base dir for sfc sources
+        __DIR__ . '/templates',
+        // components map
+        $map,
+        // directory for compiled templates
+        __DIR__ . '/tmp'
+    );
+
+## examples
+
+look into `showcase/` dir
+
 ## todo
 
-- [ ] component for client-only processing
-- [ ] attribute for client-only processing
-- [ ] client-only :bind (::bind? -- alpine, vue, ...)
+- [ ] component for client-only processing?
+- [ ] attribute for client-only processing?
+- [ ] client-only :bind (::bind? -- alpine, vue, ...)?
 - [ ] dynamic component <component :is="input_type"></component>
 - [ ] defered component (like <assets> via attribute)
 - [ ] teleport? component or attribute?
 - [x] assets: automatic write js to file (or leave embeded)
 - [ ] assets: cache buster dev, cache buster prod
-- [ ] compile to php-string-templates
-- [ ] rewrite expression parser
+- [x] compile to php-string-templates
+- [ ] new expression parser
 - [ ] test with vue order of rendering
 
 ## inspiration, copypaste, similar projects

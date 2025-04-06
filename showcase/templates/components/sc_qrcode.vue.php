@@ -1,4 +1,6 @@
-<img :src="code" alt="QR Code" />
+<img :src="code" :alt="'QR Code..'">
+<em v-html="props.data"></em>
+
 
 <?php
 
