@@ -11,7 +11,6 @@ use Dom\Node;
 
 use WMDE\VueJsTemplating\Component as vcomponent;
 
-
 class component {
 
     public string $name;
@@ -24,19 +23,17 @@ class component {
     public bool $has_style = false;
     public array $assets = [];
 
-    public $slot;
+    // public $slot;
 
     public bool $is_start = false;
-    public ?Document $pagedom = null;
-    public dom_render $renderer;
     public phuety $engine;
     // expression parser
     public $ep;
-    public $dom = null;
-    public ?props $propholder = null;
+    // public $dom = null;
+    // public ?props $propholder = null;
     public ?asset $assetholder = null;
 
-    public function __construct(public string $cbase) {
+    public function __construct() {
         //   $this->uid = uniqid();
         $this->name = str_replace('_component', '', static::class);
         /*if ($this->has_template) {
@@ -47,55 +44,18 @@ class component {
         */
     }
 
-    static function new_from_string(string $tpl, string $cbase): component {
-        return new self($cbase, $tpl);
+    static function new_from_string(string $tpl): component {
+        return new self($tpl);
     }
 
-    static function load_class($name, $dir) {
-
-        $cname = "$name" . '_component';
-        $classname = "compiled\\$name" . '_component';
-        require_once($dir . '/' . $cname . '.php');
-        $comp = new $classname($dir);
-        // $comp->load_dom();
-        return $comp;
-    }
-
-    public function slot(string $buffer) {
-        $this->slot = $buffer;
-        return $this;
-    }
-    public function run(array $props) {
+    public function run(array $props = [], array $slots = []) {
         // TODO: optimize
         foreach ($this->assets as $asset) {
             $this->assetholder->push($this->uid, $asset);
         }
         $props = $this->run_code($props);
-        $res = $this->render($props);
+        $res = $this->render($props, [], $slots);
         return $res;
-    }
-    public function xstart_running(array $props = []) {
-        // dom::d("start run dom", $this->dom);
-        #var_dump($props);
-        $this->is_start = true;
-        if (!$this->propholder) {
-            $this->propholder = new props;
-        }
-        $dom = $this->run($props);
-        if ($this->pagedom) {
-            // $this->travel_phuety($this->pagedom, $this->propholder);
-            $this->post_components($this->pagedom, $this->propholder);
-            return $this->pagedom->saveHTML();
-        }
-        if ($this->is_layout) {
-            // $this->travel_phuety($dom, $this->propholder);
-            $this->post_components($dom, $this->propholder);
-            return $dom->saveHTML();
-        }
-
-        return $dom->saveHTML();
-        // fragment with "ok" root 
-        // return substr(trim($dom->saveHtml()), 4, -5);
     }
 
     public function separate_functions($input) {
@@ -114,131 +74,14 @@ class component {
         return ['props' => $props] + $props;
     }
 
-    public function render(array $__data = [], $__blockdata = []): void {
+    public function render(array $__data = [], $__blockdata = [], array $slots = []): void {
         // return "";
     }
 
-    public function xrun(array $props = [], ?NodeList $children = null) {
-        // push assets
-        foreach ($this->assets as $asset) {
-            $this->assetholder->push($this->uid, $asset);
-        }
-        //print_r($this->assetholder);
-        // renderless?
-        if (!$this->has_template) {
-            ob_start();
-            $this->run_code($props);
-            $html = ob_get_clean();
-            $dom = dom::get_template_fragment($html);
-        } else {
+    // public function post_components(HTMLDocument $dom, $props) {
+    //     foreach ($dom->querySelectorAll("link[rel=assets]") as $anode) {
+    //         $this->handle_component("phuety-assets", $anode, $anode->ownerDocument, $props, false);
+    //     }
+    // }
 
-            $dom = $this->dom->cloneNode(true);
-            dom::register_class($dom);
-            $result = $this->run_code($props);
-            #var_dump($result);
-            [$data, $methods] = $this->separate_functions($result);
-            #var_dump($data);
-
-            if ($this->is_layout) {
-                # $html = $this->renderer->render_page($data, $methods);
-                $this->renderer->render_page_dom($dom, $this->propholder, $data, $methods);
-            } else {
-                $this->renderer->render_dom($dom, $this->propholder, $data, $methods);
-            }
-
-            // var_dump($this->is_layout);
-            //print "html result: $html\n";
-            #print "slot?\n";
-            //print_r($children);
-            // layouts are different 
-            if ($this->is_layout) {
-                #    $dom = compiler::get_document($html);
-            } else {
-                #    $dom = compiler::get_fragment($html);
-            }
-        }
-        $this->travel_nodes($dom->documentElement, $dom, $this->propholder);
-        $this->replace_slot($dom, $children, $this->propholder);
-        # compiler::d("after replace " . static::class, $dom);
-        return $dom;
-    }
-
-    public function replace_slot($dom, $children, props $props) {
-        if (!$children) return;
-        $ndom = dom::get_empty_doc();
-        dbg("ndom", $ndom->body);
-        // $ndom->registerNodeClass("DOMElement", custom_domelement::class);
-        foreach ($children as $ch) {
-            # print "+++ children import " . ($ch->tagName ?? null) . " \n";
-            $nch = $ndom->importNode($ch, true);
-            $ndom->body->appendChild($nch);
-        }
-
-        # compiler::d('-new dom before travel-', $ndom);
-        // print_r($ndom->documentElement);
-        $this->travel_nodes($ndom->body, $ndom, $props, true);
-        # compiler::d('-new dom after travel-', $ndom);
-        // print $ndom->saveHTML();
-        $slottags = $dom->getElementsByTagName('slot');
-        # var_dump($slottags->length);
-
-        if ($slottags->length == 1) {
-            #    print "+++ slot REPLACE\n";
-            $slot = $slottags->item(0);
-            foreach ($ndom->body->childNodes as $c) {
-                $slotdom = $dom->importNode($c, true);
-                dbg("++ slotnode", $c->tagName ?? "noname");
-                $slot->parentNode->insertBefore($slotdom, $slot);
-            }
-            $slot->parentNode->removeChild($slot);
-            // compiler::d("-new nodes for slot-", $slotdom);
-        }
-    }
-
-    public function post_components(HTMLDocument $dom, $props) {
-        foreach ($dom->querySelectorAll("link[rel=assets]") as $anode) {
-            $this->handle_component("phuety-assets", $anode, $anode->ownerDocument, $props, false);
-        }
-    }
-
-    public function handle_component($tagname, Node $node, $dom, props $props, $slotmode = false) {
-        // var_dump($this->engine);
-        dbg("handle component", $tagname);
-        $component = $this->engine->get_component($tagname);
-        $component->propholder = $props;
-        # print "\n=== +handle this {$this->name} compname {$component->name} start? -{$this->is_start}- layout? -{$this->is_layout}- slotmode? -{$slotmode}-\n";
-        $attrs = dom::attributes($node);
-        $attrs += $props->get($attrs['props'] ?? null);
-        // $node->hey();
-
-        #print_r($attrs);
-        #print_r($props);
-        // $props = $attrs + $node->data;
-
-
-        /*foreach ($props as $k => $v) {
-            if ($k[0] == ':') {
-                $props[ltrim($k, ':')] = $v;
-            }
-        }*/
-        $newdom = $component->run($attrs, $node->childNodes);
-        // print_r($newdom);
-        # print "\n=== -handle this {$this->name} compname {$component->name} start? -{$this->is_start}- layout? -{$this->is_layout}- slotmode? -{$slotmode}-\n";
-
-        # compiler::d("newdom handle_component", $newdom);
-
-        //var_dump($component->is_layout);
-        // if we render a html page, we save the dom and have finished
-        if ($this->is_start && $component->is_layout && !$slotmode) {
-            // print $newdom->saveHTML();
-            $this->pagedom = $newdom;
-            return;
-        }
-        // all children of <ok>
-        foreach ($newdom->documentElement->childNodes as $c) {
-            $newnode = $dom->importNode($c, true);
-            $node->parentNode->insertBefore($newnode, $node);
-        }
-        $node->parentNode->removeChild($node);
-    }
 }

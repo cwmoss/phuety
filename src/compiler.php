@@ -95,7 +95,7 @@ class compiler {
 
         if ($repl['HAS_TEMPLATE'] == 'true') {
             $html = sprintf('%s', $parts['html']->saveHTML());
-            file_put_contents($dir . '/' . $name . '.html', $html);
+            // file_put_contents($dir . '/' . $name . '.html', $html);
         } else {
             @unlink($dir . '/' . $name . '.html');
         }

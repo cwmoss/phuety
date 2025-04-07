@@ -21,13 +21,13 @@ class NAME_component extends component {
         return get_defined_vars() + $props;
     }
 
-    function render(array $__data=[], $__blockdata=[]):void {
+    function render(array $__data=[], $__blockdata=[], array $slots=[]):void {
         // ob_start();
         // if($this->is_layout) print '<!DOCTYPE html>';
         ?>
 
         RENDER
         <?php // return ob_get_clean();
-        dbg("+++ assetsholder ", $this->is_start, $this->assetholder);
+        // dbg("+++ assetsholder ", $this->is_start, $this->assetholder);
     }
 }

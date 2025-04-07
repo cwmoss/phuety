@@ -154,7 +154,7 @@ class dom_compiler {
     function php_element(tag $tag): string {
         if ($tag->tagname == "template.") return "";
         if ($tag->is_slot) {
-            return sprintf('<?=$this->slot?>');
+            return sprintf('<?=$slots["default"]?>');
         }
         if ($tag->is_component) {
             return $tag->has_children ? sprintf('<?php ob_start(); ?>') : '';
@@ -179,11 +179,11 @@ class dom_compiler {
         // TODO: empty slots
         if ($tag->is_component) {
             return sprintf(
-                '<?=$this->engine->get_component("%s")%s->run(%s + %s); ?>',
+                '<?=$this->engine->get_component("%s")->run(%s + %s %s); ?>',
                 $tag->tagname,
-                $tag->has_children ? '->slot(ob_get_clean())' : '',
                 $this->php_bindings($tag),
-                var_export($tag->attrs, true)
+                var_export($tag->attrs, true),
+                $tag->has_children ? ', ["default" => ob_get_clean()]' : '',
             );
         }
         return tag::tag_close($tag->tagname); // sprintf('</%s>', $tag->tagname);

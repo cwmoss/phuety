@@ -6,7 +6,6 @@ use Le\SMPLang\SMPLang;
 
 class phuety {
 
-
     public compiler $compiler;
     public SMPLang $expression_parser;
 
@@ -14,7 +13,24 @@ class phuety {
 
     public string $component_name_separator = ".";
 
-    public function __construct(public string $base, public array $map = [], public string $cbase = "", public array $opts = ['css' => 'scope']) {
+    public string $component_extension = ".vue.php";
+
+    /** 
+     * 
+     * @param string $base base directory of template sources
+     * @param array $map mapping component names to source files/ directories
+     * @param string $cbase base directory of compiled output
+     * @param array $opts some options
+     * @param string $compile_mode everytime, compare_timestamps, never 
+     * 
+     * */
+    public function __construct(
+        public string $base,
+        public array $map = [],
+        public string $cbase = "",
+        public array $opts = ['css' => 'scope'],
+        public string $compile_mode = "everytime"
+    ) {
         if (!$cbase) $this->cbase = $base . '/../compiled';
         if (!$map) {
             $this->map = ['layout' => 'layout'];
@@ -27,6 +43,7 @@ class phuety {
     public function asset_base(): string {
         return $this->base . '/../public/assets';
     }
+
     public function run_template_string(string $tpl, array $data) {
         $component = component::new_from_string($tpl, $this->cbase);
         var_dump($component);
@@ -94,7 +111,7 @@ location layout => layout => layout
     public function get_component_source($tagname) {
         $path = $this->get_component_source_location($tagname);
 
-        return file_get_contents($this->base . '/' . $path . '.vue.php');
+        return file_get_contents($this->base . '/' . $path . $this->component_extension);
     }
 
     public function get_component($tagname, $start = false): component {
@@ -102,7 +119,9 @@ location layout => layout => layout
         if ($this->compiled[$cname] ?? null) {
             $comp = $this->compiled[$cname];
         } else {
-            $uid = $this->compiler->compile($cname, $this->get_component_source($tagname));
+            if ($this->compile_mode != "never") {
+                $uid = $this->compiler->compile($cname, $this->get_component_source($tagname));
+            }
             $comp = $this->load_component($cname);
         }
         if ($start) $comp->is_start = true;
@@ -113,7 +132,7 @@ location layout => layout => layout
 
     public function load_component($name) {
         // $cname = str_replace('-', '_', $name); //  . '_component';
-        $comp = component::load_class($name, $this->cbase);
+        $comp = $this->load_component_class($name, $this->cbase);
         $comp->engine = $this;
         $comp->ep = $this->expression_parser;
         if (!current($this->compiled)) {
@@ -123,5 +142,21 @@ location layout => layout => layout
         }
         $this->compiled[$name] = $comp;
         return $comp;
+    }
+
+    public function load_component_class($name, $dir) {
+        $cname = "$name" . '_component';
+        $classname = "compiled\\$name" . '_component';
+        require_once($dir . '/' . $cname . '.php');
+        $comp = new $classname($dir);
+        // $comp->load_dom();
+        return $comp;
+    }
+
+    public function compile(array $components) {
+        foreach ($components as $name) {
+            // $c = $this->get_component($name);
+            $this->run($name, ["path" => "/dummy/path"]);
+        }
     }
 }
