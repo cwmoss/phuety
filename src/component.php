@@ -53,8 +53,8 @@ class component {
         foreach ($this->assets as $asset) {
             $this->assetholder->push($this->uid, $asset);
         }
-        $props = $this->run_code($props);
-        $res = $this->render($props, [], $slots);
+        $props = $this->run_code($props, $slots, $this->engine->helper);
+        $res = $this->render($props, [], $slots, $this->engine->helper);
         return $res;
     }
 
@@ -70,11 +70,11 @@ class component {
         return [$data, $fun];
     }
 
-    public function run_code(array $props) {
+    public function run_code(array $props, array $slots = [], array $helper = []) {
         return ['props' => $props] + $props;
     }
 
-    public function render(array $__data = [], $__blockdata = [], array $slots = []): void {
+    public function render(array $__data = [], $__blockdata = [], array $slots = [], array $helper = []): void {
         // return "";
     }
 

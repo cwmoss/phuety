@@ -24,6 +24,36 @@ class tag {
         "wbr"
     ];
 
+    public static array $boolean_attributes = [
+        "allowfullscreen",
+        "async",
+        "autofocus",
+        "autoplay",
+        "checked",
+        "controls",
+        "default",
+        "defer",
+        "disabled",
+        "formnovalidate",
+        "inert",
+        "ismap",
+        "itemscope",
+        "loop",
+        "multiple",
+        "muted",
+        "nomodule",
+        "novalidate",
+        "open",
+        "playsinline",
+        "readonly",
+        "required",
+        "reversed",
+        "selected",
+        "shadowrootclonable",
+        "shadowrootdelegatesfocus",
+        "shadowrootserializable",
+    ];
+
     public array $class = [];
     public array $wrap = [];
     public array $before = [];
@@ -271,7 +301,7 @@ class tag {
     public static function tag_open(string $name, array $attrs): string {
         $attr = [];
         foreach ($attrs as $aname => $avalue) {
-            if (is_bool($avalue)) {
+            if (is_bool($avalue) || in_array($aname, self::$boolean_attributes)) {
                 if ($avalue) {
                     $attr[] = $aname;
                 }

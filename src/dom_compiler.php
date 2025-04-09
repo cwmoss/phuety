@@ -91,10 +91,10 @@ class dom_compiler {
         }
         $check = $this->lang_attrs['for'];
         if ($attr = $this->check_and_remove_attribute($node, $check)) {
-            list($item, $list) = explode(' in ', $attr);
-            $this->result[] = ["foreach", $item, $list];
+            $for_parts = $this->parse_for_attribute($attr);
+            $this->result[] = ["foreach", $for_parts];
             $this->walk_nodes($node, "foreach");
-            $this->result[] = ["endforeach", $item];
+            $this->result[] = ["endforeach", $for_parts];
             return;
         }
 
@@ -129,17 +129,26 @@ class dom_compiler {
         $this->result[] = ["endtag", $tag];
     }
 
+    private function parse_for_attribute($attr) {
+        list($item_key, $list) = explode(' in ', $attr);
+        list($item, $key) = explode(",", $item_key) + [1 => null];
+        return [
+            "item" => trim($item),
+            "key" => trim($key),
+            "list" => trim($list)
+        ];
+    }
     private function generate_php_code(): string {
         $code = [];
         foreach ($this->result as $stack_code) {
             $c = $stack_code[0];
             $php = match (true) {
                 $c == "if" => sprintf('<?php if($this->ep->evaluate("%s", $__blockdata + $__data)){ ?>', $stack_code[1]),
-                $c == "foreach" => $this->php_foreach($stack_code[1], $stack_code[2]),
+                $c == "foreach" => $this->php_foreach($stack_code[1]),
                 $c == "#text" => $stack_code[1] == "script" ? $stack_code[2] : $this->php_replace_mustache($stack_code[2]),
                 $c == "html" => sprintf('<?= $this->ep->evaluate("%s", $__blockdata + $__data) ?>', $stack_code[1]),
                 $c == "endif" => '<?php } ?>',
-                $c == "endforeach" => $this->php_foreach($stack_code[1]),
+                $c == "endforeach" => $this->php_foreach($stack_code[1], true),
                 $c == "else" => '<?php } else { ?>',
                 $c == "tag" => $this->php_element($stack_code[1]),
                 $c == "endtag" => $this->php_element_end($stack_code[1]),
@@ -197,17 +206,27 @@ class dom_compiler {
         return '[' . join(", ", $php) . ']';
     }
 
-    function php_foreach($item, $list = null): string {
-        if (is_null($list)) {
+    function php_foreach($parts, $end = false): string {
+        dbg("++foreach++", $parts);
+        $item = $parts["item"];
+        $key = $parts["key"];
+        $list = $parts["list"];
+        if ($end) {
             // endforeach
-            return sprintf('<?php unset($__blockdata["%s"]);} ?>', $item);
+            return sprintf(
+                '<?php unset($__blockdata["%s"]%s);} ?>',
+                $item,
+                $key !== null ? '' : sprintf(', $__blockdata["%s"]', $key)
+            );
         }
         return sprintf(
-            '<?php foreach($this->ep->evaluate("%s", $__blockdata + $__data) as $%s){$__blockdata["%s"]=$%s; ?>',
+            '<?php foreach($this->ep->evaluate("%s", $__blockdata + $__data) as %s $%s){$__blockdata["%s"]=$%s;%s ?>',
             $list,
+            $key ? sprintf('$%s => ', $key) : '',
             $item,
             $item,
-            $item
+            $item,
+            $key ? sprintf('$__blockdata["%s"]=$%s;', $key, $key) : '',
         );
     }
 

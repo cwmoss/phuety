@@ -29,7 +29,8 @@ class phuety {
         public array $map = [],
         public string $cbase = "",
         public array $opts = ['css' => 'scope'],
-        public string $compile_mode = "everytime"
+        public string $compile_mode = "everytime",
+        public array $helper = []
     ) {
         if (!$cbase) $this->cbase = $base . '/../compiled';
         if (!$map) {
@@ -38,6 +39,10 @@ class phuety {
         dbg("start");
         $this->compiler = new compiler($this);
         $this->expression_parser = new SMPLang(['strrev' => 'strrev']);
+    }
+
+    public function set_helper(array $helper) {
+        $this->helper = $helper;
     }
 
     public function asset_base(): string {
