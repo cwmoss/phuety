@@ -7,7 +7,7 @@ use Le\SMPLang\SMPLang;
 class phuety {
 
     public compiler $compiler;
-    public SMPLang $expression_parser;
+    public $expression_parser;
 
     public array $compiled = [];
 
@@ -21,7 +21,7 @@ class phuety {
      * @param array $map mapping component names to source files/ directories
      * @param string $cbase base directory of compiled output
      * @param array $opts some options
-     * @param string $compile_mode everytime, compare_timestamps, never 
+     * @param string $compile_mode always, compare_timestamps, never 
      * 
      * */
     public function __construct(
@@ -29,8 +29,9 @@ class phuety {
         public array $map = [],
         public string $cbase = "",
         public array $opts = ['css' => 'scope'],
-        public string $compile_mode = "everytime",
-        public array $helper = []
+        public string $compile_mode = "always",
+        public array $helper = [],
+        public string $assets_base = "/assets"
     ) {
         if (!$cbase) $this->cbase = $base . '/../compiled';
         if (!$map) {
@@ -38,7 +39,9 @@ class phuety {
         }
         dbg("start");
         $this->compiler = new compiler($this);
-        $this->expression_parser = new SMPLang(['strrev' => 'strrev']);
+        $this->expression_parser = new expressions();
+        // $this->expression_parser = new dotdata(['strrev' => 'strrev']);
+        // $this->expression_parser = new SMPLang(['strrev' => 'strrev']);
     }
 
     public function set_helper(array $helper) {
@@ -46,7 +49,8 @@ class phuety {
     }
 
     public function asset_base(): string {
-        return $this->base . '/../public/assets';
+        // return $this->base . '/../public/assets';
+        return $this->base . $this->assets_base;
     }
 
     public function run_template_string(string $tpl, array $data) {
@@ -115,7 +119,7 @@ location layout => layout => layout
 
     public function get_component_source($tagname) {
         $path = $this->get_component_source_location($tagname);
-
+        if (!$path) die("could not resolve component source for $tagname");
         return file_get_contents($this->base . '/' . $path . $this->component_extension);
     }
 

@@ -4,7 +4,8 @@
       "phuety\\": "src",
       "showcase\\": "showcase/templates/lib",
       "WMDE\\VueJsTemplating\\": "src/php-vuejs-templating/src",
-      "Le\\SMPLang\\": "src/smplang/src"
+      "Le\\SMPLang\\": "src/smplang/src",
+      "Symfony\\Component\\ExpressionLanguage\\Node\\": "src/override/"
     }
   },
   "scripts": {
@@ -21,7 +22,7 @@
     "php": ">=8.4",
     "chillerlan/php-qrcode": "^4.3",
     "phpunit/phpunit": "^10.4",
-    "symfony/expression-language": "^6.3",
+    "symfony/expression-language": "^7.2",
     "leafs/fetch": "dev-main"
   },
   "require-dev": {

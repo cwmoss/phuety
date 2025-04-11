@@ -54,7 +54,7 @@ class component {
             $this->assetholder->push($this->uid, $asset);
         }
         $props = $this->run_code($props, $slots, $this->engine->helper);
-        $res = $this->render($props, [], $slots, $this->engine->helper);
+        $res = $this->render($props, $slots, $this->engine->helper);
         return $res;
     }
 
@@ -74,7 +74,7 @@ class component {
         return ['props' => $props] + $props;
     }
 
-    public function render(array $__data = [], $__blockdata = [], array $slots = [], array $helper = []): void {
+    public function render(array $__data = [], array $slots = [], array $helper = []): void {
         // return "";
     }
 

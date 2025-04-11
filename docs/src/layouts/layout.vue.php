@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="/assets/css/accordion.css" type="text/css">
   <link rel="stylesheet" href="/assets/css/prism.css" type="text/css">
   <link rel="stylesheet" href="/assets/css/app.css" type="text/css">
+  <doc.assets head></doc.assets>
   <script src="/assets/js/prism.js"></script>
   <script src="/assets/js/app.js"></script>
 </head>
@@ -33,11 +34,12 @@
       &copy; 2025
     </div>
   </footer>
-  <script src="<?= path_asset('/js/prism.js') ?>"></script>
+
 </body>
 
 </html>
 
 <?php
+dbg("+++ layout props", $props);
 
 // $partial('nav', ['current_id' => $page['_id'], 'current' => $page['_file'] ?? []])

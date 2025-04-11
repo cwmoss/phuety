@@ -50,7 +50,7 @@ $phuety = new phuety\phuety(__DIR__ . '/templates', [
     'page.*' => 'pages/*',
     'form.*' => 'form/',
     'sc.*' => 'components/'
-], __DIR__ . '/tmp', compile_mode: "never");
+], __DIR__ . '/tmp', compile_mode: "always", assets_base: "/../public/assets");
 
 
 print $phuety->run('page.' . $the_route[0], ($the_route[1] ?? []) + ['path' => $path]);

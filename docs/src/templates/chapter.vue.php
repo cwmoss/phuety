@@ -10,8 +10,14 @@
     </aside>
 </app.layout>
 
+<style>
+    p {
+        border: 1px solid black;
+    }
+</style>
+
 <?php
 
-dbg("... template all props", $props["markdown"]("__hhuhu__"));
+dbg("... template all props", $props["page"]);
 $html = "<em>hi</em>";
 // $html = $markdown("**hello**");

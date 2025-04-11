@@ -38,7 +38,7 @@ class dom_compiler {
         'bind' => ':'
     ];
 
-    private SMPLang $expressionParser;
+    private $expressionParser;
 
     /**
      * @param string $template HTML
@@ -46,7 +46,8 @@ class dom_compiler {
      */
     public function __construct(public Document $dom, array $methods, public ?Document $head = null) {
         // $this->expressionParser = new CachingExpressionParser(new BasicJsExpressionParser($methods));
-        $this->expressionParser = new SMPLang(['strrev' => 'strrev']);
+        // $this->expressionParser = new SMPLang(['strrev' => 'strrev']);
+        $this->expressionParser = new expressions();
     }
 
     public function render_page_dom(HTMLDocument $dom, props $props, array $data, array $methods = []) {
@@ -131,7 +132,7 @@ class dom_compiler {
 
     private function parse_for_attribute($attr) {
         list($item_key, $list) = explode(' in ', $attr);
-        list($item, $key) = explode(",", $item_key) + [1 => null];
+        list($item, $key) = explode(",", $item_key) + [1 => ""];
         return [
             "item" => trim($item),
             "key" => trim($key),
@@ -143,10 +144,10 @@ class dom_compiler {
         foreach ($this->result as $stack_code) {
             $c = $stack_code[0];
             $php = match (true) {
-                $c == "if" => sprintf('<?php if($this->ep->evaluate("%s", $__blockdata + $__data)){ ?>', $stack_code[1]),
+                $c == "if" => sprintf('<?php if(%s){ ?>', $this->compile_expression($stack_code[1])),
                 $c == "foreach" => $this->php_foreach($stack_code[1]),
                 $c == "#text" => $stack_code[1] == "script" ? $stack_code[2] : $this->php_replace_mustache($stack_code[2]),
-                $c == "html" => sprintf('<?= $this->ep->evaluate("%s", $__blockdata + $__data) ?>', $stack_code[1]),
+                $c == "html" => sprintf('<?= %s ?>', $this->compile_expression($stack_code[1])),
                 $c == "endif" => '<?php } ?>',
                 $c == "endforeach" => $this->php_foreach($stack_code[1], true),
                 $c == "else" => '<?php } else { ?>',
@@ -174,7 +175,7 @@ class dom_compiler {
         if ($tag->tagname == "xead") $tag->tagname = "head";
         if (!$tag->bindings) return $tag->open();
         return sprintf(
-            '<?= tag::tag_open_merged_attrs("%s", %s, %s)?>',
+            '<?= tag::tag_open_merged_attrs("%s", %s, %s) ?>',
             $tag->tagname,
             $this->php_bindings($tag),
             var_export($tag->attrs, true)
@@ -201,32 +202,34 @@ class dom_compiler {
     function php_bindings(tag $tag) {
         $php = [];
         foreach ($tag->bindings as $name => $expression) {
-            $php[] = sprintf('"%s"=>$this->ep->evaluate("%s", $__blockdata + $__data)', $name, $expression);
+            $php[] = sprintf('"%s"=> %s', $name, $this->compile_expression($expression));
+            // $this->ep->evaluate("%s", $__blockdata + $__data)
         }
         return '[' . join(", ", $php) . ']';
     }
 
     function php_foreach($parts, $end = false): string {
         dbg("++foreach++", $parts);
-        $item = $parts["item"];
-        $key = $parts["key"];
-        $list = $parts["list"];
+        $item = trim($parts["item"]);
+        $key = trim($parts["key"]);
+        $list = trim($parts["list"]);
         if ($end) {
             // endforeach
             return sprintf(
-                '<?php unset($__blockdata["%s"]%s);} ?>',
-                $item,
-                $key !== null ? '' : sprintf(', $__blockdata["%s"]', $key)
+                '<?php $__d->remove_block();} ?>'
+                //,
+                //$item,
+                //$key !== null ? '' : sprintf(', $__blockdata["%s"]', $key)
             );
         }
         return sprintf(
-            '<?php foreach($this->ep->evaluate("%s", $__blockdata + $__data) as %s $%s){$__blockdata["%s"]=$%s;%s ?>',
-            $list,
+            '<?php foreach(%s as %s $%s){$__d->add_block(["%s"=>$%s %s]); ?>',
+            $this->compile_expression($list),
             $key ? sprintf('$%s => ', $key) : '',
             $item,
             $item,
             $item,
-            $key ? sprintf('$__blockdata["%s"]=$%s;', $key, $key) : '',
+            $key ? sprintf(', "%s" => $%s', $key, $key) : '',
         );
     }
 
@@ -235,10 +238,15 @@ class dom_compiler {
         preg_match_all($regex, $text, $matches);
 
         foreach ($matches['expression'] as $index => $expression) {
-            $value = sprintf('<?= tag::h($this->ep->evaluate("%s", $__blockdata + $__data)) ?>', $expression);
+            $value = sprintf('<?= tag::h(%s) ?>', $this->compile_expression($expression));
             $text = str_replace($matches[0][$index], $value, $text);
         }
         return $text;
+    }
+
+    private function compile_expression($expression) {
+        // $this->ep->evaluate("%s", $__blockdata + $__data)
+        return $this->expressionParser->for_phuety($expression);
     }
 
     private function evaluateExpression($expression, array $data, array $methods = []) {

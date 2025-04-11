@@ -2,6 +2,7 @@
 namespace compiled;
 
 use phuety\component;
+use phuety\data_container;
 use phuety\tag;
 
 USESTATEMENTS
@@ -21,11 +22,11 @@ class NAME_component extends component {
         return get_defined_vars() + $props;
     }
 
-    function render(array $__data=[], $__blockdata=[], array $slots=[], array $helper = []):void {
+    function render(array $__data=[], array $slots=[], array $helper = []):void {
+        $__d = new data_container($__data);
         // ob_start();
         // if($this->is_layout) print '<!DOCTYPE html>';
         ?>
-
         RENDER
         <?php // return ob_get_clean();
         // dbg("+++ assetsholder ", $this->is_start, $this->assetholder);
