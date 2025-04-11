@@ -34,7 +34,7 @@ class FunctionNode extends Node {
 
         //  $function = $compiler->getFunction($this->attributes['name']);
         $function = [
-            "compiler" => fn(...$args) => \sprintf('\%s(%s)', $this->attributes['name'], implode(', ', $args)),
+            "compiler" => fn(...$args) => \sprintf('$__d->call("%s")(%s)', $this->attributes['name'], implode(', ', $args)),
         ];
 
         $compiler->raw($function['compiler'](...$arguments));
