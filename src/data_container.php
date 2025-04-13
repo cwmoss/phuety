@@ -17,10 +17,15 @@ class data_container {
     public function get($name, $default = "") {
         if ($this->blocks) {
             foreach (range(count($this->blocks) - 1, 0) as $idx) {
-                if (isset($this->blocks[$idx][$name])) return $this->blocks[$idx][$name];
+                if (isset($this->blocks[$idx][$name])) return $this->convert($this->blocks[$idx][$name]);
             }
         }
-        return $this->data[$name] ?? $default;
+        return $this->convert($this->data[$name]) ?? $default;
+    }
+
+    public function convert($value) {
+        if (is_array($value) && !array_is_list($value)) return (object) $value;
+        return $value;
     }
 
     public function add_block($data) {

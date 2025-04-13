@@ -19,7 +19,7 @@ class NAME_component extends component {
     function run_code(array $props, array $slots = [], array $helper = []){
         dbg("++ props for component", $this->name, $props);
         PHPCODE
-        return get_defined_vars() + $props;
+        return get_defined_vars() + $props + ["props"=>$props];
     }
 
     function render(array $__data=[], array $slots=[], array $helper = []):void {
