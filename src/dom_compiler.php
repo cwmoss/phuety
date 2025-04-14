@@ -150,6 +150,7 @@ class dom_compiler {
                 $c == "tag" => $this->php_element($stack_code[1]),
                 $c == "endtag" => $this->php_element_end($stack_code[1]),
                 $c == "doctype" => $stack_code[1],
+                $c == "#comment" => "",
                 default => "default-$c"
             };
             $code[] = $php;

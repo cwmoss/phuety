@@ -13,7 +13,7 @@ class phuety {
 
     public string $component_name_separator = ".";
 
-    public string $component_extension = ".vue.php";
+    public string $component_extension = ".phue.php";
 
     /** 
      * 

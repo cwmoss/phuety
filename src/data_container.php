@@ -11,6 +11,7 @@ class data_container {
 
     public function call($name) {
         if (function_exists($name)) return $name;
+        if (isset($this->helper[$name])) return $this->helper[$name];
         return $this->data[$name] ?? fn() => "unknown closure $name";
     }
 
