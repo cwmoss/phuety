@@ -1,12 +1,11 @@
-<div class="form-field" :class="{
-    has-error:error}">
+<div class="form-field" :class="{'has-error':error}">
     <label :for="name">{{label}}</label>
 
     <input v-if="type=='text'" type="text" :id="name" :name="name" :value="value">
 
     <select v-if="type=='select'" :id="name" :name="name">
 
-        <option v-for="option in options" :value="option" :selected="option==value">{{option}}</option>
+        <option v-foreach="option in options" :value="option" :selected="option==value">{{option}}</option>
     </select>
 
     <div v-if="error" class="invalid-feedback">{{error}}</div>

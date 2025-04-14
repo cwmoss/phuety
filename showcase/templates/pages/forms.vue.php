@@ -7,3 +7,11 @@
         <li><a href="/demo-alpine">Form with validation via alpine.js and custom directive</a></li>
     </ul>
 </app.layout>
+
+<?php
+
+
+//print_r($props);
+
+//$d = new \phuety\data_container($props);
+//print $d->get("path");

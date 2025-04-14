@@ -9,7 +9,7 @@
 
     <sc.infinitescroll>
 
-        <article v-for="article in res.data">
+        <article :foreach="article in res.data">
             <header>
                 <h2>{{article.title}}</h2>
             </header>

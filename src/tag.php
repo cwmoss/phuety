@@ -91,21 +91,29 @@ class tag {
         $this->wrap($wrap);
     }
 
-    public static function new_from_dom_element(Element $el, $content = null): self {
+    public static function new_from_dom_element(Element $el, $bindings_prefixes = []): self {
         $tag = [
             "tagname" => $el->localName,
             "has_children" => $el->hasChildNodes(),
             "attrs" => [],
             "bindings" => [],
-            "content" => $content,
+            // "content" => $content,
         ];
         $attributes = dom::attributes($el);
         foreach ($attributes as $name => $value) {
-            if ($name[0] == ':') {
-                $tag["bindings"][ltrim($name, ':')] = $value;
-                continue;
+            $is_binding = false;
+            foreach ($bindings_prefixes as $prefix) {
+                if (str_starts_with($name, $prefix)) {
+                    $name = str_replace($prefix, '', $name);
+                    $is_binding = true;
+                    break;
+                }
             }
-            $tag["attrs"][$name] = $value;
+            if ($is_binding) {
+                $tag["bindings"][$name] = $value;
+            } else {
+                $tag["attrs"][$name] = $value;
+            }
         }
         return new self(...$tag);
     }

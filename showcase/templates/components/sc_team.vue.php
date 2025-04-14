@@ -2,7 +2,7 @@
     <ul class="splide__pagination"></ul>
     <div class="splide__track">
         <div class="splide__list">
-            <aside v-for="person in props.persons" class="slide splide__slide">
+            <aside v-foreach="person in props.persons" class="slide splide__slide">
 
                 <h3>{{person.name.first}} {{person.name.last}}</h3>
                 <img :src="person.picture.large"></img>

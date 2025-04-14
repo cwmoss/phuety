@@ -16,13 +16,19 @@ components have a dot in it's name.
 
 the name is all lowercase. it must start with a letter and can contain numbers. it must contain at least one dot (.). don't use dashes as they are reserved for web components.
 
-### v-if
+### v-if, :if
 
-### v-else
+### v-else, :else
 
-### v-for
+### v-foreach, :foreach
 
-### v-html
+    offer in basket.offers
+    offer, key in basket.offers
+    basket.offers as offer
+    basket.offers as offer, key
+    basket.offers as key => offer
+
+### v-html, :html
 
 ### :binding
 
@@ -30,7 +36,7 @@ the name is all lowercase. it must start with a letter and can contain numbers. 
 
 :class binding is merged with class attribute
 
-### <template.></template>
+### <template.></template.>
 
 for wrapping multiple elements with v-if/v-else/v-for
 
