@@ -1,4 +1,7 @@
 {
+  "name": "cwmoss/phuety",
+  "description": "component based html5 templates",
+  "version": "1.0",
   "autoload": {
     "psr-4": {
       "phuety\\": "src",
@@ -9,6 +12,9 @@
     }
   },
   "scripts": {
+    "bin": [
+      "bin/phuety"
+    ],
     "post-update-cmd": "@setup",
     "setup": "mkdir -p compiled; mkdir -p showcase/public/assets/generated",
     "test": [
