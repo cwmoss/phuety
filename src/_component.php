@@ -15,6 +15,7 @@ class NAME_component extends component {
     public bool $has_code = HAS_CODE;
     public bool $has_style = HAS_STYLE;
     public array $assets = ASSETS;
+    public array $custom_tags = CUSTOM_TAGS;
 
     function run_code(array $props, array $slots = [], array $helper = []){
         dbg("++ props for component", $this->name, $props);

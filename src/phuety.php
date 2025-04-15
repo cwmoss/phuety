@@ -44,6 +44,9 @@ class phuety {
         // $this->expression_parser = new SMPLang(['strrev' => 'strrev']);
     }
 
+    public function set_custom_tag($tag) {
+        $this->compiler->set_custom_tag($tag);
+    }
     public function set_helper(array $helper) {
         $this->helper = $helper;
     }

@@ -11,10 +11,14 @@ use WMDE\VueJsTemplating\Component as vcomponent;
 class compiler {
     public array $compiled;
     public string $cbase;
-
+    public array $custom_tags = [];
 
     public function __construct(public phuety $engine) {
         $this->cbase = $engine->cbase;
+    }
+
+    public function set_custom_tag($tag) {
+        $this->custom_tags[] = $tag;
     }
 
     public function compile($name, $source) {
@@ -78,7 +82,8 @@ class compiler {
             'HAS_STYLE' => trim($parts['css']) ? 'true' : 'false',
             'HAS_CODE' => trim($php) ? 'true' : 'false',
             'ASSETS' => var_export($parts['assets'], true),
-            'RENDER' => $parts["render"]
+            'RENDER' => $parts["render"],
+            'CUSTOM_TAGS' => var_export([], true)
         ];
 
         $tpl = str_replace(array_keys($repl), array_values($repl), $tpl);
