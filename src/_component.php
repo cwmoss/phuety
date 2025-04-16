@@ -17,14 +17,13 @@ class NAME_component extends component {
     public array $assets = ASSETS;
     public array $custom_tags = CUSTOM_TAGS;
 
-    function run_code(array $props, array $slots = [], array $helper = []){
+    function run_code(data_container $props, array $slots = [], data_container $helper){
         dbg("++ props for component", $this->name, $props);
         PHPCODE
-        return get_defined_vars() + $props + ["props"=>$props];
+        return get_defined_vars();
     }
 
-    function render(array $__data=[], array $slots=[], array $helper = []):void {
-        $__d = new data_container($__data, $helper);
+    function render(data_container $__d, array $slots=[]):void {
         // ob_start();
         // if($this->is_layout) print '<!DOCTYPE html>';
         ?>

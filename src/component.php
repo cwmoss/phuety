@@ -53,8 +53,11 @@ class component {
         foreach ($this->assets as $asset) {
             $this->assetholder->push($this->uid, $asset);
         }
-        $props = $this->run_code($props, $slots, $this->engine->helper);
-        $res = $this->render($props, $slots, $this->engine->helper);
+        dbg("++ all helper", $this->engine->helper);
+        $props = new data_container($props, $this->engine->helper);
+        $local = $this->run_code($props, $slots, $props);
+        $props->add_local($local);
+        $res = $this->render($props, $slots);
         return $res;
     }
 
@@ -70,11 +73,11 @@ class component {
         return [$data, $fun];
     }
 
-    public function run_code(array $props, array $slots = [], array $helper = []) {
-        return ['props' => $props] + $props;
+    public function run_code(data_container $props, array $slots = [], data_container $helper) {
+        return [];
     }
 
-    public function render(array $__data = [], array $slots = [], array $helper = []): void {
+    public function render(data_container $__d, array $slots = []): void {
         // return "";
     }
 

@@ -22,7 +22,7 @@ class compiler {
     }
 
     public function compile($name, $source) {
-        $splitter = new splitter($this->engine->opts, $this->engine->asset_base());
+        $splitter = new splitter($this->engine->opts, $this->engine->asset_base(), $this->custom_tags);
         [$source, $php] = $splitter->split_php($source);
         $is_layout = false;
         $dom = null;
@@ -83,7 +83,7 @@ class compiler {
             'HAS_CODE' => trim($php) ? 'true' : 'false',
             'ASSETS' => var_export($parts['assets'], true),
             'RENDER' => $parts["render"],
-            'CUSTOM_TAGS' => var_export([], true)
+            'CUSTOM_TAGS' => var_export($parts["custom"], true)
         ];
 
         $tpl = str_replace(array_keys($repl), array_values($repl), $tpl);

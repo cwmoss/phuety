@@ -10,7 +10,7 @@ use function PHPUnit\Framework\isNull;
 
 class splitter {
 
-    public function __construct(public array $opts = [], public string $assets_base = "") {
+    public function __construct(public array $opts = [], public string $assets_base = "", public array $custom_tags) {
     }
 
     /*
@@ -29,7 +29,8 @@ class splitter {
             'css' => "",
             'js' => [],
             'assets' => [],
-            'uid' => $name . '---' . uniqid()
+            'uid' => $name . '---' . uniqid(),
+            'custom' => []
         ];
         // dom::d("split $name -- ", $dom);
         if ($this->opts['css'] == 'scoped_simple') {
@@ -82,6 +83,9 @@ class splitter {
                         } else if ($node->tagName == 'LINK') {
                             $this->handle_link($node, $parts);
                             $remove[] = $node;
+                        } else if (in_array(strtolower($node->tagName), $this->custom_tags)) {
+                            $this->handle_custom_tag($node, $parts);
+                            $remove[] = $node;
                         } else {
                             // add class
                             dom::add_class($node, $parts['uid'] . ' root');
@@ -114,6 +118,12 @@ class splitter {
         $attrs = dom::attributes($node);
         // if($attrs['href'])
         $parts['assets'][] = ['link', 'head', $attrs, $node->ownerDocument->saveHTML($node)];
+    }
+
+    public function handle_custom_tag($node, &$parts) {
+        $attrs = dom::attributes($node);
+        // if($attrs['href'])
+        $parts['custom'][strtolower($node->tagName)] = [$attrs, $node->innerHTML];
     }
 
     public function handle_script(Element $node, &$parts) {
