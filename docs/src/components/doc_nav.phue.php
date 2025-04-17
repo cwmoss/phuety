@@ -10,7 +10,9 @@
 
 <?php
 
-$chapters = (object) $helper->get('chapter_index');
+$chapters = $helper->call('get')('chapter_index');
 $current_section = $props->current->dir ? basename($props->current->dir) : basename($chapters[0]->_file->dir);
-// dbg("++++ current_section", $current_section, $props);
+dbg("  ");
+dbg("  ");
+dbg("!!!!!!!!!!!!!!! ++++ current_section", $current_section, $chapters->index);
 ?>

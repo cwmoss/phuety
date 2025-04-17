@@ -56,7 +56,7 @@ class component {
         dbg("++ all helper", $this->engine->helper);
         $props = new data_container($props, $this->engine->helper);
         $local = $this->run_code($props, $slots, $props);
-        $props->add_local($local);
+        if ($local) $props->add_local($local);
         $res = $this->render($props, $slots);
         return $res;
     }
