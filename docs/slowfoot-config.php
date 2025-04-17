@@ -1,12 +1,13 @@
 <?php
 
 require_once("site.php");
-require_once("phuety_adapter.php");
+// require_once("phuety_adapter.php");
 
 use slowfoot\configuration;
 use slowfoot\loader\dataset;
 use slowfoot\store;
 use slowfoot_plugin\markdown;
+use slowfoot_plugin\phuety\phuety_adapter;
 
 return new configuration(
   site_name: 'phuety Documentation',

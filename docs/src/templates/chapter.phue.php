@@ -18,6 +18,6 @@
 
 <?php
 
-dbg("... template all props", $props["page"]);
+dbg("... template all props", $props->page);
 $html = "<em>hi</em>";
 // $html = $markdown("**hello**");

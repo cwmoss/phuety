@@ -33,11 +33,11 @@ class site {
         //$current_section = $current['dir']?basename($current['dir']):basename($chapters[0]['_file']['dir']);
         $current_section = "";
         $chapters = array_reduce($chapters, function ($res, $chapter) use ($current_section) {
-            $sid = basename($chapter['_file']['dir']);
+            $sid = basename($chapter->_file->dir);
             if (!isset($res[$sid])) {
                 $res[$sid] = [
                     'sid' => $sid,
-                    'title' => $chapter['chapter_title'] ?? $sid,
+                    'title' => $chapter->chapter_title ?? $sid,
                     'active' => $sid == $current_section,
                     'c' => [$chapter]
                 ];

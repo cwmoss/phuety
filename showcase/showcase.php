@@ -17,6 +17,7 @@ if ($_SERVER['REQUEST_URI'] == '/assets/mvp.css') {
     header("Content-Type: text/css");
     foreach (glob(__DIR__ . '/tmp/*.css') as $f) {
         print file_get_contents($f);
+        print "\n";
     }
     exit;
 } elseif ($_SERVER['REQUEST_URI'] == '/assets/logo.jpg') {
