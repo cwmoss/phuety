@@ -68,13 +68,15 @@ class dom_compiler {
         if ($attr = $this->check_and_remove_attribute($node, "if")) {
             $this->result[] = new instruction("if", $attr);
             $this->walk_nodes($node, "if");
-
+            dbg("+++ if => else?", $name, $node->nextElementSibling->nodeName);
             if (
                 $node->nextElementSibling &&
-                ($attr = $this->check_and_remove_attribute($node->nextElementSibling, "else"))
+                ($this->check_and_remove_attribute($node->nextElementSibling, "else") !== false)
             ) {
-                $this->result[] = new instruction("else", $attr);
+                dbg("YES");
+                $this->result[] = new instruction("else");
                 $this->walk_nodes($node->nextElementSibling, "else");
+                $this->removeNode($node->nextElementSibling);
             }
             $this->result[] = new instruction("endif");
             return;
@@ -91,7 +93,7 @@ class dom_compiler {
         if ($attr = $this->check_and_remove_attribute($node, "html")) {
             $tag = tag::new_from_dom_element($node, $this->lang_bindings_prefixes);
             $this->result[] = new instruction("tag", tag: $tag);
-            $this->result[] = new instruction("html", html: $attr);
+            $this->result[] = new instruction("html", $attr);
             // ignore children
             $this->result[] = new instruction("endtag", tag: $tag);
         }
@@ -129,7 +131,7 @@ class dom_compiler {
         };
         return [
             "item" => trim($item),
-            "key" => trim($key),
+            "key" => trim((string)$key),
             "list" => trim($list)
         ];
     }
@@ -172,7 +174,7 @@ class dom_compiler {
     private function check_and_remove_attribute(Element $node, string $attr): bool|string {
         $found = $this->check_attribute($node, $attr);
         if (!$found) return false;
-        // dbg("attr", $found);
+        dbg("attr", $attr, $found);
         $attribute = $node->getAttribute($found);
         $node->removeAttribute($found);
         return $attribute;

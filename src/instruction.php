@@ -25,8 +25,8 @@ class instruction {
             "endif" => '<?php } ?>',
             "endforeach" => $this->php_foreach_end(),
             "else" => '<?php } else { ?>',
-            "tag" => $this->php_element(),
-            "endtag" => $this->php_element_end(),
+            "tag" => $this->php_element($ep),
+            "endtag" => $this->php_element_end($ep),
             "doctype" => $this->html,
             "#comment" => "",
             default => "default-{$this->name}"
@@ -35,7 +35,7 @@ class instruction {
         return $php;
     }
 
-    function php_element(): string {
+    function php_element($ep): string {
         $tag = $this->tag;
         if ($tag->tagname == "template.") return "";
         if ($tag->is_slot) {
@@ -52,12 +52,12 @@ class instruction {
         return sprintf(
             '<?= tag::tag_open_merged_attrs("%s", %s, %s) ?>',
             $tag->tagname,
-            $this->php_bindings($tag),
+            $this->php_bindings($ep),
             var_export($tag->attrs, true)
         );
     }
 
-    function php_element_end(): string {
+    function php_element_end($ep): string {
         $tag = $this->tag;
         if ($tag->tagname == "template.") return "";
         if ($tag->is_slot) return "";
@@ -67,7 +67,7 @@ class instruction {
             return sprintf(
                 '<?=$this->engine->get_component("%s")->run(%s + %s %s); ?>',
                 $tag->tagname,
-                $this->php_bindings($tag),
+                $this->php_bindings($ep),
                 var_export($tag->attrs, true),
                 $tag->has_children ? ', ["default" => ob_get_clean()]' : '',
             );
