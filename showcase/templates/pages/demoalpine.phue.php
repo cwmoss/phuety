@@ -3,13 +3,13 @@
     <sc.navigation subnav="forms" :path="props.path"></sc.navigation>
     <h1>You can contact us via this form -- <span v-html="hello()"></span></h1>
 
-    <section v-if="success">
+    <section :if="success">
         <aside>
             <h4>Thank you for your message!</h4>
         </aside>
     </section>
 
-    <form.alpine v-else :action="props.path">
+    <form.alpine :else :action="props.path">
 
         <form.field name="name" label="Name" :value="input.name" :error="errors.name"></form.field>
         <form.field name="email" label="eMail Address" :value="input.email" :error="errors.email"></form.field>
@@ -36,9 +36,9 @@
 
 use showcase\contactform;
 
-$success = $props['success'] ?? false;
+$success = $props->success ?? false;
 $form = new contactform;
-[$input, $errors] = $form->handle($props['path']);
+[$input, $errors] = $form->handle($props->path);
 
 $rules = [
     'email' => [

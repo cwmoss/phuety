@@ -5,7 +5,7 @@
     </div>
 
     <div slot="modal">
-        <h2 v-if="title">{{title}}</h2>
+        <h2 :if="title">{{title}}</h2>
         <slot.></slot.>
         <p>
             <button class="cta-modal-toggle" type="button">{{close}}</button>
@@ -26,6 +26,6 @@
 https://www.smashingmagazine.com/2022/04/cta-modal-build-web-component/
 https://host.sonspring.com/cta-modal/
 */
-$title = $props['title'] ?? '';
-$close = $props['close'] ?? 'Close';
-$open = $props['open'] ?? 'Open';
+$title = $props->title ?? '';
+$close = $props->close ?? 'Close';
+$open = $props->open ?? 'Open';

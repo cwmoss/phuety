@@ -6,4 +6,4 @@
 
 use  chillerlan\QRCode\{QRCode, QROptions};
 
-$code = (new QRCode)->render($props['data']);
+$code = (new QRCode)->render($props->data);

@@ -18,13 +18,22 @@ class data_container {
         return $this->data[$name] ?? fn() => "unknown closure $name";
     }
 
-    public function get($name, $default = "") {
+    public function get($name, $default = null) {
         if ($this->blocks) {
             foreach (range(count($this->blocks) - 1, 0) as $idx) {
                 if (isset($this->blocks[$idx][$name])) return $this->convert($this->blocks[$idx][$name]);
             }
         }
         return $this->convert($this->data[$name]) ?? $default;
+    }
+
+    public function __isset($name) {
+        if ($this->blocks) {
+            foreach (range(count($this->blocks) - 1, 0) as $idx) {
+                if (isset($this->blocks[$idx][$name])) true;
+            }
+        }
+        return isset($this->data[$name]);
     }
 
     public function convert($value) {

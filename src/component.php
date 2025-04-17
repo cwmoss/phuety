@@ -73,7 +73,7 @@ class component {
         return [$data, $fun];
     }
 
-    public function run_code(data_container $props, array $slots = [], data_container $helper) {
+    public function run_code(data_container $props, array $slots, data_container $helper) {
         return [];
     }
 

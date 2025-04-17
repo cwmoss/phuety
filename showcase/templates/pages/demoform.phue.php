@@ -29,6 +29,6 @@
 
 use showcase\contactform;
 
-$success = $props['success'] ?? false;
+$success = $props->success ?? false;
 $form = new contactform;
-[$input, $errors] = $form->handle($props['path']);
+[$input, $errors] = $form->handle($props->path);

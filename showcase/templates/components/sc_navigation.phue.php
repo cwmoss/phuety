@@ -23,8 +23,8 @@
 </style>
 <?php
 
-$active = $props['path'] ?? '/';
-$subnav = $props['subnav'] ?? false;
+$active = $props->path ?? '/';
+$subnav = $props->subnav ?? false;
 
 $top = [
     (object)['url' => '/', 'title' => 'Home'],

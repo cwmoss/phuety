@@ -29,6 +29,6 @@
 
 <?php
 
-$type = $props['type'] ?? "text";
+$type = $props->type ?? "text";
 
 // print_r($props['options']);

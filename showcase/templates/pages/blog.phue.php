@@ -33,7 +33,7 @@
 
 use Leaf\Fetch;
 
-$page = $props['page'] ?? 1;
+$page = $props->page ?? 1;
 $res = Fetch::get("https://jsonplaceholder.typicode.com/posts?_limit=10&_page=" . $page);
 // print_r($res);
 

@@ -18,4 +18,4 @@
 use showcase\contactform;
 
 $form = new contactform;
-[$input, $errors] = $form->handle($props['path']);
+[$input, $errors] = $form->handle($props->path);

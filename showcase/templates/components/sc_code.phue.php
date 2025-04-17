@@ -55,4 +55,4 @@
 </style>
 <?php
 $dir = __DIR__ . '/../templates/';
-$code = file_get_contents($dir . $props['file']);
+$code = file_get_contents($dir . $props->file);
