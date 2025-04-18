@@ -90,7 +90,7 @@ class instruction {
         $key = trim($this->for_expression["key"]);
         $list = trim($this->for_expression["list"]);
         return sprintf(
-            '<?php foreach(%s as %s $%s){$__d->add_block(["%s"=>$%s %s]); ?>',
+            '<?php foreach(%s as %s $%s){$__d->_add_block(["%s"=>$%s %s]); ?>',
             $this->compile_expression($list, $ep),
             $key ? sprintf('$%s => ', $key) : '',
             $item,
@@ -102,7 +102,7 @@ class instruction {
 
     function php_foreach_end(): string {
         return sprintf(
-            '<?php $__d->remove_block();} ?>'
+            '<?php $__d->_remove_block();} ?>'
             //,
             //$item,
             //$key !== null ? '' : sprintf(', $__blockdata["%s"]', $key)

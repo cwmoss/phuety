@@ -96,6 +96,7 @@ class dom_compiler {
             $this->result[] = new instruction("html", $attr);
             // ignore children
             $this->result[] = new instruction("endtag", tag: $tag);
+            return;
         }
 
         $tag = tag::new_from_dom_element($node, $this->lang_bindings_prefixes);

@@ -57,12 +57,13 @@ class phuety {
     }
 
     public function run_template_string(string $tpl, array $data) {
-        $component = component::new_from_string($tpl, $this->cbase);
-        var_dump($component);
-        $component->engine = $this;
-        $component->ep = $this->expression_parser;
-        $component->assetholder = new asset;
-        return $component->run($data);
+        // $component = component::new_from_string($tpl, $this->cbase);
+        $cname = "tmp.x" . uniqid();
+        $component = $this->get_tmp_component($cname, $tpl);
+        // print_r($component);
+        unlink($this->cbase . "/" . $component->name . "_component.php");
+        $data['$asset'] = new asset;
+        $component->run($data);
     }
 
     public function run(string $cname, array $data) {
@@ -120,10 +121,11 @@ location layout => layout => layout
         return false;
     }
 
-    public function get_component_source($tagname) {
+    public function get_component_source($tagname): array {
         $path = $this->get_component_source_location($tagname);
         if (!$path) die("could not resolve component source for $tagname");
-        return file_get_contents($this->base . '/' . $path . $this->component_extension);
+        $filename = $this->base . '/' . $path . $this->component_extension;
+        return [file_get_contents($filename), $filename];
     }
 
     public function get_component($tagname, $start = false): component {
@@ -140,13 +142,23 @@ location layout => layout => layout
         return $comp;
     }
 
-
+    public function get_tmp_component($tagname, $src): component {
+        $cname = str_replace($this->component_name_separator, '_', $tagname);
+        if ($this->compiled[$cname] ?? null) {
+            $comp = $this->compiled[$cname];
+        } else {
+            $uid = $this->compiler->compile($cname, [$src, ""]);
+            $comp = $this->load_component($cname);
+        }
+        $comp->is_start = true;
+        return $comp;
+    }
 
     public function load_component($name) {
         // $cname = str_replace('-', '_', $name); //  . '_component';
         $comp = $this->load_component_class($name, $this->cbase);
-        $comp->engine = $this;
-        $comp->ep = $this->expression_parser;
+        $comp->set_engine($this);
+        $comp->set_ep($this->expression_parser);
         if (!current($this->compiled)) {
             $comp->assetholder = new asset;
         } else {

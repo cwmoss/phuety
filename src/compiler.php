@@ -21,39 +21,40 @@ class compiler {
         $this->custom_tags[] = $tag;
     }
 
-    public function compile($name, $source) {
-        $splitter = new splitter($this->engine->opts, $this->engine->asset_base(), $this->custom_tags);
-        [$source, $php] = $splitter->split_php($source);
+    public function compile($name, array $src) {
+        [$source, $src_file] = $src;
+        $splitter = new splitter([], $this->engine->asset_base(), $this->custom_tags);
+        $parts = $splitter->split_php($source, $name);
+        $parts->compile_basedir = $this->cbase;
+        $parts->src_file = $src_file;
         $is_layout = false;
         $dom = null;
         $head = null;
         if (
-            str_starts_with($source, '<html') || str_starts_with($source, '<!DOCTYPE') ||
-            str_starts_with($source, '<root') || str_starts_with($source, '<head') || str_starts_with($source, '<x-page')
+            str_starts_with($parts->html, '<html') || str_starts_with($parts->html, '<!DOCTYPE') ||
+            str_starts_with($parts->html, '<root') || str_starts_with($parts->html, '<head') || str_starts_with($parts->html, '<x-page')
         ) {
             $is_layout = true;
             // $dom = compiler::get_document($html);
             // $source = str_replace(["<head", "</head>"], ["<xead", "</xead>"], $source);
-            if (preg_match("~(<head.*?>)(.*?)</head>~ism", $source, $mat)) {
+            if (preg_match("~(<head.*?>)(.*?)</head>~ism", $parts->html, $mat)) {
                 dbg("++ found head", $mat);
-                $source = str_replace($mat[0], $mat[1] . '', $source);
-                $head = dom::get_template_fragment($mat[2]);
+                $parts->html = str_replace($mat[0], $mat[1] . '', $parts->html);
+                $parts->head = dom::get_template_fragment($mat[2]);
             }
-            $dom = dom::get_document($source);
+            $dom = dom::get_document($parts->html);
             dbg("++ doctype", $dom->saveHtml($dom->doctype));
-        } elseif ($source) {
-            $dom = dom::get_template_fragment($source);
+        } elseif ($parts->html) {
+            $dom = dom::get_template_fragment($parts->html);
         }
         #if ($name == 'assets') {
         #    dom::d("assets-source", $dom);
         #}
 
         // var_dump($dom);
-        $parts = $splitter->split_sfc($dom, $name, $is_layout);
-        $php = rtrim($php, '>?');
-        $parts['php'] = $php;
-        $parts['head'] = $head;
-        $parts["render"] = $dom ? $this->compile_dom($name, $parts) : "";
+        $splitter->split_sfc($dom, $name, $is_layout, $parts);
+
+        $parts->render = $dom ? $this->compile_dom($name, $parts) : "";
         $uid = $this->create_component($name, $parts);
 
         // $uid = component::create($name, $this->cbase, $parts);
@@ -61,55 +62,57 @@ class compiler {
     }
 
     public function compile_dom($name, $parts) {
-        $compiler = new dom_compiler($parts["html"], [], $parts["head"]);
+        $compiler = new dom_compiler($parts->dom, [], $parts->head);
         $res = $compiler->compile();
         return $res;
     }
-    public function create_component($name, $parts) {
+    public function create_component($name, parts $parts) {
         // dbg("create component", $name, $parts);
         # print "create component $name";
         // print_r($parts);
         $tpl = file_get_contents(__DIR__ . '/_component.php');
         $dir = $this->cbase;
-        [$php, $use] = $this->get_use_statements($parts['php']);
+        [$php, $use] = $this->get_use_statements($parts->php);
+        // print_r($parts);
         $repl = [
             'NAME' => $name,
-            'UID' => $parts['uid'],
-            'ISLAYOUT' => $parts['is_layout'] ? 'true' : 'false',
+            'UID' => $parts->uid,
+            'ISLAYOUT' => var_export($parts->is_layout, true),
             'PHPCODE' => $php,
             'USESTATEMENTS' => $use,
-            'HAS_TEMPLATE' => $parts['html'] ? 'true' : 'false',
-            'HAS_STYLE' => trim($parts['css']) ? 'true' : 'false',
+            'HAS_TEMPLATE' => $parts->html ? 'true' : 'false',
+            'HAS_STYLE' => trim($parts->css) ? 'true' : 'false',
             'HAS_CODE' => trim($php) ? 'true' : 'false',
-            'ASSETS' => var_export($parts['assets'], true),
-            'RENDER' => $parts["render"],
-            'CUSTOM_TAGS' => var_export($parts["custom"], true)
+            'ASSETS' => var_export($parts->assets, true),
+            'RENDER' => $parts->render,
+            'CUSTOM_TAGS' => var_export($parts->custom, true),
+            'DEBUG_INFO' => var_export(["src" => $parts->src_file, "php" => $parts->php_start], true)
         ];
 
         $tpl = str_replace(array_keys($repl), array_values($repl), $tpl);
         file_put_contents($dir . '/' . $name . '_component.php', $tpl);
         // print "hu";
+        // TODO: move to handlers
         if ($repl['HAS_STYLE'] == 'true') {
             //print " style $name";
-            $css = sprintf(".%s{\n%s\n}", $parts['uid'], $parts['css']);
-            file_put_contents($dir . '/' . $name . '.css', $css);
+            file_put_contents($dir . '/' . $name . '.css', $parts->css);
         } else {
             // print "unlink style";
             @unlink($dir . '/' . $name . '.css');
         }
-
+        /*
         if ($repl['HAS_TEMPLATE'] == 'true') {
-            $html = sprintf('%s', $parts['html']->saveHTML());
+            $html = sprintf('%s', $parts->dom->saveHTML());
             // file_put_contents($dir . '/' . $name . '.html', $html);
         } else {
             @unlink($dir . '/' . $name . '.html');
         }
-
-        $this->write_js($name, $parts['js']);
+*/
+        $this->write_js($name, $parts->js);
         // $php = '<?php ' . $parts['php'];
         // file_put_contents($dir . '/' . $name . '.run.php', $php);
 
-        return $repl['UID'];
+        return $parts->uid;
     }
 
     public function write_js(string $name, array $js) {

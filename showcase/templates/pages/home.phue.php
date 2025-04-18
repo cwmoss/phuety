@@ -1,5 +1,7 @@
 <app.layout :title="title" :path="props.path">
 
+  <p :html="title"></p>
+
   <sc.qrcode data="i love you"></sc.qrcode>
 
   <h2 :if="ok">hello {{ strrev(name) }}</h2>
@@ -18,6 +20,7 @@
 
   <sc.code file="layout.phue.php"></sc.code>
 
+  <p>{{horst??"kein horst"}}</p>
 </app.layout>
 
 <script>

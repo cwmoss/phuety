@@ -27,7 +27,7 @@ class NameNode extends Node {
     }
 
     public function compile(Compiler $compiler): void {
-        $compiler->raw('$__d->get("' . $this->attributes['name'] . '")');
+        $compiler->raw('$__d->_get("' . $this->attributes['name'] . '")');
     }
 
     public function evaluate(array $functions, array $values): mixed {

@@ -9,7 +9,7 @@
 
   <link rel="stylesheet" href="/assets/mvp.css">
   <link rel="stylesheet" href="/components-css">
-  <title v-html="props.title"></title>
+  <title :html="props.title"></title>
   <style>
     nav {
       margin-bottom: 1em;

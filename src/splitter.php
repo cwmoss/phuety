@@ -10,7 +10,15 @@ use function PHPUnit\Framework\isNull;
 
 class splitter {
 
-    public function __construct(public array $opts = [], public string $assets_base = "", public array $custom_tags) {
+    public function __construct(public array $handler = [], public string $assets_base = "", public array $custom_tags = []) {
+        $this->handler = [
+            new handle_css(),
+            new handle_script(),
+            new handle_link()
+        ];
+        foreach ($custom_tags as $tag) {
+            $this->handler[] = new handle_custom_tag($tag);
+        }
     }
 
     /*
@@ -18,24 +26,18 @@ class splitter {
         atm only php block at the end of sfc is supported
         TODO: support more cases
     */
-    public function split_php($source) {
+    public function split_php($source, $name): parts {
         [$sfc, $php] = explode('<?php', $source, 2) + [1 => ""];
-        return [trim($sfc), $php];
+        $php_start = $php ? count(explode("\n", $sfc)) : null;
+        return new parts($name, rtrim($php, '>?'), trim($sfc), $php_start);
     }
-    public function split_sfc(Document|string|null $dom, $name, $is_layout = false) {
-        $parts = [
-            'php' => "",
-            'html' => "",
-            'css' => "",
-            'js' => [],
-            'assets' => [],
-            'uid' => $name . '---' . uniqid(),
-            'custom' => []
-        ];
+    public function split_sfc(Document|string|null $dom, $name, bool $is_layout, parts $parts) {
+        $parts->uid = $name . '---' . uniqid();
+
         // dom::d("split $name -- ", $dom);
-        if ($this->opts['css'] == 'scoped_simple') {
-            $parts['uid'] = $name;
-        }
+        //if ($this->opts['css'] == 'scoped_simple') {
+        //    $parts->uid = $name;
+        //}
         $remove = [];
         if ($dom) {
             if ($is_layout) {
@@ -46,7 +48,7 @@ class splitter {
                 foreach ($dom->childNodes as $node) {
                     if ($node->nodeType == \XML_COMMENT_NODE && str_starts_with($node->textContent, "?php")) {
                         $phpcode = substr($node->textContent, 4);
-                        $parts['php'] = $phpcode;
+                        $parts->php = $phpcode;
                         $remove[] = $node;
                     }
                 }
@@ -73,28 +75,26 @@ class splitter {
                     }
                     if ($node->nodeType == \XML_ELEMENT_NODE) {
                         dbg("++ splitter", $node->tagName);
-                        if ($node->tagName == 'STYLE') {
-                            $this->handle_css($node, $parts);
-                            $remove[] = $node;
-                            #$dom->documentElement->removeChild($node);
-                        } else if ($node->tagName == 'SCRIPT') {
-                            $this->handle_script($node, $parts);
-                            $remove[] = $node;
-                        } else if ($node->tagName == 'LINK') {
-                            $this->handle_link($node, $parts);
-                            $remove[] = $node;
-                        } else if (in_array(strtolower($node->tagName), $this->custom_tags)) {
-                            $this->handle_custom_tag($node, $parts);
-                            $remove[] = $node;
-                        } else {
+                        $handled = false;
+                        foreach ($this->handler as $handler) {
+                            if ($handler->handle($node, $parts)) {
+                                if ($handler->remove_node) {
+                                    $remove[] = $node;
+                                }
+                                $handled = true;
+                                break;
+                            }
+                        }
+                        // default: some template element
+                        if (!$handled) {
                             // add class
-                            dom::add_class($node, $parts['uid'] . ' root');
+                            dom::add_class($node, $parts->uid . ' root');
                         }
                     }
                 }
                 /* sometimes code ends with ?> */
                 // $php = rtrim($php, '>?');
-                $parts['php'] = $php;
+                // $parts->php = $php;
             }
         }
         foreach ($remove as $node) {
@@ -102,59 +102,15 @@ class splitter {
             $node->parentNode->removeChild($node);
         }
         if ($is_layout) {
-            $parts['html'] = $dom;
+            $parts->dom = $dom;
         } else {
             // $parts['vue'] = $dom->saveHtml();
-            $parts['html'] = $dom;
+            $parts->dom = $dom;
         }
 
-        $parts['is_layout'] = $is_layout;
+        $parts->is_layout = $is_layout;
         //if ($name == 'sc_navigation')
         // print_r($parts);
         return $parts;
-    }
-
-    public function handle_link($node, &$parts) {
-        $attrs = dom::attributes($node);
-        // if($attrs['href'])
-        $parts['assets'][] = ['link', 'head', $attrs, $node->ownerDocument->saveHTML($node)];
-    }
-
-    public function handle_custom_tag($node, &$parts) {
-        $attrs = dom::attributes($node);
-        // if($attrs['href'])
-        $parts['custom'][strtolower($node->tagName)] = [$attrs, $node->innerHTML];
-    }
-
-    public function handle_script(Element $node, &$parts) {
-        $attrs = dom::attributes($node);
-        $position = (isset($attrs['head']) ? 'head' : null);
-        if (is_null($position)) $position = 'body';
-        $node->removeAttribute('head');
-        // convert embeded to external?
-        if (!isset($attrs['src'])) {
-            dbg("++ js embed => external");
-            $name = $parts['uid'] . '-' . count($parts['js']) . '.js';
-            $parts['js'][$name] = (string) $node->textContent;
-            dbg("+++ embed js $name", $parts['js'][$name]);
-            $node->textContent = null;
-            $node->setAttribute('src', '/assets/generated/' . $name);
-        } else {
-            // todo: cache buster
-            if ($attrs['src'] ?? null && $attrs['src'][0] == '/') {
-                $node->setAttribute('src', $attrs['src'] . '?' . time());
-            }
-        }
-        $parts['assets'][] = ['script', $position, dom::attributes($node), $node->ownerDocument->saveHTML($node)];
-    }
-
-    public function handle_css(Element $node, &$parts) {
-        $attrs = dom::attributes($node);
-        if (!isset($attrs['global'])) {
-            $parts['css'] = str_replace('root', '&.root', (string) $node->textContent);
-        } else {
-            $node->removeAttribute('global');
-            $parts['assets'][] = ['style', 'head', dom::attributes($node), $node->ownerDocument->saveHTML($node)];
-        }
     }
 }

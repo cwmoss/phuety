@@ -26,9 +26,9 @@ class component {
     // public $slot;
 
     public bool $is_start = false;
-    public phuety $engine;
+    protected phuety $engine;
     // expression parser
-    public $ep;
+    protected $ep;
     // public $dom = null;
     // public ?props $propholder = null;
     public ?asset $assetholder = null;
@@ -44,6 +44,13 @@ class component {
         */
     }
 
+    public function set_engine($e) {
+        $this->engine = $e;
+    }
+
+    public function set_ep($ep) {
+        $this->ep = $ep;
+    }
     static function new_from_string(string $tpl): component {
         return new self($tpl);
     }
@@ -56,7 +63,7 @@ class component {
         dbg("++ all helper", $this->engine->helper);
         $props = new data_container($props, $this->engine->helper);
         $local = $this->run_code($props, $slots, $props);
-        if ($local) $props->add_local($local);
+        if ($local) $props->_add_local($local);
         $res = $this->render($props, $slots);
         return $res;
     }
@@ -73,7 +80,7 @@ class component {
         return [$data, $fun];
     }
 
-    public function run_code(data_container $props, array $slots, data_container $helper) {
+    public function run_code(data_container $props, array $slots, data_container $helper): array {
         return [];
     }
 
