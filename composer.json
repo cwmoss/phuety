@@ -14,8 +14,7 @@
       "phuety\\": "src",
       "showcase\\": "showcase/templates/lib",
       "WMDE\\VueJsTemplating\\": "src/php-vuejs-templating/src",
-      "Le\\SMPLang\\": "src/smplang/src",
-      "Symfony\\Component\\ExpressionLanguage\\Node\\": "src/override/"
+      "Le\\SMPLang\\": "src/smplang/src"
     }
   },
   "scripts": {
@@ -33,7 +32,8 @@
   },
   "require": {
     "php": ">=8.4",
-    "symfony/expression-language": "^7.2"
+    "symfony/expression-language": "^7.2",
+    "leafs/fetch": "dev-main"
   },
   "require-dev": {
     "pestphp/pest": "^2.28",

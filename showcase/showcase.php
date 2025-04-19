@@ -71,11 +71,11 @@ function d(...$args) {
     }
     echo '</pre>';
 }
-
-function dbg(...$args) {
-    error_log(json_encode($args, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), 4);
+if (!function_exists("dbg")) {
+    function dbg(...$args) {
+        error_log(json_encode($args, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), 4);
+    }
 }
-
 function redirect($to) {
     header("Location: $to");
     exit;
