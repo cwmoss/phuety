@@ -46,7 +46,7 @@ class site {
             }
             return $res;
         }, []);
-        yield ['_id' => 'chapter_index', 'index' => $chapters];
+        yield ['_id' => 'chapter_index', 'index' => array_values($chapters)];
         return;
     }
 }

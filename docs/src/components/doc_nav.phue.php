@@ -1,6 +1,6 @@
 <nav>
-    <details :foreach="section, sid in chapters.index"
-        :open="sid==current_section?'open':''"
+    <details :foreach="section in chapters.index"
+        :open="section.sid==current_section?'open':''"
         :class="{active: sid==current_section}">
         <summary>{{ section.title }}</summary>
         <a :foreach="chapter in section.c" :href="helper.path(chapter)"
@@ -10,9 +10,6 @@
 
 <?php
 
-$chapters = $helper->call('get')('chapter_index');
-$current_section = $props->current->dir ? basename($props->current->dir) : basename($chapters[0]->_file->dir);
-dbg("  ");
-dbg("  ");
-dbg("!!!!!!!!!!!!!!! ++++ current_section", $current_section, $chapters->index);
-?>
+$chapters = $helper->get('chapter_index');
+// var_dump($chapters);die();
+$current_section = $props->current->dir ? basename($props->current->dir) : basename($chapters->index[0]->_file->dir);

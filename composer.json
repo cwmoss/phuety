@@ -3,6 +3,12 @@
   "description": "component based html5 templates",
   "version": "v1.0",
   "minimum-stability": "dev",
+  "repositories": [
+    {
+      "type": "git",
+      "url": "https://github.com/cwmoss/slowfoot"
+    }
+  ],
   "autoload": {
     "psr-4": {
       "phuety\\": "src",

@@ -1,4 +1,4 @@
 <?php
-$image_tag = $helper->image_tag;
+// $image_tag = $helper->image_tag;
 
-print $image_tag($props->src, $props->size, ['alt' => $props->alt ?? ""]);
+print $helper->image_tag($props->src, $props->size, ['alt' => $props->alt ?? ""]);
