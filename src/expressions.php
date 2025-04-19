@@ -17,6 +17,14 @@ class expressions extends ExpressionLanguage {
         //var_dump($exp);
         // var_dump($exp->getNodes()->compile());
         return $this->getCompiler()->compile($exp->getNodes())->getSource();
+        $compiler = $this->getCompiler();
+        $nodes = $exp->getNodes();
+        foreach ($nodes->nodes as $n) {
+            dbg("> comp >", get_class($n));
+            $n->compile($compiler);
+        }
+        dbg("> comp end <<", $compiler->getSource());
+        return $compiler->getSource();
     }
 
     private function getCompiler(): Compiler {
