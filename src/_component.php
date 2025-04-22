@@ -4,6 +4,7 @@ namespace compiled;
 use phuety\component;
 use phuety\data_container;
 use phuety\tag;
+use function phuety\dbg;
 
 USESTATEMENTS
 

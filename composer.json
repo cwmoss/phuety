@@ -15,7 +15,10 @@
       "showcase\\": "showcase/templates/lib",
       "WMDE\\VueJsTemplating\\": "src/php-vuejs-templating/src",
       "Le\\SMPLang\\": "src/smplang/src"
-    }
+    },
+    "files": [
+      "src/functions.php"
+    ]
   },
   "scripts": {
     "bin": [

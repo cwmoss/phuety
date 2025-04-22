@@ -1,5 +1,7 @@
 <?php
 // php -S localhost:4000 showcase/public/index.php
+use function phuety\dbg;
+
 ini_set("error_reporting", E_ALL);
 ini_set("display_errors", 0);
 
@@ -71,11 +73,7 @@ function d(...$args) {
     }
     echo '</pre>';
 }
-if (!function_exists("dbg")) {
-    function dbg(...$args) {
-        error_log(json_encode($args, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), 4);
-    }
-}
+
 function redirect($to) {
     header("Location: $to");
     exit;
