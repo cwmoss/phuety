@@ -13,7 +13,7 @@ class ComponentTest extends TestCase {
     public function testJustASingleComponent() {
         $result = $this->create_and_render('hello', ['name' => 'world']);
 
-        $this->assertSame('<div class="hello root">hello world</div>', $result);
+        $this->assertSame('<div class="hello root">hello world</div>', trim($result));
     }
 
     public function testTemplateString() {
@@ -23,33 +23,41 @@ class ComponentTest extends TestCase {
     }
 
     public function testIf() {
-        $result = $this->render_string('<div v-if="props.name">hello {{props.name}}</div>', ['name' => 'world']);
+        $result = $this->render_string('<div :if="props.name">hello {{props.name}}</div>', ['name' => 'world']);
         $this->assertSame('<div>hello world</div>', $result);
 
-        $result = $this->render_string('<template v-if="props.name">hello {{props.name}}</template>', ['name' => 'world']);
+        $result = $this->render_string('<template. :if="props.name">hello {{props.name}}</template.>', ['name' => 'world']);
         $this->assertSame('hello world', $result);
     }
 
     public function testFor() {
-        $result = $this->render_string('<div v-for="item in props.items"><em>{{item}}</em></div>', ['items' => ['hello', 'world']]);
+        $result = $this->render_string('<div :foreach="item in props.items"><em>{{item}}</em></div>', ['items' => ['hello', 'world']]);
         $this->assertSame('<div><em>hello</em></div><div><em>world</em></div>', $result);
 
-        $result = $this->render_string('<template v-for="item in props.items"><em>{{item}}</em>!</template>', ['items' => ['hello', 'world']]);
+        $result = $this->render_string('<template. :foreach="item in props.items"><em>{{item}}</em>!</template.>', ['items' => ['hello', 'world']]);
         $this->assertSame('<em>hello</em>!<em>world</em>!', $result);
 
-        $result = $this->render_string('<div v-if="exists" v-for="item in props.items"><em>{{item}}</em></div>', ['exists' => true, 'items' => ['hello', 'world']]);
+        $result = $this->render_string('<div :if="exists" :foreach="item in props.items"><em>{{item}}</em></div>', ['exists' => true, 'items' => ['hello', 'world']]);
         $this->assertSame('<div><em>hello</em></div><div><em>world</em></div>', $result);
 
-        $result = $this->render_string('<div v-if="exists" v-for="item in props.items"><em>{{item}}</em></div>', ['exists' => false, 'items' => ['hello', 'world']]);
+        $result = $this->render_string('<div :if="exists" :foreach="item in props.items"><em>{{item}}</em></div>', ['exists' => false, 'items' => ['hello', 'world']]);
         $this->assertSame('', $result);
     }
 
     public function testRaw() {
-        $result = $this->render_string('<div v-html="html"></div>', ['html' => '<em>hello world</em>']);
+        $result = $this->render_string('<div :html="html"></div>', ['html' => '<em>hello world</em>']);
         $this->assertSame('<div><em>hello world</em></div>', $result);
 
-        // $result = $this->render_string('<template v-for="item in props.items"><em>{{item}}</em>!</template>', ['items' => ['hello', 'world']]);
-        // $this->assertSame('<em>hello</em>!<em>world</em>!', $result);
+        $result = $this->render_string('<template. :foreach="item in props.items"><em>{{item}}</em>!</template.>', ['items' => ['hello', 'world']]);
+        $this->assertSame('<em>hello</em>!<em>world</em>!', $result);
+    }
+
+    public function testText() {
+        $result = $this->render_string('I am <em :if="bread">happy</em><em :else>sad</em>!', ['bread' => true]);
+        $this->assertSame('I am <em>happy</em>!', $result);
+
+        $result = $this->render_string('I am <em :if="bread">happy</em><em :else>sad</em>!', ['bread' => false]);
+        $this->assertSame('I am <em>sad</em>!', $result);
     }
 
     private function render_string(string $template, array $data) {
@@ -59,6 +67,6 @@ class ComponentTest extends TestCase {
 
     private function create_and_render(string $template, array $data, array $methods = []) {
         $runner = new phuety(__DIR__ . '/fixtures', ['hello' => 'hello'], "", ['css' => 'scoped_simple']);
-        return $runner->run($template, $data);
+        return $runner->run_get($template, $data);
     }
 }

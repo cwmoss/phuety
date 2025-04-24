@@ -23,7 +23,7 @@ class compiler {
 
     public function compile($name, array $src) {
         [$source, $src_file] = $src;
-        $splitter = new splitter([], $this->engine->asset_base(), $this->custom_tags);
+        $splitter = new splitter([], $this->engine->asset_base(), $this->custom_tags, $this->engine->opts);
         $parts = $splitter->split_php($source, $name);
         $parts->compile_basedir = $this->cbase;
         $parts->src_file = $src_file;

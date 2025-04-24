@@ -10,7 +10,7 @@ use function PHPUnit\Framework\isNull;
 
 class splitter {
 
-    public function __construct(public array $handler = [], public string $assets_base = "", public array $custom_tags = []) {
+    public function __construct(public array $handler = [], public string $assets_base = "", public array $custom_tags = [], public array $opts = []) {
         $this->handler = [
             new handle_css(),
             new handle_script(),
@@ -35,9 +35,10 @@ class splitter {
         $parts->uid = $name . '---' . uniqid();
 
         // dom::d("split $name -- ", $dom);
-        //if ($this->opts['css'] == 'scoped_simple') {
-        //    $parts->uid = $name;
-        //}
+        // TODO: scoping without uniqid
+        if ($this->opts['css'] == 'scoped_simple') {
+            $parts->uid = $name;
+        }
         $remove = [];
         if ($dom) {
             if ($is_layout) {
@@ -86,10 +87,7 @@ class splitter {
                             }
                         }
                         // default: some template element
-                        if (!$handled) {
-                            // add class
-                            dom::add_class($node, $parts->uid . ' root');
-                        }
+                        // if (!$handled) {}
                     }
                 }
                 /* sometimes code ends with ?> */
@@ -100,6 +98,14 @@ class splitter {
         foreach ($remove as $node) {
             //$dom->documentElement->removeChild($node);
             $node->parentNode->removeChild($node);
+        }
+        // add class, only if scoped styles are needed
+        if ($parts->css) {
+            foreach ($dom->documentElement->childNodes as $node) {
+                if ($node->nodeType == \XML_ELEMENT_NODE) {
+                    dom::add_class($node, $parts->uid . ' root');
+                }
+            }
         }
         if ($is_layout) {
             $parts->dom = $dom;

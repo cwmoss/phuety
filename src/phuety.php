@@ -3,6 +3,7 @@
 namespace phuety;
 
 use Le\SMPLang\SMPLang;
+use ReflectionClass;
 
 class phuety {
 
@@ -56,14 +57,26 @@ class phuety {
         return $this->base . $this->assets_base;
     }
 
-    public function run_template_string(string $tpl, array $data) {
+    public function run_template_string(string $tpl, array $data): string {
         // $component = component::new_from_string($tpl, $this->cbase);
         $cname = "tmp.x" . uniqid();
         $component = $this->get_tmp_component($cname, $tpl);
         // print_r($component);
-        unlink($this->cbase . "/" . $component->name . "_component.php");
+        // TODO: optimize?
+        unlink(new ReflectionClass($component)->getFileName());
+        // unlink($this->cbase . "/" . $component->name . "_component.php");
         $data['$asset'] = new asset;
+        ob_start();
         $component->run($data);
+        return ob_get_clean();
+    }
+
+    public function run_get(string $cname, array $data): string {
+        $component = $this->get_component($cname, true);
+        $data['$asset'] = new asset;
+        ob_start();
+        $component->run($data);
+        return ob_get_clean();
     }
 
     public function run(string $cname, array $data) {
