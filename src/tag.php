@@ -71,6 +71,8 @@ class tag {
         public array $attrs = [],
         public array $data = [],
         public tag|array|string|null $content = null,
+        public ?string $html_content_expression = null,
+        public ?string $text_content_expression = null,
         public bool $has_children = true,
         string|array $wrap = []
     ) {
@@ -91,12 +93,13 @@ class tag {
         $this->wrap($wrap);
     }
 
-    public static function new_from_dom_element(Element $el, $bindings_prefixes = []): self {
+    public static function new_from_dom_element(Element $el, $bindings_prefixes = [], ?string $html = null): self {
         $tag = [
             "tagname" => $el->localName,
             "has_children" => $el->hasChildNodes(),
             "attrs" => [],
             "bindings" => [],
+            "html_content_expression" => $html,
             // "content" => $content,
         ];
         $attributes = dom::attributes($el);

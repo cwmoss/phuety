@@ -21,7 +21,9 @@ class instruction {
             "if" => sprintf('<?php if(%s){ ?>', $this->compile_expression($this->expression, $ep)),
             "foreach" => $this->php_foreach($ep),
             "#text" => $this->parent_element == "script" ? $this->text : $this->php_replace_mustache($this->text, $ep),
+            /* 
             "html" => sprintf('<?= %s ?>', $this->compile_expression($this->expression, $ep)),
+            */
             "endif" => '<?php } ?>',
             "endforeach" => $this->php_foreach_end(),
             "else" => '<?php } else { ?>',
@@ -37,30 +39,47 @@ class instruction {
 
     function php_element($ep): string {
         $tag = $this->tag;
-        if ($tag->tagname == "template.") return "";
+        $html = "";
+        if ($tag->html_content_expression) {
+            $html = sprintf('<?= %s ?>', $this->compile_expression($tag->html_content_expression, $ep));
+        }
+
+        if ($tag->tagname == "template.") {
+            return $html;
+        }
         if ($tag->is_slot) {
-            return sprintf('<?=$slots["default"]?>');
+            $slotcontent = sprintf('<?=$slots["default"]??""?>');
+            if ($tag->has_children) {
+                $slotcontent .= sprintf('<?php if(!($slots["default"]??"")){ ?>');
+            }
+            return $slotcontent;
         }
         if ($tag->is_component) {
-            return $tag->has_children ? sprintf('<?php ob_start(); ?>') : '';
+            if ($tag->has_children || $html) return sprintf('<?php ob_start(); ?>') . $html;
+            return "";
         }
         // if ($tag->is_asset) {
         //     return sprintf('< ?=$this->assetholder->get("%s")? >', $tag->attrs["position"]);
         // }
         // if ($tag->tagname == "xead") $tag->tagname = "head";
-        if (!$tag->bindings) return $tag->open();
+        if (!$tag->bindings) return $tag->open() . $html;
         return sprintf(
             '<?= tag::tag_open_merged_attrs("%s", %s, %s) ?>',
             $tag->tagname,
             $this->php_bindings($ep),
             var_export($tag->attrs, true)
-        );
+        ) . $html;
     }
 
     function php_element_end($ep): string {
         $tag = $this->tag;
-        if ($tag->tagname == "template.") return "";
-        if ($tag->is_slot) return "";
+        if ($tag->tagname == "template.") {
+            return "";
+        }
+        if ($tag->is_slot) {
+            if ($tag->has_children) return '<?php } ?>';
+            return "";
+        }
         // if ($tag->tagname == "xead") $tag->tagname = "head";
         // TODO: empty slots
         if ($tag->is_component) {
@@ -69,7 +88,7 @@ class instruction {
                 $tag->tagname,
                 $this->php_bindings($ep),
                 var_export($tag->attrs, true),
-                $tag->has_children ? ', ["default" => ob_get_clean()]' : '',
+                ($tag->has_children || $tag->html_content_expression) ? ', ["default" => ob_get_clean()]' : '',
             );
         }
         return tag::tag_close($tag->tagname); // sprintf('</%s>', $tag->tagname);

@@ -62,7 +62,7 @@ class compiler {
     }
 
     public function compile_dom($name, $parts) {
-        $compiler = new dom_compiler($parts->dom, [], $parts->head);
+        $compiler = new dom_compiler($parts->dom, [], $this->engine->compiler_options, $parts->head);
         $res = $compiler->compile();
         return $res;
     }

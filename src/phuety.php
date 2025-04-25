@@ -32,12 +32,11 @@ class phuety {
         public array $opts = ['css' => 'scope'],
         public string $compile_mode = "always",
         public array $helper = [],
-        public string $assets_base = "/assets"
+        public string $assets_base = "/assets",
+        public ?compiler_options $compiler_options = null
     ) {
         if (!$cbase) $this->cbase = $base . '/../compiled';
-        if (!$map) {
-            $this->map = ['layout' => 'layout'];
-        }
+        if (!$compiler_options) $this->compiler_options = new compiler_options();
         dbg("start");
         $this->compiler = new compiler($this);
         $this->expression_parser = new expressions();

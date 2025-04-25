@@ -24,7 +24,7 @@ class data_container {
                 if (isset($this->blocks[$idx][$name])) return $this->_convert($this->blocks[$idx][$name]);
             }
         }
-        return $this->_convert($this->data[$name]) ?? $default;
+        return $this->_convert($this->data[$name] ?? $default);
     }
 
     public function __isset($name) {

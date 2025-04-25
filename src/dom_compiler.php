@@ -29,81 +29,67 @@ class dom_compiler {
     private $template;
 
     public array $result = [];
-    public $lang_attrs = [
-        'if' => 'if',
-        'else' => 'else',
-        'for' => 'foreach',
-        'html' => 'html',
-        'bind' => 'bind'
-    ];
-    public $lang_shortcut = ":";
-    public $lang_prefix = "v-";
-    public array $lang_bindings_prefixes = [];
     private $expressionParser;
 
-    public function __construct(public HTMLDocument $dom, array $methods, public ?Document $head = null) {
+    public function __construct(public HTMLDocument $dom, array $methods, public compiler_options $compiler_options, public ?Document $head = null) {
         // $this->expressionParser = new CachingExpressionParser(new BasicJsExpressionParser($methods));
         // $this->expressionParser = new SMPLang(['strrev' => 'strrev']);
         $this->expressionParser = new expressions();
-        $this->lang_bindings_prefixes = [
-            $this->lang_prefix . $this->lang_attrs["bind"] . $this->lang_shortcut,
-            $this->lang_shortcut,
-        ];
     }
 
     public function compile() {
         if ($this->dom->doctype) {
             $this->result[] = new instruction("doctype", html: $this->dom->saveHtml($this->dom->doctype));
         }
-        $this->walk_nodes($this->dom->documentElement);
+        $this->walk_nodes($this->dom->documentElement, $this->compiler_options);
         // var_dump($this->result);
         return $this->generate_php_code();
     }
 
-    private function walk_nodes(Element $node, $block = "") {
+    private function walk_nodes(Element $node, compiler_options $compiler_options) {
         $name = strtolower($node->nodeName);
-        if ($this->check_attribute($node, "else")) {
+        if ($compiler_options->check_attribute($node, "else")) {
             throw new Exception("else without if on $name on line " . $node->getLineNo());
         }
-        if ($attr = $this->check_and_remove_attribute($node, "if")) {
+        if ($attr = $compiler_options->check_and_remove_attribute($node, "if")) {
             $this->result[] = new instruction("if", $attr);
-            $this->walk_nodes($node, "if");
-            dbg("+++ if => else?", $name, $node->nextElementSibling->nodeName);
+            $this->walk_nodes($node, $compiler_options);
+            dbg("+++ if => else?", $name, $node->nextElementSibling->nodeName ?? "");
             if (
                 $node->nextElementSibling &&
-                ($this->check_and_remove_attribute($node->nextElementSibling, "else") !== false)
+                ($compiler_options->check_and_remove_attribute($node->nextElementSibling, "else") !== false)
             ) {
                 dbg("YES");
                 $this->result[] = new instruction("else");
-                $this->walk_nodes($node->nextElementSibling, "else");
+                $this->walk_nodes($node->nextElementSibling, $compiler_options);
                 $this->removeNode($node->nextElementSibling);
             }
             $this->result[] = new instruction("endif");
             return;
         }
-        if ($attr = $this->check_and_remove_attribute($node, "for")) {
+        if ($attr = $compiler_options->check_and_remove_attribute($node, "for")) {
             $for_parts = $this->parse_for_attribute($attr);
             $this->result[] = new instruction("foreach", for_expression: $for_parts);
-            $this->walk_nodes($node, "foreach");
+            $this->walk_nodes($node, $compiler_options);
             $this->result[] = new instruction("endforeach", for_expression: $for_parts);
             return;
         }
 
         // TODO: check allowed tags
-        if ($attr = $this->check_and_remove_attribute($node, "html")) {
-            $tag = tag::new_from_dom_element($node, $this->lang_bindings_prefixes);
+        if ($attr = $compiler_options->check_and_remove_attribute($node, "html")) {
+            $tag = tag::new_from_dom_element($node, $compiler_options->binding_prefixes(), html: $attr);
             $this->result[] = new instruction("tag", tag: $tag);
-            $this->result[] = new instruction("html", $attr);
+            // $this->result[] = new instruction("html", $attr);
             // ignore children
             $this->result[] = new instruction("endtag", tag: $tag);
             return;
         }
 
-        $tag = tag::new_from_dom_element($node, $this->lang_bindings_prefixes);
+        $tag = tag::new_from_dom_element($node, $compiler_options->binding_prefixes());
         // dbg("++ path", $node->getNodePath());
         $this->result[] = new instruction("tag", tag: $tag);
         if ($name == "head" && $this->head) {
-            $this->walk_nodes($this->head->documentElement);
+            $this->walk_nodes($this->head->documentElement, $compiler_options);
         }
         foreach ($node->childNodes as $cnode) {
             // dbg("+++ is textnode?", $cnode->nodeName);
@@ -113,7 +99,7 @@ class dom_compiler {
                 continue;
             }
             //dbg("++no");
-            $this->walk_nodes($cnode);
+            $this->walk_nodes($cnode, $compiler_options);
         }
 
         $this->result[] = new instruction("endtag", tag: $tag);
@@ -127,8 +113,8 @@ class dom_compiler {
         };
         match (true) {
             str_contains($item_key, ",") => [$item, $key] = explode(',', $item_key),
-            str_contains($item_key, "=>") => [$list, $item_key] = explode(' as ', $item_key),
-            default => $item = $item_key
+            str_contains($item_key, "=>") => [$key, $item] = explode('=>', $item_key),
+            default => [$item, $key] = [$item_key, ""]
         };
         return [
             "item" => trim($item),
@@ -145,11 +131,6 @@ class dom_compiler {
         return join("", $code);
     }
 
-    private function evaluateExpression($expression, array $data, array $methods = []) {
-        return $this->expressionParser->evaluate($expression, $data + $methods);
-        // return $this->expressionParser->parse($expression, $methods)->evaluate($data);
-    }
-
     private function removeNode(Element $node) {
         $node->parentNode->removeChild($node);
     }
@@ -163,25 +144,15 @@ class dom_compiler {
         return $node instanceof CharacterData;
     }
 
-    private function check_attribute(Element $node, string $attr): bool|string {
-        $attr_l = $this->lang_prefix . $this->lang_attrs[$attr];
-        $attr_s = $this->lang_shortcut . $this->lang_attrs[$attr];
-        return match (true) {
-            $node->hasAttribute($attr_l) => $attr_l,
-            $node->hasAttribute($attr_s) => $attr_s,
-            default => false
-        };
-    }
-    private function check_and_remove_attribute(Element $node, string $attr): bool|string {
-        $found = $this->check_attribute($node, $attr);
-        if (!$found) return false;
-        dbg("attr", $attr, $found);
-        $attribute = $node->getAttribute($found);
-        $node->removeAttribute($found);
-        return $attribute;
-    }
-
+    /*    
+    
     private function isRemovedFromTheDom(Node $node): bool {
         return $node->parentNode === null;
     }
+
+    private function evaluateExpression($expression, array $data, array $methods = []) {
+        return $this->expressionParser->evaluate($expression, $data + $methods);
+        // return $this->expressionParser->parse($expression, $methods)->evaluate($data);
+    }
+*/
 }
