@@ -2,4 +2,4 @@ vendor/
 composer.lock
 compiled/
 .DS_Store
-#.phpunit.*
+.phpunit.result.cache
