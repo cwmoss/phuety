@@ -12,7 +12,7 @@ use Symfony\Component\ExpressionLanguage\Node\Node;
 
 /*
 
-override method via composer autoload psr-4:
+alternative: override classes via composer autoload psr-4:
 
     "Symfony\\Component\\ExpressionLanguage\\Node\\": "src/override/"
 
@@ -27,14 +27,6 @@ class expressions extends ExpressionLanguage {
         //var_dump($exp);
         // var_dump($exp->getNodes()->compile());
         return $this->getCompiler()->compile($exp->getNodes())->getSource();
-        $compiler = $this->getCompiler();
-        $nodes = $exp->getNodes();
-        foreach ($nodes->nodes as $n) {
-            dbg("> comp >", get_class($n));
-            $n->compile($compiler);
-        }
-        dbg("> comp end <<", $compiler->getSource());
-        return $compiler->getSource();
     }
 
     private function getCompiler(): Compiler {
@@ -50,7 +42,7 @@ class ex_compiler extends Compiler {
     public string $source = '';
 
     public function compile(Node $node): static {
-        dbg("> comp0 >", get_class($node));
+        // dbg("> comp0 >", get_class($node));
 
         // $node->compile($this);
         // return $this;
@@ -65,14 +57,7 @@ class ex_compiler extends Compiler {
             $node->compile($this);
         }
 
-        dbg("> comp0 end <<", $this->getSource());
-        return $this;
-
-        foreach ($node->nodes as $n) {
-            dbg("> comp >", get_class($n));
-            $n->compile($this);
-        }
-        dbg("> comp end <<", $this->getSource());
+        // dbg("> comp0 end <<", $this->getSource());
         return $this;
     }
 
@@ -106,12 +91,12 @@ class ex_compiler extends Compiler {
     }
 
     public function compile_name($node) {
-        dbg("> comp0 name>", $node->attributes['name']);
+        // dbg("> comp0 name>", $node->attributes['name']);
         $this->raw('$__d->_get("' . $node->attributes['name'] . '")');
     }
 
     public function compile_function($node) {
-        dbg("> comp0 function>", $node->attributes['name']);
+        // dbg("> comp0 function>", $node->attributes['name']);
         $arguments = [];
         foreach ($node->nodes['arguments']->nodes as $node) {
             $arguments[] = $this->subcompile($node);

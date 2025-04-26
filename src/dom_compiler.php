@@ -46,22 +46,30 @@ class dom_compiler {
         return $this->generate_php_code();
     }
 
-    private function walk_nodes(Element $node, compiler_options $compiler_options) {
+    private function walk_nodes(Element $node, compiler_options $compiler_options, ?Element $parent = null) {
         $name = strtolower($node->nodeName);
         if ($compiler_options->check_attribute($node, "else")) {
             throw new Exception("else without if on $name on line " . $node->getLineNo());
         }
+        if ($attr = $compiler_options->check_and_remove_attribute($node, "slot")) {
+            if (!$parent || !str_contains($parent->nodeName, "."))
+                throw new Exception("slotted content must be a first level child of a component. error on line " .
+                    $node->getLineNo());
+            $this->result[] = new instruction("slotted", $attr);
+            $this->walk_nodes($node, $compiler_options, $parent);
+            $this->result[] = new instruction("endslotted", $attr);
+            return;
+        }
         if ($attr = $compiler_options->check_and_remove_attribute($node, "if")) {
             $this->result[] = new instruction("if", $attr);
-            $this->walk_nodes($node, $compiler_options);
-            dbg("+++ if => else?", $name, $node->nextElementSibling->nodeName ?? "");
+            $this->walk_nodes($node, $compiler_options, $parent);
+            // dbg("+++ if => else?", $name, $node->nextElementSibling->nodeName ?? "");
             if (
                 $node->nextElementSibling &&
                 ($compiler_options->check_and_remove_attribute($node->nextElementSibling, "else") !== false)
             ) {
-                dbg("YES");
                 $this->result[] = new instruction("else");
-                $this->walk_nodes($node->nextElementSibling, $compiler_options);
+                $this->walk_nodes($node->nextElementSibling, $compiler_options, $parent);
                 $this->removeNode($node->nextElementSibling);
             }
             $this->result[] = new instruction("endif");
@@ -70,7 +78,7 @@ class dom_compiler {
         if ($attr = $compiler_options->check_and_remove_attribute($node, "for")) {
             $for_parts = $this->parse_for_attribute($attr);
             $this->result[] = new instruction("foreach", for_expression: $for_parts);
-            $this->walk_nodes($node, $compiler_options);
+            $this->walk_nodes($node, $compiler_options, $parent);
             $this->result[] = new instruction("endforeach", for_expression: $for_parts);
             return;
         }
@@ -89,7 +97,7 @@ class dom_compiler {
         // dbg("++ path", $node->getNodePath());
         $this->result[] = new instruction("tag", tag: $tag);
         if ($name == "head" && $this->head) {
-            $this->walk_nodes($this->head->documentElement, $compiler_options);
+            $this->walk_nodes($this->head->documentElement, $compiler_options, $node);
         }
         foreach ($node->childNodes as $cnode) {
             // dbg("+++ is textnode?", $cnode->nodeName);
@@ -99,7 +107,7 @@ class dom_compiler {
                 continue;
             }
             //dbg("++no");
-            $this->walk_nodes($cnode, $compiler_options);
+            $this->walk_nodes($cnode, $compiler_options, $node);
         }
 
         $this->result[] = new instruction("endtag", tag: $tag);

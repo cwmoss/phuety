@@ -29,6 +29,8 @@ class instruction {
             "else" => '<?php } else { ?>',
             "tag" => $this->php_element($ep),
             "endtag" => $this->php_element_end($ep),
+            "slotted" => '<?php ob_start(); ?>',
+            "endslotted" => sprintf('<?php $__s[0]["%s"]=ob_get_clean(); ?>', $this->expression),
             "doctype" => $this->html,
             "#comment" => "",
             default => "default-{$this->name}"
@@ -48,14 +50,14 @@ class instruction {
             return $html;
         }
         if ($tag->is_slot) {
-            $slotcontent = sprintf('<?=$slots["default"]??""?>');
+            $slotcontent = sprintf('<?=$slots["%s"]??""?>', $tag->slotname);
             if ($tag->has_children) {
-                $slotcontent .= sprintf('<?php if(!($slots["default"]??"")){ ?>');
+                $slotcontent .= sprintf('<?php if(!($slots["%s"]??"")){ ?>', $tag->slotname);
             }
             return $slotcontent;
         }
         if ($tag->is_component) {
-            if ($tag->has_children || $html) return sprintf('<?php ob_start(); ?>') . $html;
+            if ($tag->has_children || $html) return sprintf('<?php array_unshift($__s, []); ob_start(); ?>') . $html;
             return "";
         }
         // if ($tag->is_asset) {
@@ -88,7 +90,8 @@ class instruction {
                 $tag->tagname,
                 $this->php_bindings($ep),
                 var_export($tag->attrs, true),
-                ($tag->has_children || $tag->html_content_expression) ? ', ["default" => ob_get_clean()]' : '',
+                ($tag->has_children || $tag->html_content_expression) ?
+                    ', ["default" => ob_get_clean()]+array_shift($__s)' : '',
             );
         }
         return tag::tag_close($tag->tagname); // sprintf('</%s>', $tag->tagname);
@@ -104,7 +107,7 @@ class instruction {
     }
 
     function php_foreach($ep): string {
-        dbg("++foreach++", $this);
+        // dbg("++foreach++", $this);
         $item = trim($this->for_expression["item"]);
         $key = trim($this->for_expression["key"]);
         $list = trim($this->for_expression["list"]);

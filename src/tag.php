@@ -63,6 +63,8 @@ class tag {
     public bool $is_slot = false;
     public bool $is_asset = false;
 
+    public ?string $slotname = null;
+
     public function __construct(
         public string $tagname = 'div',
         public string $id = "",
@@ -79,6 +81,8 @@ class tag {
         // TODO: dependend on phuety conf
         if (str_starts_with($tagname, "slot.")) {
             $this->is_slot = true;
+            [$dummy, $name] = explode(".", $tagname, 2);
+            $this->slotname = $name ?: "default";
         } elseif (str_contains($tagname, ".")) {
             $this->is_component = true;
         } elseif ($tagname == "link" && ($attrs["rel"] ?? null) == "assets") {
@@ -89,8 +93,6 @@ class tag {
         } elseif (!is_array($content)) {
             $this->content = [$content];
         }
-        $this->class_add($class);
-        $this->wrap($wrap);
     }
 
     public static function new_from_dom_element(Element $el, $bindings_prefixes = [], ?string $html = null): self {
@@ -121,129 +123,6 @@ class tag {
         return new self(...$tag);
     }
 
-    public static function new(string $definition, string|tag|array|null $content = null): self {
-        $tag = self::parse_definition($definition);
-        return new self(...$tag, content: $content);
-    }
-
-    public static function parse_definition(string $definition): array {
-        $tags = explode(">", $definition);
-        $me = array_pop($tags);
-        $parts = soup::words($me);
-        $tag = ['tagname' => 'div', 'id' => "", 'class' => [], 'attrs' => []];
-        if ($parts[0][0] != '#' && $parts[0][0] != '.') {
-            $tag['tagname'] = array_shift($parts);
-        }
-        $attrs = [];
-        foreach ($parts as $part) {
-            match ($part[0]) {
-                '#' => $tag['id'] = ltrim($part, '#'),
-                '.' => $tag['class'][] = ltrim($part, '.'),
-                '[' => $attrs[] = self::attr_from_string($part),
-                default => $attrs[] = $part
-            };
-        }
-        foreach ($attrs as $attr) {
-            $tag['attrs'][$attr[0]] = $attr[1];
-        }
-        if ($tags) {
-            $tag['wrap'] = join(">", $tags);
-        }
-        return $tag;
-    }
-
-    public function tagname(string $tag): self {
-        $this->tagname = $tag;
-        return $this;
-    }
-
-    public function id(string $id): self {
-        $this->id = $id;
-        return $this;
-    }
-
-    public function type(): string|null {
-        return $this->attr_get('type');
-    }
-
-    public function class_add(array|string $class, mixed $condition = null) {
-        if (is_string($class)) $class = soup::words($class);
-        if (is_null($condition) || $condition)
-            $this->class = array_merge($this->class, $class);
-        return $this;
-    }
-
-    public function content(tag|string|null $content): self {
-        $this->content[] = $content;
-        return $this;
-    }
-
-    public function wrap(string|array $tags): self {
-        if (is_string($tags)) {
-            $tags = explode(">", $tags);
-            $this->wrap = array_map(fn($t) => tag::new($t), $tags);
-        } else {
-            $this->wrap = $tags;
-        }
-
-        return $this;
-    }
-
-    public function before(string|tag $tag, tag|array|string|null $content = null): self {
-        $this->before[] = is_string($tag) ? tag::new($tag, $content) : $tag;
-        return $this;
-    }
-
-    public function after(string|tag $tag, tag|array|string|null $content = null): self {
-        array_unshift($this->after, is_string($tag) ? tag::new($tag, $content) : $tag);
-        return $this;
-    }
-
-    public function attr(string $name, bool|string|null $value = true): self {
-        $this->attrs[$name] = $value;
-        return $this;
-    }
-
-    public function attrs(array $attributes): self {
-        foreach ($attributes as $name => $value) {
-            $this->attr($name, $value);
-        }
-        return $this;
-    }
-
-    public function attr_get(string $name): bool|string|null {
-        return $this->attrs[$name] ?? null;
-
-        //foreach ($this->attrs as $attr) {
-        //    if ($attr[0] == $name) return $attr[1];
-        //}
-        //return false;
-    }
-
-
-    public function data(string $name, bool|string|null $value = true): self {
-        $this->data[$name] = $value;
-        return $this;
-    }
-
-    public function datas(array $datas): self {
-        foreach ($datas as $name => $value) {
-            $this->data($name, $value);
-        }
-        return $this;
-    }
-
-    public function data_get(string $name): bool|string|null {
-        return $this->data[$name] ?? null;
-    }
-
-    public static function attr_from_string(string $attr_val): array {
-        // remove []
-        if ($attr_val[0] == '[') $attr_val = substr($attr_val, 1, strlen($attr_val) - 2);
-        [$name, $value] = explode("=", $attr_val, 2) + [1 => true];
-        return [$name, $value];
-    }
-
     public function to_attrs(): array {
         $attrs = [];
         if ($this->id) $attrs['id'] = $this->id;
@@ -260,23 +139,6 @@ class tag {
             $data['data-' . $k] = $v;
         }
         return $data;
-    }
-    function with(string $property, $function): static {
-        $prop = is_array($this->$property) ? $this->$property[0] : $this->$property;
-        $function($prop);
-        return $this;
-    }
-
-    function each(string $property, $function): static {
-        foreach ($this->$property as $prop) {
-            $function($prop);
-        }
-        return $this;
-    }
-
-
-    public function get_content(): string {
-        return $this->render_array($this->content);
     }
 
     public function open(): string {
@@ -339,30 +201,5 @@ class tag {
     public static function tag(string $name, array $attrs, string $content = ""): string {
         $start = self::tag_open($name, $attrs);
         return sprintf('%s%s%s', $start, $content, self::tag_close($name));
-    }
-
-    public function render_array(array $elements): string {
-        return join("", array_map(fn($el) => (string) $el, $elements));
-    }
-
-    public function render(): string {
-        $html = "";
-        foreach ($this->wrap as $tag) {
-            $html .= $tag->open();
-        }
-        $html .=  $this->render_array($this->before) .
-            $this->open() .
-            $this->get_content() .
-            $this->close() .
-            $this->render_array($this->after);
-
-        foreach (array_reverse($this->wrap) as $tag) {
-            $html .= $tag->close();
-        }
-        return $html;
-    }
-
-    public function __toString(): string {
-        return $this->render();
     }
 }

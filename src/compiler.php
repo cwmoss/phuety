@@ -38,12 +38,12 @@ class compiler {
             // $dom = compiler::get_document($html);
             // $source = str_replace(["<head", "</head>"], ["<xead", "</xead>"], $source);
             if (preg_match("~(<head.*?>)(.*?)</head>~ism", $parts->html, $mat)) {
-                dbg("++ found head", $mat);
+                // dbg("++ found head", $mat);
                 $parts->html = str_replace($mat[0], $mat[1] . '', $parts->html);
                 $parts->head = dom::get_template_fragment($mat[2]);
             }
             $dom = dom::get_document($parts->html);
-            dbg("++ doctype", $dom->saveHtml($dom->doctype));
+            // dbg("++ doctype", $dom->saveHtml($dom->doctype));
         } elseif ($parts->html) {
             $dom = dom::get_template_fragment($parts->html);
         }

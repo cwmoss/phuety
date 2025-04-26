@@ -2,6 +2,7 @@
 
 namespace phuety;
 
+use Exception;
 use Le\SMPLang\SMPLang;
 use ReflectionClass;
 
@@ -35,15 +36,24 @@ class phuety {
         public string $assets_base = "/assets",
         public ?compiler_options $compiler_options = null
     ) {
-        if (!$cbase) $this->cbase = $base . '/../compiled';
-        if (!$compiler_options) $this->compiler_options = new compiler_options();
-        dbg("start");
+        // dbg("start");
+        $this->init();
+    }
+
+    private function init() {
+        if (!$this->cbase) $this->cbase = $this->base . '/../compiled';
+        if (!is_dir($this->cbase)) mkdir($this->cbase, recursive: true);
+        if ($this->compile_mode == "never" && !is_readable($this->cbase)) {
+            throw new Exception("compile dir must be readable ($this->cbase)");
+        } elseif (!is_writable($this->cbase)) {
+            throw new Exception("compile dir must be writeable ($this->cbase)");
+        }
+        if (!$this->compiler_options) $this->compiler_options = new compiler_options();
         $this->compiler = new compiler($this);
         $this->expression_parser = new expressions();
         // $this->expression_parser = new dotdata(['strrev' => 'strrev']);
         // $this->expression_parser = new SMPLang(['strrev' => 'strrev']);
     }
-
     public function set_custom_tag($tag) {
         $this->compiler->set_custom_tag($tag);
     }

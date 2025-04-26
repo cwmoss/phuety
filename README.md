@@ -16,11 +16,11 @@ components have a dot in it's name.
 
 the name is all lowercase. it must start with a letter and can contain numbers. it must contain at least one dot (.). don't use dashes as they are reserved for web components.
 
-### v-if, :if
+### :if, ph-if
 
-### v-else, :else
+### :else, ph-else
 
-### v-foreach, :foreach
+### :foreach, ph-foreach
 
     offer in basket.offers
     offer, key in basket.offers
@@ -28,9 +28,9 @@ the name is all lowercase. it must start with a letter and can contain numbers. 
     basket.offers as offer, key
     basket.offers as key => offer
 
-### v-html, :html
+### :html, ph-html
 
-### :binding
+### :[name], ph-bind:[name]
 
 ### :class
 
@@ -40,9 +40,26 @@ the name is all lowercase. it must start with a letter and can contain numbers. 
 
 for wrapping multiple elements with v-if/v-else/v-for
 
-### <slot.>
+### <slot.>, <slot.[name]></slot.[name]>, :slot, ph-slot
 
-default slot in component code
+The <slot.\*> element is a slot outlet that indicates where the parent-provided slot content should be rendered.
+
+If you need multiple slot outlets in a single component, you can use named slots.
+
+`<slot.>` is a shorthand for `<slot.default>`
+
+slots can have default content, that is rendered, if not provided by the calling template.
+
+    <footer><slot.footer><em>this is the end</em></slot.footer></footer>
+
+To pass slotted content to a component, use the slot directive.
+
+    <my.card>
+        <span :slot="footer">updated: {{recent_update}}</span>
+        <h1>updates for axel</h1>
+    </my.card>
+
+Elements without a slot directive are passed as the default slot. Only direct childs of a component can be passed as named slots.
 
 ### <app.assets head|body />
 
@@ -97,7 +114,7 @@ look into `showcase/` dir
 - [x] assets: automatic write js to file (or leave embeded)
 - [ ] assets: cache buster dev, cache buster prod
 - [x] compile to php-string-templates
-- [ ] new expression parser
+- [x] new expression parser => take symfony for now
 - [ ] test with vue order of rendering
 
 ## inspiration, copypaste, similar projects

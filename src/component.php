@@ -60,7 +60,7 @@ class component {
         foreach ($this->assets as $asset) {
             $this->assetholder->push($this->uid, $asset);
         }
-        dbg("++ all helper", $this->engine->helper);
+        // dbg("++ all helper", $this->engine->helper);
         $props = new data_container($props, $this->engine->helper);
         $local = $this->run_code($props, $slots, $props);
         if ($local) $props->_add_local($local);

@@ -15,7 +15,8 @@ class compiler_options {
         public string $elseif = "elseif",
         public string $for = "foreach",
         public string $bind = "bind",
-        public string $html = "html"
+        public string $html = "html",
+        public string $slot = "slot",
     ) {
     }
 
@@ -37,7 +38,7 @@ class compiler_options {
     public function check_and_remove_attribute(Element $node, string $attr): bool|string {
         $found = $this->check_attribute($node, $attr);
         if (!$found) return false;
-        dbg("attr", $attr, $found);
+        // dbg("attr", $attr, $found);
         $attribute = $node->getAttribute($found);
         $node->removeAttribute($found);
         return $attribute;

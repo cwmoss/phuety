@@ -62,7 +62,7 @@ class data_container {
     }
 
     public function __call(string $method, $args) {
-        dbg("++ helper call", $method, $this->helper);
+        // dbg("++ helper call", $method, $this->helper);
         return call_user_func_array($this->helper[$method], $args);
     }
 }

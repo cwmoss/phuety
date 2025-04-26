@@ -19,13 +19,14 @@ class NAME_component extends component {
     public array $custom_tags = CUSTOM_TAGS;
 
     public function run_code(data_container $props, array $slots, data_container $helper): array{
-        dbg("++ props for component", $this->name, $props);PHPCODE
+        // dbg("++ props for component", $this->name, $props);PHPCODE
         return get_defined_vars();
     }
 
     public function render(data_container $__d, array $slots=[]):void {
         // ob_start();
         // if($this->is_layout) print '<!DOCTYPE html>';
+        $__s = [];
         ?>RENDER<?php // return ob_get_clean();
         // dbg("+++ assetsholder ", $this->is_start, $this->assetholder);
     }

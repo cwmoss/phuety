@@ -17,10 +17,10 @@ class handle_script {
         $node->removeAttribute('head');
         // convert embeded to external?
         if (!isset($attrs['src'])) {
-            dbg("++ js embed => external");
+            // dbg("++ js embed => external");
             $name = $parts->uid . '-' . count($parts->js) . '.js';
             $parts->js[$name] = (string) $node->textContent;
-            dbg("+++ embed js $name", $parts->js[$name]);
+            // dbg("+++ embed js $name", $parts->js[$name]);
             $node->textContent = null;
             $node->setAttribute('src', $this->baseurl . $name);
         } else {

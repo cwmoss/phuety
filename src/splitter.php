@@ -75,7 +75,7 @@ class splitter {
                         continue;
                     }
                     if ($node->nodeType == \XML_ELEMENT_NODE) {
-                        dbg("++ splitter", $node->tagName);
+                        // dbg("++ splitter", $node->tagName);
                         $handled = false;
                         foreach ($this->handler as $handler) {
                             if ($handler->handle($node, $parts)) {
