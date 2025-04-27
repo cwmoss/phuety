@@ -19,7 +19,7 @@ _phuety_ gives you a nice way to code the html views in your application.
 - automatic, context aware escaping :white_check_mark:
 - it's fast, since it compiles to php :white_check_mark:
 
-## syntax
+## Syntax
 
 All Components have a dot in it's name.
 
@@ -123,7 +123,7 @@ To pass slotted content to a component, use the slot directive.
 
 Elements without a slot directive are passed as the default slot. Only direct childs of a component can be passed as named slots.
 
-### expressions
+### Expressions
 
 _phuety_ uses the Symfony ExpressionLanguage component. It uses a specific syntax which is based on the expression syntax of Twig.
 
@@ -140,9 +140,9 @@ https://symfony.com/doc/current/reference/formats/expression_language.html
 
 links to css/js files
 
-## component map
+## Component Map
 
-it needs a prefix based map to find the components in your project.
+It needs a prefix based map to find the components in your project.
 
     $map = [
         // <app.layout> => layout.phue.php
@@ -157,7 +157,7 @@ it needs a prefix based map to find the components in your project.
         'sc.*' => 'components/'
     ];
 
-## api
+## API
 
     $phuety = new phuety\phuety(
         // base dir for sfc sources
@@ -168,11 +168,11 @@ it needs a prefix based map to find the components in your project.
         __DIR__ . '/tmp'
     );
 
-## examples
+## Examples
 
 look into `showcase/` dir
 
-## todo
+## TODO (maybe)
 
 - [ ] resolve paths at compile time?
 - [ ] component for client-only processing?
@@ -187,7 +187,7 @@ look into `showcase/` dir
 - [x] new expression parser => take symfony for now
 - [ ] test with vue order of rendering
 
-## inspiration, copypaste, similar projects
+## Inspiration, copypaste, similar projects
 
 - https://github.com/wmde/php-vuejs-templating
 - https://github.com/ctxcode/vue-pre
