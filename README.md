@@ -1,4 +1,4 @@
-## start
+## Start
 
     git clone https://github.com/cwmoss/phuety
     cd phuety
@@ -8,27 +8,28 @@
 > [!NOTE]
 > This project is still beta. The API is subject to change.
 
-## what?
+## What?
 
-phuety are vue inspired dom/component based templates run by the fabulous php 🐘.
+_phuety_ is a vue inspired dom/component based template engine, run by the fabulous php 🐘.
 
-phuety gives you a nice way to code the html views in your application.
+_phuety_ gives you a nice way to code the html views in your application.
 
-- familiar syntax if you know vue :white_check_mark:
+- familiar syntax, if you know vue :white_check_mark:
 - you can use plain php in your templates :white_check_mark:
+- automatic, context aware escaping :white_check_mark:
 - it's fast, since it compiles to php :white_check_mark:
 
 ## syntax
 
-components have a dot in it's name.
+All Components have a dot in it's name.
 
-the name is all lowercase. it must start with a letter and can contain numbers. it must contain at least one dot (.). don't use dashes as they are reserved for web components.
+The name is all lowercase. It must start with a letter and can contain numbers. It must contain at least one dot (.). Don't use dashes as they are reserved for Web Components.
 
-### single file components (sfc)
+### Single File Components (SFC)
 
-single file components can contain template code, script code, style code and php code (must be the very last section).
+Single File Components can contain template code, script code, style code and php code (php code must be the very last section).
 
-#### example
+#### Example
 
 ```php title="page_navigation.phue.php"
 <!-- page_navigation.phue.php -->
@@ -83,6 +84,8 @@ You can now use your new pagination component like this:
 
 ### :html, ph-html
 
+Contents of `:html` are inserted as plain HTML.
+
 ### :[name], ph-bind:[name]
 
 ### :class
@@ -91,11 +94,17 @@ You can now use your new pagination component like this:
 
 ### <template.></template.>
 
-for wrapping multiple elements with v-if/v-else/v-for
+The template tag is for wrapping multiple elements with :if, :else, :foreach.
+
+### {{ expression }}
+
+Use the "Mustache" syntax (double curly braces) to place contents in text areas.
+
+    <span>Message: {{ msg }}</span>
 
 ### <slot.>, <slot.[name]></slot.[name]>, :slot, ph-slot
 
-The `<slot.\*>` element is a slot outlet that indicates where the parent-provided slot content should be rendered.
+The `<slot.[name]>` element is a slot outlet that indicates where the parent-provided slot content should be rendered.
 
 If you need multiple slot outlets in a single component, you can use named slots.
 
@@ -114,6 +123,19 @@ To pass slotted content to a component, use the slot directive.
 
 Elements without a slot directive are passed as the default slot. Only direct childs of a component can be passed as named slots.
 
+### expressions
+
+_phuety_ uses the Symfony ExpressionLanguage component. It uses a specific syntax which is based on the expression syntax of Twig.
+
+Some examples:
+
+- foo ?? 'no'
+- foo.baz ?? foo['baz'] ?? 'no'
+- fruit?.getStock()
+- 'hello ' ~ name
+
+https://symfony.com/doc/current/reference/formats/expression_language.html
+
 ### <app.assets head|body />
 
 links to css/js files
@@ -123,16 +145,15 @@ links to css/js files
 it needs a prefix based map to find the components in your project.
 
     $map = [
-        // <app.layout> => layout.vue.php
+        // <app.layout> => layout.phue.php
         'app.layout' => 'layout',
-        // <app.assets> => assets.vue.php
+        // <app.assets> => assets.phue.php
         'app.assets' => 'assets',
-        'phuety-*' => '*',
-        // page.contact => pages/contact.vue.php
+        // page.contact => pages/contact.phue.php
         'page.*' => 'pages/*',
-        // form.field => form/form_field.vue.php
+        // form.field => form/form_field.phue.php
         'form.*' => 'form/',
-        // sc.qrcode => components/sc_qrcode.vue.php
+        // sc.qrcode => components/sc_qrcode.phue.php
         'sc.*' => 'components/'
     ];
 
@@ -153,12 +174,12 @@ look into `showcase/` dir
 
 ## todo
 
-- [ ] resolve paths at compile time
+- [ ] resolve paths at compile time?
 - [ ] component for client-only processing?
 - [ ] attribute for client-only processing?
 - [ ] client-only :bind (::bind? -- alpine, vue, ...)?
-- [ ] dynamic component <component :is="input_type"></component>
-- [ ] defered component (like <assets> via attribute)
+- [ ] dynamic component <component :is="input_type"></component>?
+- [ ] defered component (like <assets> via attribute)?
 - [ ] teleport? component or attribute?
 - [x] assets: automatic write js to file (or leave embeded)
 - [ ] assets: cache buster dev, cache buster prod
