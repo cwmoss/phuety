@@ -22,7 +22,7 @@ single file components can contain template code, script code, style code and ph
 
 #### example
 
-```page_navigation.phue.php
+```php file=page_navigation.phue.php
 <nav :aria-label="label??'Pagination Navigation'" role="navigation">
     <a :foreach="range(1, total_pages) as p" :href="update_url(p)"
         :class="{active:current_page==p}" :html="p"></a>
