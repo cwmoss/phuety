@@ -16,7 +16,7 @@ phuety gives you a nice way to code the html views in your application.
 
 - familiar syntax if you know vue :white_check_mark:
 - you can use plain php in your templates :white_check_mark:
-- it's fast, since it comiles to php :white_check_mark:
+- it's fast, since it compiles to php :white_check_mark:
 
 ## syntax
 
