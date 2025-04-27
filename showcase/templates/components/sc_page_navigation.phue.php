@@ -23,6 +23,7 @@
 
 <?php
 $query = $_GET;
+$my_url = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $current_page = $query["page"] ?? 1;
 $total_pages = $props->total_pages ?? 1;
-$update_url = fn($page) => $_SERVER['PHP_SELF'] . '?' . http_build_query(["page" => $page] + $query);
+$update_url = fn($page) =>  $my_url . '?' . http_build_query(["page" => $page] + $query);
