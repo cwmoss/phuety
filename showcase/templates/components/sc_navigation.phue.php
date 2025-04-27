@@ -1,9 +1,9 @@
 <nav>
 
-    <a v-if="!subnav" href="/"><sc-logo></sc-logo></a>
+    <a :if="!subnav" href="/"><sc-logo></sc-logo></a>
     <ul>
-        <li v-foreach="item in navpoints">
-            <a :href="item.url" :class="active==item.url?'active':''" v-html="item.title"></a>
+        <li :foreach="item in navpoints">
+            <a :href="item.url" :class="active==item.url?'active':''" :html="item.title"></a>
         </li>
     </ul>
 

@@ -21,6 +21,9 @@
   <sc.code file="layout.phue.php"></sc.code>
 
   <p>{{horst??"kein horst"}}</p>
+
+  <sc.page.navigation total_pages="7" current_page="3"></sc.page.navigation>
+
 </app.layout>
 
 <script>

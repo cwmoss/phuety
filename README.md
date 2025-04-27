@@ -16,6 +16,49 @@ components have a dot in it's name.
 
 the name is all lowercase. it must start with a letter and can contain numbers. it must contain at least one dot (.). don't use dashes as they are reserved for web components.
 
+### single file components (sfc)
+
+single file components can contain template code, script code, style code and php code (must be the very last section).
+
+#### example
+
+```page_navigation.phue.php
+<nav :aria-label="label??'Pagination Navigation'" role="navigation">
+    <a :foreach="range(1, total_pages) as p" :href="update_url(p)"
+        :class="{active:current_page==p}" :html="p"></a>
+</nav>
+
+<style>
+    root {
+        display: flex;
+        justify-content: start;
+    }
+
+    a {
+        text-decoration: none;
+        padding: .25rem;
+        margin: .25rem;
+    }
+
+    a.active {
+        background-color: black;
+        color: white;
+    }
+</style>
+
+<?php
+$query = $_GET;
+$current_page = $query["page"] ?? 1;
+$total_pages = $props->total_pages ?? 1;
+$update_url = fn($page) => $_SERVER['PHP_SELF'] . '?' . http_build_query(["page" => $page] + $query);
+```
+
+You can now use your new pagination component like this:
+
+```
+<page.navigation total_pages="7" current_page="3"></page.navigation>
+```
+
 ### :if, ph-if
 
 ### :else, ph-else
@@ -42,7 +85,7 @@ for wrapping multiple elements with v-if/v-else/v-for
 
 ### <slot.>, <slot.[name]></slot.[name]>, :slot, ph-slot
 
-The <slot.\*> element is a slot outlet that indicates where the parent-provided slot content should be rendered.
+The `<slot.\*>` element is a slot outlet that indicates where the parent-provided slot content should be rendered.
 
 If you need multiple slot outlets in a single component, you can use named slots.
 
@@ -64,10 +107,6 @@ Elements without a slot directive are passed as the default slot. Only direct ch
 ### <app.assets head|body />
 
 links to css/js files
-
-## single file components (sfc)
-
-single file components can contain template code, script code, style code and php code (must be the very last section).
 
 ## component map
 
@@ -123,3 +162,4 @@ look into `showcase/` dir
 - https://github.com/ctxcode/vue-pre
 - https://github.com/php-templates/php-templates
 - https://github.com/leongrdic/php-smplang
+- https://github.com/tempestphp/tempest-framework/tree/main/src/Tempest/View
