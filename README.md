@@ -14,9 +14,9 @@ phuety are vue inspired dom/component based templates run by the fabulous php ðŸ
 
 phuety gives you a nice way to code the html views in your application.
 
-- :white_check_mark: familiar syntax if you know vue
-- :white_check_mark: you can use plain php in your templates
-- :white_check_mark: it's fast, since it comiles to php
+- [:white_check_mark:] familiar syntax if you know vue
+- [:white_check_mark:] you can use plain php in your templates
+- [:white_check_mark:] it's fast, since it comiles to php
 
 ## syntax
 
