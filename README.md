@@ -1,14 +1,22 @@
 ## start
 
-    install php 8.4
-
+    git clone https://github.com/cwmoss/phuety
+    cd phuety
     composer install
-
     php -S localhost:4000 -t showcase/public/
+
+> [!NOTE]
+> This project is still beta. The API is subject to change.
 
 ## what?
 
-phuety are vue inspired component/dom based templates run by php
+phuety are vue inspired dom/component based templates run by the fabulous php 🐘.
+
+phuety gives you a nice way to code the html views in your application.
+
+- :white_check_mark: familiar syntax if you know vue
+- :white_check_mark: you can use plain php in your templates
+- :white_check_mark: it's fast, since it comiles to php
 
 ## syntax
 
