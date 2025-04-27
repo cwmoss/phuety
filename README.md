@@ -22,7 +22,7 @@ single file components can contain template code, script code, style code and ph
 
 #### example
 
-```php file=page_navigation.phue.php
+```php file="page_navigation.phue.php"
 <nav :aria-label="label??'Pagination Navigation'" role="navigation">
     <a :foreach="range(1, total_pages) as p" :href="update_url(p)"
         :class="{active:current_page==p}" :html="p"></a>
@@ -55,7 +55,7 @@ $update_url = fn($page) => $_SERVER['PHP_SELF'] . '?' . http_build_query(["page"
 
 You can now use your new pagination component like this:
 
-```
+```html
 <page.navigation total_pages="7" current_page="3"></page.navigation>
 ```
 
