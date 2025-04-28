@@ -153,7 +153,14 @@ class tag {
         return htmlspecialchars($attr);
     }
 
-    public static function tag_open_merged_attrs(string $name, array $bindings, array $attrs) {
+    public static function tag_open_merged_attrs(string $name, array $bindings, array $attrs, ?object $merge_props = null) {
+        if ($merge_props?->class) {
+            if ($attrs["class"] ?? false) {
+                $attrs["class"] .= " " . $merge_props->class;
+            } else {
+                $attrs["class"] = $merge_props->class;
+            }
+        }
         if ($bindings["class"] ?? null) {
             $class = (array) ($attrs["class"] ?? []);
 

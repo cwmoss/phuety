@@ -47,7 +47,7 @@ class dom_compiler {
         return $this->generate_php_code();
     }
 
-    private function walk_nodes(Element $node, compiler_options $compiler_options, ?Element $parent = null) {
+    private function walk_nodes(Element $node, compiler_options $compiler_options, ?Element $parent = null, $level = 0) {
         $name = strtolower($node->nodeName);
         if ($compiler_options->check_attribute($node, "else")) {
             throw new Exception("else without if on $name on line " . $node->getLineNo());
@@ -60,20 +60,20 @@ class dom_compiler {
                 throw new Exception("slotted content must be a first level child of a component. error on line " .
                     $node->getLineNo());
             $this->result[] = new instruction("slotted", $attr);
-            $this->walk_nodes($node, $compiler_options, $parent);
+            $this->walk_nodes($node, $compiler_options, $parent, $level);
             $this->result[] = new instruction("endslotted", $attr);
             return;
         }
         if ($attr = $compiler_options->check_and_remove_attribute($node, "if")) {
             $this->result[] = new instruction("if", $attr);
-            $this->walk_nodes($node, $compiler_options, $parent);
+            $this->walk_nodes($node, $compiler_options, $parent, $level);
             // dbg("+++ if => else?", $name, $node->nextElementSibling->nodeName ?? "");
             if (
                 $node->nextElementSibling &&
                 ($attr = $compiler_options->check_and_remove_attribute($node->nextElementSibling, "elseif"))
             ) {
                 $this->result[] = new instruction("elseif", $attr);
-                $this->walk_nodes($node->nextElementSibling, $compiler_options, $parent);
+                $this->walk_nodes($node->nextElementSibling, $compiler_options, $parent, $level);
                 $this->removeNode($node->nextElementSibling);
             }
             if (
@@ -81,7 +81,7 @@ class dom_compiler {
                 ($compiler_options->check_and_remove_attribute($node->nextElementSibling, "else") !== false)
             ) {
                 $this->result[] = new instruction("else");
-                $this->walk_nodes($node->nextElementSibling, $compiler_options, $parent);
+                $this->walk_nodes($node->nextElementSibling, $compiler_options, $parent, $level);
                 $this->removeNode($node->nextElementSibling);
             }
             $this->result[] = new instruction("endif");
@@ -90,7 +90,7 @@ class dom_compiler {
         if ($attr = $compiler_options->check_and_remove_attribute($node, "for")) {
             $for_parts = $this->parse_for_attribute($attr);
             $this->result[] = new instruction("foreach", for_expression: $for_parts);
-            $this->walk_nodes($node, $compiler_options, $parent);
+            $this->walk_nodes($node, $compiler_options, $parent, $level);
             $this->result[] = new instruction("endforeach", for_expression: $for_parts);
             return;
         }
@@ -98,7 +98,7 @@ class dom_compiler {
         // TODO: check allowed tags
         if ($attr = $compiler_options->check_and_remove_attribute($node, "html")) {
             $tag = tag::new_from_dom_element($node, $compiler_options->binding_prefixes(), html: $attr);
-            $this->result[] = new instruction("tag", tag: $tag);
+            $this->result[] = new instruction("tag", tag: $tag, level: $level);
             // $this->result[] = new instruction("html", $attr);
             // ignore children
             $this->result[] = new instruction("endtag", tag: $tag);
@@ -107,9 +107,9 @@ class dom_compiler {
 
         $tag = tag::new_from_dom_element($node, $compiler_options->binding_prefixes());
         // dbg("++ path", $node->getNodePath());
-        $this->result[] = new instruction("tag", tag: $tag);
+        $this->result[] = new instruction("tag", tag: $tag, level: $level);
         if ($name == "head" && $this->head) {
-            $this->walk_nodes($this->head->documentElement, $compiler_options, $node);
+            $this->walk_nodes($this->head->documentElement, $compiler_options, $node, $level);
         }
         foreach ($node->childNodes as $cnode) {
             if (strtolower($cnode->nodeName) == "#comment") {
@@ -124,7 +124,7 @@ class dom_compiler {
                 continue;
             }
             //dbg("++no");
-            $this->walk_nodes($cnode, $compiler_options, $node);
+            $this->walk_nodes($cnode, $compiler_options, $node, $level + 1);
         }
 
         $this->result[] = new instruction("endtag", tag: $tag);

@@ -11,9 +11,9 @@ use phuety\phuety;
 class ComponentTest extends TestCase {
 
     public function testSimple() {
-        $result = $this->create_and_render('hello', ['name' => 'world']);
+        $result = $this->create_and_render('test.hello', ['name' => 'world']);
 
-        $this->assertSame('<div class="hello root">hello world</div>', trim($result));
+        $this->assertSame('<div class="test_hello root">hello world</div>', trim($result));
     }
 
     public function testProperties() {
@@ -22,6 +22,12 @@ class ComponentTest extends TestCase {
         $result = $this->render_string('<test.firstname title="some title" :person-list="names"></test.firstname>', ['names' => $names]);
 
         $this->assertSame("<h1>some title</h1>\n<div>Anna</div>", trim($result));
+    }
+
+    public function testMergedClass() {
+        $result = $this->render_string('<test.hello class="blue" name="world"></test.hello>', []);
+
+        $this->assertSame('<div class="test_hello root blue">hello world</div>', trim($result));
     }
 
     public function testRecursiveComponent() {
@@ -51,12 +57,12 @@ class ComponentTest extends TestCase {
     }
 
     private function render_string(string $template, array $data) {
-        $runner = new phuety(__DIR__ . '/../fixtures', ['hello' => 'hello', 'test.*' => '*'], '', ['css' => 'scoped_simple']);
+        $runner = new phuety(__DIR__ . '/../fixtures', ['test.*' => '*'], '', ['css' => 'scoped_simple']);
         return $runner->render_template_string($template, $data);
     }
 
     private function create_and_render(string $template, array $data, array $methods = []) {
-        $runner = new phuety(__DIR__ . '/../fixtures', ['hello' => 'hello', 'test.*' => '*'], "", ['css' => 'scoped_simple']);
+        $runner = new phuety(__DIR__ . '/../fixtures', ['test.*' => '*'], "", ['css' => 'scoped_simple']);
         return $runner->render($template, $data);
     }
 }

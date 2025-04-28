@@ -11,7 +11,8 @@ class instruction {
         public ?array $for_expression = null,
         public ?string $html = null,
         public ?string $text = null,
-        public ?string $parent_element = null
+        public ?string $parent_element = null,
+        public ?int $level = null,
     ) {
     }
 
@@ -65,12 +66,13 @@ class instruction {
         //     return sprintf('< ?=$this->assetholder->get("%s")? >', $tag->attrs["position"]);
         // }
         // if ($tag->tagname == "xead") $tag->tagname = "head";
-        if (!$tag->bindings) return $tag->open() . $html;
+        if (!$tag->bindings && $this->level != 1) return $tag->open() . $html;
         return sprintf(
-            '<?= tag::tag_open_merged_attrs("%s", %s, %s) ?>',
+            '<?= tag::tag_open_merged_attrs("%s", %s, %s %s) ?>',
             $tag->tagname,
             $this->php_bindings($ep),
-            var_export($tag->attrs, true)
+            var_export($tag->attrs, true),
+            $this->level == 1 ? ', $__d->props' : ''
         ) . $html;
     }
 

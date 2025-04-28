@@ -46,11 +46,12 @@ class SlotTest extends TestCase {
 
     public function testMulti() {
         $result = $this->render_string('<test.slotmulti>achim <h2>good morning</h2><p>bye</bye></test.slotmulti>');
-        $this->assertSame("<div>\n            <h1>welcome</h1>\n        achim <h2>good morning</h2><p>bye</p></div>", trim($result));
+        # $this->assertSame("<div>\n            <h1>welcome</h1>\n        achim <h2>good morning</h2><p>bye</p></div>", trim($result));
+        $this->assertSame("<div>            <h1>welcome</h1>\n        achim <h2>good morning</h2><p>bye</p></div>", trim($result));
 
         $result = $this->render_string('<test.slotmulti>achim <h2 :slot="title">good morning</h2><p>bye</bye></test.slotmulti>');
         $this->assertSame(
-            "<div>\n    <h2>good morning</h2>    achim <p>bye</p></div>",
+            "<div>    <h2>good morning</h2>    achim <p>bye</p></div>",
             trim($result)
         );
     }
