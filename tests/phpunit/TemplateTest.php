@@ -91,6 +91,40 @@ class TemplateTest extends TestCase {
         $this->assertSame('<div data-names="[{&quot;name&quot;:&quot;Anna&quot;}]"></div>', $result);
     }
 
+    public function testClass() {
+        $result = $this->render_string('<div :class="temperature" class="dishes"></div>', ["temperature" => "hot"]);
+        $this->assertSame('<div class="dishes hot"></div>', $result);
+
+        $result = $this->render_string('<div class="dishes" :class="temperature"></div>', ["temperature" => "hot"]);
+        $this->assertSame('<div class="dishes hot"></div>', $result);
+
+        $result = $this->render_string('<div class="dishes" :class="{hot: high_temperature, cold: !high_temperature}"></div>', ["high_temperature" => false]);
+        $this->assertSame('<div class="dishes cold"></div>', $result);
+
+        $result = $this->render_string('<div class="dishes" :class="{hot: high_temperature, cold: !high_temperature}"></div>', ["high_temperature" => true]);
+        $this->assertSame('<div class="dishes hot"></div>', $result);
+
+        $result = $this->render_string('<div class="dishes" :class="{\'text-danger\': high_temperature}"></div>', ["high_temperature" => true]);
+        $this->assertSame('<div class="dishes text-danger"></div>', $result);
+
+        $result = $this->render_string('<div class="dishes" :class="multi"></div>', ["multi" => ["one", "two"]]);
+        $this->assertSame('<div class="dishes one two"></div>', $result);
+
+        $result = $this->render_string('<div class="dishes" :class="[\'one\', \'two\']"></div>', ["multi" => ["one", "two"]]);
+        $this->assertSame('<div class="dishes one two"></div>', $result);
+
+        $result = $this->render_string('<div class="dishes" :class="{textDanger: high_temperature}"></div>', ["high_temperature" => true]);
+        $this->assertSame('<div class="dishes textDanger"></div>', $result);
+    }
+
+    public function testStyle() {
+        $result = $this->render_string('<div :style="\'font-size: small\'" style="font-size: big"></div>', []);
+        $this->assertSame('<div style="font-size: big; font-size: small"></div>', $result);
+
+        $result = $this->render_string('<div :style="{fontSize: \'small\', backgroundColor: \'red\'}" style="font-size: big"></div>', []);
+        $this->assertSame('<div style="font-size: big; font-size: small; background-color: red;"></div>', $result);
+    }
+
     private function render_string(string $template, array $data) {
         $runner = new phuety(__DIR__ . '/../fixtures', [], '', ['css' => 'scoped_simple']);
         return $runner->render_template_string($template, $data);

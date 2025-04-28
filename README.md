@@ -139,7 +139,7 @@ Attributes can be a rendered by an expression. This is done via the bind directi
 
 #### Component Attributes
 
-Attributs of components are passed as properties via the `$props` object to the components. Dashes in attribute names are converted to underscores. Binded Properties can be objects, arrays, strings, etc.
+Attributs of components are passed as properties via the `$props` object to the components. Dashes in attribute names are converted to underscores (kebab-case to snake_case). Binded Properties can be objects, arrays, strings, etc.
 
 ```php
 <!-- first.name.phue.php -->
@@ -177,7 +177,32 @@ $names = [
 
 ### :class
 
-:class binding is merged with class attribute
+`:class` binding is merged with class attribute
+
+    <div :class="temperature" class="dishes"></div>
+    ["temperature" => "cold"] =>  <div class="dishes cold"></div>
+
+When binding is an object, it's keys are toggled as class names based on their truthiness.
+
+    <div :class="{hot: high_temperature, cold: !high_temperature}" class="dishes"></div>
+    ["high_temperature" => true] =>  <div class="dishes hot"></div>
+
+When binding is an array, it's values are added to the class names.
+
+    <div class="dishes" :class="multi"></div>
+    ["multi" => ["one", "two"] =>  <div class="dishes one two"></div>
+
+### :style
+
+`:style` binding is merged with style attribute
+
+    <div :style="'font-size: small'" style="font-size: big"></div>
+    => <div style="font-size: big; font-size: small"></div>
+
+When binding is an object, it's key names are converted from camelCase to kebab-case.
+
+    <div :style="{fontSize: 'small', backgroundColor: 'red'}" style="font-size: big">
+    => <div style="font-size: big; font-size: small; background-color: red;"></div>
 
 ### <template.>
 

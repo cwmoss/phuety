@@ -157,7 +157,7 @@ class tag {
         if ($bindings["class"] ?? null) {
             $class = (array) ($attrs["class"] ?? []);
 
-            foreach ((array)$bindings["class"] as $k => $v) {
+            foreach ((array) $bindings["class"] as $k => $v) {
                 if (is_numeric($k)) {
                     $class[] = $v;
                 } else {
@@ -167,6 +167,19 @@ class tag {
                 }
             }
             $bindings["class"] = join(" ", $class);
+        }
+        if ($bindings["style"] ?? null) {
+            $style = (array) ($attrs["style"] ?? []);
+            if ($style) $style = array_map(fn($s) => rtrim($s, "; ") . ";", $style);
+
+            foreach ((array) $bindings["style"] as $k => $v) {
+                if (is_numeric($k)) {
+                    $style[] = $v;
+                } else {
+                    $style[] = sprintf('%s: %s;', self::kebab($k), $v);
+                }
+            }
+            $bindings["style"] = join(" ", $style);
         }
         return self::tag_open($name, $bindings + $attrs);
     }
@@ -204,5 +217,15 @@ class tag {
     public static function tag(string $name, array $attrs, string $content = ""): string {
         $start = self::tag_open($name, $attrs);
         return sprintf('%s%s%s', $start, $content, self::tag_close($name));
+    }
+
+    public static function kebab(string $camelCase) {
+        return preg_replace_callback(
+            '/[A-Z]/',
+            function ($matches) {
+                return '-' . strtolower($matches[0]);
+            },
+            $camelCase
+        );
     }
 }
