@@ -67,7 +67,7 @@ class phuety {
         return $this->base . $this->assets_base;
     }
 
-    public function run_template_string(string $tpl, array $data): string {
+    public function render_template_string(string $tpl, array $data): string {
         // $component = component::new_from_string($tpl, $this->cbase);
         $cname = "tmp.x" . uniqid();
         $component = $this->get_tmp_component($cname, $tpl);
@@ -81,7 +81,7 @@ class phuety {
         return ob_get_clean();
     }
 
-    public function run_get(string $cname, array $data): string {
+    public function render(string $cname, array $data): string {
         $component = $this->get_component($cname, true);
         $data['$asset'] = new asset;
         ob_start();

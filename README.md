@@ -218,6 +218,17 @@ full prefixed in template source folder.
         __DIR__ . '/tmp'
     );
 
+### run(), render(), render_template_string()
+
+    // print output to stdout
+    $phuety->run($component_name, ['the' => 'variables', 'go' => 'here']);
+
+    // render output
+    $output = $phuety->render($component_name, ['the' => 'variables', 'go' => 'here']);
+
+    // render template string
+    $output = $phuety->render("<h1 :html="title"></h1>", ['title' => 'Hello']);
+
 ## Examples
 
 look into `showcase/` dir

@@ -87,7 +87,7 @@ class instruction {
         // TODO: empty slots
         if ($tag->is_component) {
             return sprintf(
-                '<?=$this->engine->get_component("%s")->run(%s + %s %s); ?>',
+                '<?php $this->engine->get_component("%s")->run(%s + %s %s); ?>',
                 $tag->tagname,
                 $this->php_bindings($ep),
                 var_export($tag->attrs, true),
