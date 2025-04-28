@@ -71,12 +71,20 @@ You can now use your new pagination component like this:
 ```
 
 This example above contains a template section (comment and nav tag), a style section and a php section. Every section is optional.
-If you have cases, where you don't want a template section, you can output html directly in the php section via print(), echo or <?= "short echo tag" ?>.
+If you have cases, where you don't want a template section, you can output html directly in the php section via `print()`, `echo` or `<?= "short echo tag" ?>`.
 
-In the php section, you have access to the `$props` object, containing the properties passed to the component,
-the `$helper` object, containing optional helper functions, passed to the phuety engine and the `$slots` array,
-containing the slots passed to the component. `$props` object, containing the properties passed to the component and all variables and closures,
-defined in the php section. The properties are also merged with the defined variables in this order (first wins):  
+In the php section, you have access to the following variables:
+
+- (object) `$props`, containing the properties passed to the component,
+- (object) `$helper`, containing optional helper functions, passed to the phuety engine
+- (array) `$slots`, containing the slots passed to the component.
+
+In the template secion, you have access to the following variables:
+
+- (object) `$props`, containing the properties passed to the component
+- all variables and closures defined in the php section
+
+The properties are also merged with the defined variables in this order (first wins):  
 "props" (the property object) => local defined names => property names
 
 ```html
@@ -94,6 +102,8 @@ defined in the php section. The properties are also merged with the defined vari
 <?php
 $name = "Anna"
 ```
+
+The styles section above is transformed to scoped styles. You can disable scoping using the attribute `global`. The special selector `root` is for addressing all template root elements.
 
 ### :if, ph-if
 
@@ -150,15 +160,16 @@ slots can have default content, that is rendered, if not provided by the calling
 To pass slotted content to a component, use the slot directive.
 
     <my.card>
-        <span :slot="footer">updated: {{recent_update}}</span>
+        <span :slot="footer">last update: {{updated_at}}</span>
         <h1>updates for axel</h1>
+        <!-- more content here -->
     </my.card>
 
 Elements without a slot directive are passed as the default slot. Only direct childs of a component can be passed as named slots.
 
 ### Expressions
 
-_phuety_ uses the Symfony ExpressionLanguage component. It uses a specific syntax which is based on the expression syntax of Twig.
+_phuety_ uses the Symfony ExpressionLanguage component. It uses a specific syntax which is based on the expression syntax of _Twig_.
 
 Some examples:
 
