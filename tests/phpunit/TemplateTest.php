@@ -24,6 +24,22 @@ class TemplateTest extends TestCase {
         $this->assertSame('hello world', $result);
     }
 
+    public function testElse() {
+        $result = $this->render_string('<div :if="name">hello {{props.name}}</div><div :else>hi stranger</div>', ['name' => '']);
+        $this->assertSame('<div>hi stranger</div>', $result);
+    }
+
+    public function testElseIf() {
+        $result = $this->render_string('<div :if="hour<11">Morning!</div><div :elseif="hour < 17">Good Afternoon</div><div :else>Good Evening</div>', ['hour' => '7']);
+        $this->assertSame('<div>Morning!</div>', $result);
+
+        $result = $this->render_string('<div :if="hour<11">Morning!</div><div :elseif="hour < 17">Good Afternoon</div><div :else>Good Evening</div>', ['hour' => '15']);
+        $this->assertSame('<div>Good Afternoon</div>', $result);
+
+        $result = $this->render_string('<div :if="hour<11">Morning!</div><div :elseif="hour < 17">Good Afternoon</div><div :else>Good Evening</div>', ['hour' => '20']);
+        $this->assertSame('<div>Good Evening</div>', $result);
+    }
+
     public function testFor() {
         $result = $this->render_string('<div :foreach="item in props.items"><em>{{item}}</em></div>', ['items' => ['hello', 'world']]);
         $this->assertSame('<div><em>hello</em></div><div><em>world</em></div>', $result);

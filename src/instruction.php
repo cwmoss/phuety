@@ -19,6 +19,7 @@ class instruction {
 
         $php = match ($this->name) {
             "if" => sprintf('<?php if(%s){ ?>', $this->compile_expression($this->expression, $ep)),
+            "elseif" => sprintf('<?php }elseif(%s){ ?>', $this->compile_expression($this->expression, $ep)),
             "foreach" => $this->php_foreach($ep),
             "#text" => $this->parent_element == "script" ? $this->text : $this->php_replace_mustache($this->text, $ep),
             /* 

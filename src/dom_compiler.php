@@ -51,6 +51,9 @@ class dom_compiler {
         if ($compiler_options->check_attribute($node, "else")) {
             throw new Exception("else without if on $name on line " . $node->getLineNo());
         }
+        if ($compiler_options->check_attribute($node, "elseif")) {
+            throw new Exception("elseif without if on $name on line " . $node->getLineNo());
+        }
         if ($attr = $compiler_options->check_and_remove_attribute($node, "slot")) {
             if (!$parent || !str_contains($parent->nodeName, "."))
                 throw new Exception("slotted content must be a first level child of a component. error on line " .
@@ -64,6 +67,14 @@ class dom_compiler {
             $this->result[] = new instruction("if", $attr);
             $this->walk_nodes($node, $compiler_options, $parent);
             // dbg("+++ if => else?", $name, $node->nextElementSibling->nodeName ?? "");
+            if (
+                $node->nextElementSibling &&
+                ($attr = $compiler_options->check_and_remove_attribute($node->nextElementSibling, "elseif"))
+            ) {
+                $this->result[] = new instruction("elseif", $attr);
+                $this->walk_nodes($node->nextElementSibling, $compiler_options, $parent);
+                $this->removeNode($node->nextElementSibling);
+            }
             if (
                 $node->nextElementSibling &&
                 ($compiler_options->check_and_remove_attribute($node->nextElementSibling, "else") !== false)
