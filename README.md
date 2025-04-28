@@ -74,6 +74,14 @@ You can now use your new pagination component like this:
 
 ### :else, ph-else
 
+### :elseif, ph-elseif
+
+```html
+<div :if="hour<11">Morning!</div>
+<div :elseif="hour < 17">Good Afternoon!</div>
+<div :else>Good Evening</div>
+```
+
 ### :foreach, ph-foreach
 
     offer in basket.offers
@@ -92,7 +100,7 @@ Contents of `:html` are inserted as plain HTML.
 
 :class binding is merged with class attribute
 
-### <template.></template.>
+### <template.>
 
 The template tag is for wrapping multiple elements with :if, :else, :foreach.
 
@@ -102,7 +110,7 @@ Use the "Mustache" syntax (double curly braces) to place contents in text areas.
 
     <span>Message: {{ msg }}</span>
 
-### <slot.>, <slot.[name]></slot.[name]>, :slot, ph-slot
+### <slot.>, <slot.[name]>, :slot, ph-slot
 
 The `<slot.[name]>` element is a slot outlet that indicates where the parent-provided slot content should be rendered.
 
@@ -143,6 +151,8 @@ links to css/js files
 ## Component Map
 
 It needs a prefix based map to find the components in your project.
+If you provide an empty map, that means, that all components must be
+full prefixed in template source folder.
 
     $map = [
         // <app.layout> => layout.phue.php
@@ -175,9 +185,7 @@ look into `showcase/` dir
 ## TODO (maybe)
 
 - [ ] resolve paths at compile time?
-- [ ] component for client-only processing?
-- [ ] attribute for client-only processing?
-- [ ] client-only :bind (::bind? -- alpine, vue, ...)?
+- [ ] client-only processing with phuety-skip and phuety-long-attributes
 - [ ] dynamic component <component :is="input_type"></component>?
 - [ ] defered component (like <assets> via attribute)?
 - [ ] teleport? component or attribute?
