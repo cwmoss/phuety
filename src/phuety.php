@@ -4,6 +4,7 @@ namespace phuety;
 
 use Exception;
 use Le\SMPLang\SMPLang;
+use phuety\symfony_el\expressions;
 use ReflectionClass;
 
 class phuety {

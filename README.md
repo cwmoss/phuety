@@ -71,7 +71,7 @@ You can now use your new pagination component like this:
 ```
 
 This example above contains a template section (comment and nav tag), a style section and a php section. Every section is optional.
-If you have cases, where you don't want a template section, you can output html directly in the php section via `print()`, `echo` or `<?= "short echo tag" ?>`.
+If you have cases, where you don't want a template section at all, you can output html directly in the php section via `print()`, `echo` or `<?= "short echo tag" ?>`.
 
 In the php section, you have access to the following variables:
 
@@ -79,7 +79,7 @@ In the php section, you have access to the following variables:
 - (object) `$helper`, containing optional helper functions, passed to the phuety engine
 - (array) `$slots`, containing the slots passed to the component.
 
-In the template secion, you have access to the following variables:
+In the template section, you have access to the following variables:
 
 - (object) `$props`, containing the properties passed to the component
 - all variables and closures defined in the php section
@@ -103,7 +103,8 @@ The properties are also merged with the defined variables in this order (first w
 $name = "Anna"
 ```
 
-The styles section above is transformed to scoped styles. You can disable scoping using the attribute `global`. The special selector `root` is for addressing all template root elements.
+The styles section above is transformed to scoped styles. You can disable scoping using the attribute `global`.
+The special selector `root` is for addressing all template root elements (in this case the `<nav>` element).
 
 ### :if, ph-if
 
