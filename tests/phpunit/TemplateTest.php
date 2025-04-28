@@ -78,6 +78,19 @@ class TemplateTest extends TestCase {
         $this->assertSame('<!-- <div></div> -->', $result);
     }
 
+    public function testAttributes() {
+        $result = $this->render_string('<div :open="is_open"></div>', ["is_open" => false]);
+        $this->assertSame('<div></div>', $result);
+
+        $result = $this->render_string('<div :open="is_open"></div>', ["is_open" => true]);
+        $this->assertSame('<div open></div>', $result);
+
+        $names = [(object) ["name" => "Anna"]];
+
+        $result = $this->render_string('<div :data-names="names"></div>', ["names" => $names]);
+        $this->assertSame('<div data-names="[{&quot;name&quot;:&quot;Anna&quot;}]"></div>', $result);
+    }
+
     private function render_string(string $template, array $data) {
         $runner = new phuety(__DIR__ . '/../fixtures', [], '', ['css' => 'scoped_simple']);
         return $runner->render_template_string($template, $data);

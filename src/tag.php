@@ -179,6 +179,9 @@ class tag {
                     $attr[] = $aname;
                 }
             } else {
+                if (is_array($avalue) || is_object($avalue)) {
+                    $avalue = json_encode($avalue, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+                }
                 $attr[] = sprintf('%s="%s"', $aname, self::h($avalue));
             }
         }

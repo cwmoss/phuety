@@ -89,7 +89,7 @@ class instruction {
             return sprintf(
                 '<?php $this->engine->get_component("%s")->run(%s + %s %s); ?>',
                 $tag->tagname,
-                $this->php_bindings($ep),
+                $this->php_bindings($ep, true),
                 var_export($tag->attrs, true),
                 ($tag->has_children || $tag->html_content_expression) ?
                     ', ["default" => ob_get_clean()]+array_shift($__s)' : '',
@@ -98,9 +98,10 @@ class instruction {
         return tag::tag_close($tag->tagname); // sprintf('</%s>', $tag->tagname);
     }
 
-    function php_bindings($ep) {
+    function php_bindings($ep, $for_component = false) {
         $php = [];
         foreach ($this->tag->bindings as $name => $expression) {
+            if ($for_component) $name = str_replace("-", "_", $name);
             $php[] = sprintf('"%s"=> %s', $name, $this->compile_expression($expression, $ep));
             // $this->ep->evaluate("%s", $__blockdata + $__data)
         }

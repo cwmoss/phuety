@@ -135,6 +135,46 @@ Contents of `:html` are inserted as plain HTML.
 
 ### :[name], ph-bind:[name]
 
+Attributes can be a rendered by an expression. This is done via the bind directive. We need to differentiate between attributes of phuety components and attributes of html elements.
+
+#### Component Attributes
+
+Attributs of components are passed as properties via the `$props` object to the components. Dashes in attribute names are converted to underscores. Binded Properties can be objects, arrays, strings, etc.
+
+```php
+<!-- first.name.phue.php -->
+<h1>{{ title }}</h1>
+<div :html="person_list[0].name"></div>
+
+<!-- some.calling.page.phue.php -->
+<first.name title="some title" :person-list="names"></first.name>
+
+<?php
+$names = [
+    (object) ["name"=>"Anna"]
+];
+```
+
+#### Attributes of Html Elements
+
+Attributes of html elements can only be strings. However, If you bind an object or array to an attribute, it will automatically serialized as JSON. This can be useful,
+if you are using Web Components or other Javascripts and you need some initial state. Attribute names are not converted on Html Elements.
+
+Known boolean Attributes will be omitted, if the expression returns a falsy value.
+
+```php
+<dialog :open="show_dialog"><!-- <dialog open> -->
+    <names-list title="some title" :person-list="names"></names-list>
+    <!-- <names-list title="some title" person-list="[{&quot;name&quot;:&quot;Anna&quot;}]"></names-list> -->
+</dialog>
+
+<?php
+$show_dialog = true;
+$names = [
+    (object) ["name"=>"Anna"]
+];
+```
+
 ### :class
 
 :class binding is merged with class attribute
