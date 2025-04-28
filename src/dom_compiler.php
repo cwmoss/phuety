@@ -111,6 +111,11 @@ class dom_compiler {
             $this->walk_nodes($this->head->documentElement, $compiler_options, $node);
         }
         foreach ($node->childNodes as $cnode) {
+            if (strtolower($cnode->nodeName) == "#comment") {
+                // dbg("++comment");
+                $this->result[] = new instruction(strtolower($cnode->nodeName), parent_element: $name, text: $cnode->textContent);
+                continue;
+            }
             // dbg("+++ is textnode?", $cnode->nodeName);
             if ($this->isTextNode($cnode)) {
                 // dbg("++yes");

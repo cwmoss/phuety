@@ -70,6 +70,14 @@ class TemplateTest extends TestCase {
         $this->assertSame('I am <em>sad</em>!', $result);
     }
 
+    public function testComment() {
+        $result = $this->render_string('<!-- as first element --><div><!-- wrapper start --></div>', []);
+        $this->assertSame('<!-- as first element --><div><!-- wrapper start --></div>', $result);
+
+        $result = $this->render_string('<!-- <div></div> -->', []);
+        $this->assertSame('<!-- <div></div> -->', $result);
+    }
+
     private function render_string(string $template, array $data) {
         $runner = new phuety(__DIR__ . '/../fixtures', [], '', ['css' => 'scoped_simple']);
         return $runner->run_template_string($template, $data);

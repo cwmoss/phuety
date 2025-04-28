@@ -33,7 +33,7 @@ class instruction {
             "slotted" => '<?php ob_start(); ?>',
             "endslotted" => sprintf('<?php $__s[0]["%s"]=ob_get_clean(); ?>', $this->expression),
             "doctype" => $this->html,
-            "#comment" => "",
+            "#comment" => '<!--' . $this->text . '-->',
             default => "default-{$this->name}"
         };
 

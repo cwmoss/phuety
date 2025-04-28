@@ -70,6 +70,31 @@ You can now use your new pagination component like this:
 <page.navigation total_pages="7" current_page="3"></page.navigation>
 ```
 
+This example above contains a template section (comment and nav tag), a style section and a php section. Every section is optional.
+If you have cases, where you don't want a template section, you can output html directly in the php section via print(), echo or <?= "short echo tag" ?>.
+
+In the php section, you have access to the `$props` object, containing the properties passed to the component,
+the `$helper` object, containing optional helper functions, passed to the phuety engine and the `$slots` array,
+containing the slots passed to the component. `$props` object, containing the properties passed to the component and all variables and closures,
+defined in the php section. The properties are also merged with the defined variables in this order (first wins):  
+"props" (the property object) => local defined names => property names
+
+```html
+<div :html="props.name"></div>
+<!-- <div>Joe</div> -->
+<div :html="name"></div>
+<!-- <div>Joe</div> -->
+```
+
+```html
+<div :html="props.name"></div>
+<!-- <div>Joe</div> -->
+<div :html="name"></div>
+<!-- <div>Anna</div> -->
+<?php
+$name = "Anna"
+```
+
 ### :if, ph-if
 
 ### :else, ph-else
@@ -102,7 +127,7 @@ Contents of `:html` are inserted as plain HTML.
 
 ### <template.>
 
-The template tag is for wrapping multiple elements with :if, :else, :foreach.
+The template tag is for wrapping multiple elements with :if, :else, :elseif, :foreach.
 
 ### {{ expression }}
 
