@@ -84,8 +84,11 @@ In the template section, you have access to the following variables:
 - (object) `$props`, containing the properties passed to the component
 - all variables and closures defined in the php section
 
-The properties are also merged with the defined variables in this order (first wins):  
-"props" (the property object) => local defined names => property names
+The properties are also merged with the defined variables in this order (first wins):
+
+1. `$props` (the property object)
+2. local defined names
+3. property names
 
 ```html
 <div :html="props.name"></div>
