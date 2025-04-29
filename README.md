@@ -61,7 +61,7 @@ Single File Components can contain template code, script code, style code and ph
 <?php
 $query = $_GET;
 $my_url = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-$current_page = $query["page"] ?? 1;
+$current_page = $props->current_page ?? 1;
 $total_pages = $props->total_pages ?? 1;
 $update_url = fn($page) =>  $my_url . '?' . http_build_query(["page" => $page] + $query);
 ```
@@ -69,7 +69,7 @@ $update_url = fn($page) =>  $my_url . '?' . http_build_query(["page" => $page] +
 You can now use your new pagination component like this:
 
 ```html
-<page.navigation total_pages="7" current_page="3"></page.navigation>
+<page.navigation total-pages="7" current-page="3"></page.navigation>
 ```
 
 This example above contains a template section (comment and nav tag), a style section and a php section. Every section is optional.
@@ -117,7 +117,7 @@ The special selector `root` is for addressing all template root elements (in thi
 
 ### :if, ph-if
 
-If on the same Element the `:if` directive get processed before the :foreach directive.
+when `:if` and `:foreach` are on the same Element the `:if` directive get processed before the `:foreach` directive.
 
 ### :else, ph-else
 
@@ -135,7 +135,7 @@ The `:elseif` directive must directly follow an `:if` or another `:elseif` direc
 
 ### :foreach, ph-foreach
 
-If on the same Element the `:if` directive get processed before the :foreach directive.
+when `:if` and `:foreach` are on the same Element the `:if` directive get processed before the `:foreach` directive.
 
 Expressions look like this:
 
