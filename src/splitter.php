@@ -99,14 +99,17 @@ class splitter {
             //$dom->documentElement->removeChild($node);
             $node->parentNode->removeChild($node);
         }
-        // add class, only if scoped styles are needed
-        if ($parts->css) {
-            foreach ($dom->documentElement->childNodes as $node) {
-                if ($node->nodeType == \XML_ELEMENT_NODE) {
-                    dom::add_class($node, $parts->uid . ' root');
-                }
+
+        // count root elements
+        $c = 0;
+        foreach ($dom->documentElement->childNodes as $node) {
+            if ($node->nodeType == \XML_ELEMENT_NODE) {
+                $c++;
+                // add class, only if scoped styles are needed
+                if ($parts->css) dom::add_class($node, $parts->uid . ' root');
             }
         }
+        $parts->total_rootelements = $c;
         if ($is_layout) {
             $parts->dom = $dom;
         } else {

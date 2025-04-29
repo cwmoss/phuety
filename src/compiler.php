@@ -62,7 +62,7 @@ class compiler {
     }
 
     public function compile_dom($name, $parts) {
-        $compiler = new dom_compiler($parts->dom, [], $this->engine->compiler_options, $parts->head);
+        $compiler = new template_compiler($parts->dom, [], $this->engine->compiler_options, $parts->head, $parts->total_rootelements);
         $res = $compiler->compile();
         return $res;
     }
@@ -86,6 +86,7 @@ class compiler {
             'ASSETS' => var_export($parts->assets, true),
             'RENDER' => $parts->render,
             'CUSTOM_TAGS' => var_export($parts->custom, true),
+            'TOTAL_ROOTELEMENTS' => $parts->total_rootelements,
             'DEBUG_INFO' => var_export(["src" => $parts->src_file, "php" => $parts->php_start], true)
         ];
 

@@ -153,42 +153,41 @@ class tag {
         return htmlspecialchars($attr);
     }
 
-    public static function tag_open_merged_attrs(string $name, array $bindings, array $attrs, ?object $merge_props = null) {
-        if ($merge_props?->class) {
-            if ($attrs["class"] ?? false) {
-                $attrs["class"] .= " " . $merge_props->class;
+    public static function tag_open_merged_attrs(string $name, array $bindings, array $attrs, ?object $fallthrough_props = null) {
+        $special = [];
+        $s = self::merge_attributes($attrs["class"] ?? null, $bindings["class"] ?? null, $fallthrough_props?->class, "class");
+        if ($s) $special["class"] = $s;
+        $s = self::merge_attributes($attrs["style"] ?? null, $bindings["style"] ?? null, $fallthrough_props?->style, "style");
+        if ($s) $special["style"] = $s;
+        if ($fallthrough_props?->id) {
+            $special["id"] = $fallthrough_props->id;
+        }
+        return self::tag_open($name, $special + $bindings + $attrs);
+    }
+
+    public static function merge_attributes(?string $attr, mixed $binding, mixed $fallthrough, string $type = "class"): ?string {
+        if (!$attr && !$binding && !$fallthrough) return null;
+        $attr = (array) $attr;
+        if ($attr && $type == "style") $attr = array_map(fn($s) => rtrim($s, "; ") . ";", $attr);
+        $bd = self::resolve_attr_object($binding, $type);
+        $fall = self::resolve_attr_object($fallthrough, $type);
+        return join(" ", array_merge($attr, $bd, $fall));
+    }
+
+    public static function resolve_attr_object(mixed $obj, string $type = "class"): array {
+        if (!$obj) return [];
+        $resolved = [];
+        foreach ((array) $obj as $k => $v) {
+            if (is_numeric($k)) {
+                $resolved[] = $v;
             } else {
-                $attrs["class"] = $merge_props->class;
-            }
-        }
-        if ($bindings["class"] ?? null) {
-            $class = (array) ($attrs["class"] ?? []);
-
-            foreach ((array) $bindings["class"] as $k => $v) {
-                if (is_numeric($k)) {
-                    $class[] = $v;
-                } else {
-                    if ($v) {
-                        $class[] = $k;
-                    }
+                if ($v) {
+                    if ($type == "class") $resolved[] = $k;
+                    else $resolved[] = sprintf('%s: %s;', self::kebab($k), $v);
                 }
             }
-            $bindings["class"] = join(" ", $class);
         }
-        if ($bindings["style"] ?? null) {
-            $style = (array) ($attrs["style"] ?? []);
-            if ($style) $style = array_map(fn($s) => rtrim($s, "; ") . ";", $style);
-
-            foreach ((array) $bindings["style"] as $k => $v) {
-                if (is_numeric($k)) {
-                    $style[] = $v;
-                } else {
-                    $style[] = sprintf('%s: %s;', self::kebab($k), $v);
-                }
-            }
-            $bindings["style"] = join(" ", $style);
-        }
-        return self::tag_open($name, $bindings + $attrs);
+        return $resolved;
     }
 
     public static function tag_open(string $name, array $attrs): string {

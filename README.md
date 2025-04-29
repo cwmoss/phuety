@@ -19,13 +19,15 @@ _phuety_ gives you a nice way to code the html views in your application.
 - automatic, context aware escaping :white_check_mark:
 - it's fast, since it compiles to php :white_check_mark:
 
-## Syntax
+## How?
+
+### Naming
 
 All Components have a dot in it's name.
 
 The name is all lowercase. It must start with a letter and can contain numbers. It must contain at least one dot (.). Don't use dashes as they are reserved for Web Components.
 
-### Single File Components (SFC)
+### Phuety Components are Single File Components (SFC)
 
 Single File Components can contain template code, script code, style code and php code (php code must be the very last section).
 
@@ -73,11 +75,15 @@ You can now use your new pagination component like this:
 This example above contains a template section (comment and nav tag), a style section and a php section. Every section is optional.
 If you have cases, where you don't want a template section at all, you can output html directly in the php section via `print()`, `echo` or `<?= "short echo tag" ?>`.
 
+#### PHP Section
+
 In the php section, you have access to the following variables:
 
 - (object) `$props`, containing the properties passed to the component,
 - (object) `$helper`, containing optional helper functions, passed to the phuety engine
 - (array) `$slots`, containing the slots passed to the component.
+
+#### Template Section
 
 In the template section, you have access to the following variables:
 
@@ -111,9 +117,15 @@ The special selector `root` is for addressing all template root elements (in thi
 
 ### :if, ph-if
 
+If on the same Element the `:if` directive get processed before the :foreach directive.
+
 ### :else, ph-else
 
+The :else directive must directly follow an `:if` or `:elseif` directive.
+
 ### :elseif, ph-elseif
+
+The `:elseif` directive must directly follow an `:if` or another `:elseif` directive.
 
 ```html
 <div :if="hour<11">Morning!</div>
@@ -123,11 +135,22 @@ The special selector `root` is for addressing all template root elements (in thi
 
 ### :foreach, ph-foreach
 
-    offer in basket.offers
-    offer, key in basket.offers
-    basket.offers as offer
-    basket.offers as offer, key
-    basket.offers as key => offer
+If on the same Element the `:if` directive get processed before the :foreach directive.
+
+Expressions look like this:
+
+```
+// php style
+basket.offers as key => offer
+basket.offers as offer
+basket.offers as offer, key
+// js style
+offer in basket.offers
+offer, key in basket.offers
+
+// example
+<li :foreach="basket.offers as offer" :html="offer.title"></li>
+```
 
 ### :html, ph-html
 
@@ -140,6 +163,10 @@ Attributes can be a rendered by an expression. This is done via the bind directi
 #### Component Attributes
 
 Attributs of components are passed as properties via the `$props` object to the components. Dashes in attribute names are converted to underscores (kebab-case to snake_case). Binded Properties can be objects, arrays, strings, etc.
+
+`:class` and `:style` bindings are special. see below.
+
+`class`, `style`, `id` attributes on components are fallthrough attributes. see below.
 
 ```php
 <!-- first.name.phue.php -->
@@ -162,10 +189,13 @@ if you are using Web Components or other Javascripts and you need some initial s
 
 Known boolean Attributes will be omitted, if the expression returns a falsy value.
 
+`:class` and `:style` bindings are special. see below.
+
 ```php
-<dialog :open="show_dialog"><!-- <dialog open> -->
+<dialog :open="show_dialog">
+<!-- <dialog open> -->
     <names-list title="some title" :person-list="names"></names-list>
-    <!-- <names-list title="some title" person-list="[{&quot;name&quot;:&quot;Anna&quot;}]"></names-list> -->
+<!-- <names-list title="some title" person-list="[{&quot;name&quot;:&quot;Anna&quot;}]"></names-list> -->
 </dialog>
 
 <?php
@@ -203,6 +233,23 @@ When binding is an object, it's key names are converted from camelCase to kebab-
 
     <div :style="{fontSize: 'small', backgroundColor: 'red'}" style="font-size: big">
     => <div style="font-size: big; font-size: small; background-color: red;"></div>
+
+### Fallthrough Attributes
+
+When a component renders a single root element,
+fallthrough attributes will be automatically added to the root element's attributes.
+
+Fallthrough attributes are: `id`, `class` and `style`.
+
+```html
+<my.button class="large"></my.button>
+
+<!-- template of <my.button> -->
+<button>Click Me</button>
+
+<!-- result -->
+<button class="large">Click Me</button>
+```
 
 ### <template.>
 

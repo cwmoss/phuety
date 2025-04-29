@@ -13,6 +13,7 @@ class instruction {
         public ?string $text = null,
         public ?string $parent_element = null,
         public ?int $level = null,
+        public bool $single_root = false
     ) {
     }
 
@@ -66,13 +67,14 @@ class instruction {
         //     return sprintf('< ?=$this->assetholder->get("%s")? >', $tag->attrs["position"]);
         // }
         // if ($tag->tagname == "xead") $tag->tagname = "head";
-        if (!$tag->bindings && $this->level != 1) return $tag->open() . $html;
+        $is_fallthrough = ($this->level == 1 && $this->single_root);
+        if (!$tag->bindings && !$is_fallthrough) return $tag->open() . $html;
         return sprintf(
             '<?= tag::tag_open_merged_attrs("%s", %s, %s %s) ?>',
             $tag->tagname,
             $this->php_bindings($ep),
             var_export($tag->attrs, true),
-            $this->level == 1 ? ', $__d->props' : ''
+            $is_fallthrough ? ', $__d->_get("props")' : ''
         ) . $html;
     }
 

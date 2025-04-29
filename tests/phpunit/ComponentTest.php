@@ -24,10 +24,19 @@ class ComponentTest extends TestCase {
         $this->assertSame("<h1>some title</h1>\n<div>Anna</div>", trim($result));
     }
 
-    public function testMergedClass() {
+    public function testFallthroughClass() {
         $result = $this->render_string('<test.hello class="blue" name="world"></test.hello>', []);
 
         $this->assertSame('<div class="test_hello root blue">hello world</div>', trim($result));
+
+        $result = $this->render_string('<test.multiroot class="blue"></test.multiroot>', []);
+        $this->assertSame("<h1>hello</h1>\n<div class=\"static\">world</div>", trim($result));
+    }
+
+    public function testFallthroughId() {
+        $result = $this->render_string('<test.hello id="blue" name="world"></test.hello>', []);
+
+        $this->assertSame('<div class="test_hello root" id="blue">hello world</div>', trim($result));
     }
 
     public function testRecursiveComponent() {

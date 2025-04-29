@@ -22,7 +22,7 @@ TODO:
     - stylemap
 */
 
-class dom_compiler {
+class template_compiler {
 
     /**
      * @var string HTML
@@ -32,7 +32,7 @@ class dom_compiler {
     public array $result = [];
     private $expressionParser;
 
-    public function __construct(public HTMLDocument $dom, array $methods, public compiler_options $compiler_options, public ?Document $head = null) {
+    public function __construct(public HTMLDocument $dom, array $methods, public compiler_options $compiler_options, public ?Document $head = null, public int $total_rootelements = 0) {
         // $this->expressionParser = new CachingExpressionParser(new BasicJsExpressionParser($methods));
         // $this->expressionParser = new SMPLang(['strrev' => 'strrev']);
         $this->expressionParser = new expressions();
@@ -98,7 +98,7 @@ class dom_compiler {
         // TODO: check allowed tags
         if ($attr = $compiler_options->check_and_remove_attribute($node, "html")) {
             $tag = tag::new_from_dom_element($node, $compiler_options->binding_prefixes(), html: $attr);
-            $this->result[] = new instruction("tag", tag: $tag, level: $level);
+            $this->result[] = new instruction("tag", tag: $tag, level: $level, single_root: ($this->total_rootelements == 1));
             // $this->result[] = new instruction("html", $attr);
             // ignore children
             $this->result[] = new instruction("endtag", tag: $tag);
@@ -107,7 +107,7 @@ class dom_compiler {
 
         $tag = tag::new_from_dom_element($node, $compiler_options->binding_prefixes());
         // dbg("++ path", $node->getNodePath());
-        $this->result[] = new instruction("tag", tag: $tag, level: $level);
+        $this->result[] = new instruction("tag", tag: $tag, level: $level, single_root: ($this->total_rootelements == 1));
         if ($name == "head" && $this->head) {
             $this->walk_nodes($this->head->documentElement, $compiler_options, $node, $level);
         }
