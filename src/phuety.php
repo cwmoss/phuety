@@ -14,6 +14,7 @@ class phuety {
     public ?expressions $expression_parser = null;
 
     public array $compiled = [];
+    public array $collected = [];
 
     public string $component_name_separator = ".";
 
@@ -101,15 +102,39 @@ class phuety {
     public function run(string $cname, array $data) {
         // $this->compiled = [];
         $context = $this->context->with_top($cname);
-        $assetholder = new asset;
+
+        $assetholder = $this->collect($cname);
         $runner = function ($runner, $component_name, $props, $slots = []) use ($assetholder) {
-            $this->get_component($component_name)($runner, $props, $slots, $assetholder);
+            $this->get_component($component_name)->run($runner, $this, $props, $slots, $assetholder);
         };
         $runner($runner, $cname, $data);
         //$component = $this->get_component($cname, true);
         // $data['$asset'] = new asset;
         // $component->run($this, $data);
         //$component($data, [], new asset);
+    }
+
+    public function collect($cname): asset {
+        if (isset($this->collected[$cname])) return $this->collected[$cname];
+        $all_components = [];
+        $this->collect_all($cname, $all_components);
+        // dbg("++ all components", $all_components);
+        $assetholder = new asset;
+        foreach ($all_components as $name => $dummy) {
+            $this->get_component($name)->collect_assets($assetholder);
+        }
+        $this->collected[$cname] = $assetholder;
+        return $assetholder;
+    }
+
+    public function collect_all($cname, array &$visited) {
+        $component = $this->get_component($cname);
+        $visited[$cname] = true;
+        if ($component->components) {
+            foreach ($component->components as $child) {
+                if (!isset($visited[$child])) $this->collect_all($child, $visited);
+            }
+        }
     }
 
     public function is_component($tagname) {
@@ -167,7 +192,7 @@ location layout => layout => layout
         if ($path[0] != "/") $filename = $this->base . '/' . $path;
         else $filename = $path;
 
-        dbg("++ loading component source", $tagname, $filename);
+        // dbg("++ loading component source", $tagname, $filename);
         if (file_exists($filename . $this->sfc_extension)) {
             return [file_get_contents($filename . $this->sfc_extension), $filename, false];
         }
@@ -208,8 +233,8 @@ location layout => layout => layout
             //$comp->assetholder = current($this->compiled)->assetholder;
         }
         // $this->compiled[$name] = $comp;
-        return component::get_runner($this, $comp, new asset);
-        // return $comp;
+        // return component::get_runner($this, $comp, new asset);
+        return $comp;
     }
 
     public function load_component_class($name, $dir) {

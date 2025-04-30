@@ -22,6 +22,7 @@ class component {
     public bool $has_code = false;
     public bool $has_style = false;
     public array $assets = [];
+    public ?array $components = null;
 
     // public $slot;
 
@@ -54,24 +55,26 @@ class component {
     static function new_from_string(string $tpl): component {
         return new self($tpl);
     }
-
-    public function run(phuety $engine, array $props = [], array $slots = []): void {
-        // TODO: optimize
+    public function collect_assets(asset $assetholder) {
         foreach ($this->assets as $asset) {
-            $this->assetholder->push($this->uid, $asset);
+            $assetholder->push($this->uid, $asset);
         }
+    }
+    public function run($runner, phuety $engine, array $props = [], array $slots = [], ?asset $assetholder = null): void {
+        // TODO: optimize
+
         // dbg("++ all helper", $engine->helper);
         $props_container = new data_container($props, $engine->helper);
-        $local = $this->run_code($props_container, $slots, $props_container);
+        $local = $this->run_code($props_container, $slots, $props_container, $assetholder);
         if ($local) $props_container->_add_local($local);
-        $this->render($engine, $props_container, $slots);
+        $this->render($runner, $props_container, $slots);
     }
 
     static public function get_runner(phuety $engine, self $component) {
         $assets = $component->assets;
 
         return function ($runner, array $props = [], array $slots = [], ?asset $assetholder = null) use ($component, $engine, $assets) {
-            if ($assetholder) foreach ($assets as $asset) {
+            if (false && $assetholder) foreach ($assets as $asset) {
                 $assetholder->push($component->uid, $asset);
             }
 

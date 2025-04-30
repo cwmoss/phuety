@@ -1,2 +1,2 @@
 test:
-	vendor/bin/phpunit tests/phpunit/ --display-warnings --display-errors
+	vendor/bin/phpunit tests/phpunit/ --display-warnings --display-errors --display-deprecations

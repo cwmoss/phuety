@@ -20,6 +20,7 @@ class NAME_component extends component {
     public array $assets = ASSETS;
     public array $custom_tags = CUSTOM_TAGS;
     public int $total_rootelements = TOTAL_ROOTELEMENTS;
+    public ?array $components = COMPONENTS;
 
     public function run_code(data_container $props, array $slots, data_container $helper, asset $assetholder): array{
         // dbg("++ props for component", $this->name, $props);PHPCODE

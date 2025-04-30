@@ -6,7 +6,7 @@ use Dom\HTMLElement;
 
 class handle_link {
 
-    public function __construct(public string $baseurl = '/assets/generated/', public bool $remove_node = true) {
+    public function __construct(public string $baseurl = '/assets/build/', public bool $remove_node = true) {
     }
 
     public function handle(HtmlElement $node, parts $parts): bool {
