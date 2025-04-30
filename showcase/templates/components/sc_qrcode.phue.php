@@ -1,5 +1,6 @@
 <img :src="code" :alt="'QR Code..'">
 
+{{props.phuety}}
 
 <?php
 

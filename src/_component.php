@@ -14,6 +14,7 @@ class NAME_component extends component {
     public string $uid = "UID";
     public bool $is_layout = ISLAYOUT;
     public string $name = "NAME";
+    public string $tagname = "TAGNAME";
     public bool $has_template = HAS_TEMPLATE;
     public bool $has_code = HAS_CODE;
     public bool $has_style = HAS_STYLE;

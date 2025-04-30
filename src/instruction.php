@@ -92,8 +92,9 @@ class instruction {
         // $__engine->get_component("%s")->run($__engine, %s + %s %s);
         if ($tag->is_component) {
             return sprintf(
-                '<?php $__runner($__runner, "%s", %s + %s %s); ?>',
+                '<?php $__runner($__runner, "%s", %s, %s + %s %s); ?>',
                 $tag->tagname,
+                sprintf('$__d->_get("phuety")->with($this->tagname, "%s")', $tag->tagname),
                 $this->php_bindings($ep, true),
                 var_export($tag->attrs, true),
                 ($tag->has_children || $tag->html_content_expression) ?

@@ -9,6 +9,8 @@
 
 </nav>
 
+{{props.phuety}}
+
 <style>
     a.active {
         text-decoration: none;

@@ -104,10 +104,10 @@ class phuety {
         $context = $this->context->with_top($cname);
 
         $assetholder = $this->collect($cname);
-        $runner = function ($runner, $component_name, $props, $slots = []) use ($assetholder) {
-            $this->get_component($component_name)->run($runner, $this, $props, $slots, $assetholder);
+        $runner = function ($runner, $component_name, phuety_context $context, $props, $slots = []) use ($assetholder) {
+            $this->get_component($component_name)->run($runner, $this, $context, $props, $slots, $assetholder);
         };
-        $runner($runner, $cname, $data);
+        $runner($runner, $cname, $context, $data);
         //$component = $this->get_component($cname, true);
         // $data['$asset'] = new asset;
         // $component->run($this, $data);

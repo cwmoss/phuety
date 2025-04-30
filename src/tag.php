@@ -153,6 +153,9 @@ class tag {
     }
 
     public static function h($attr): string {
+        if (is_array($attr) || is_object($attr)) {
+            $attr = json_encode($attr, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        }
         return htmlspecialchars($attr);
     }
 

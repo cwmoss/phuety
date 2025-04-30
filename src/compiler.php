@@ -74,6 +74,7 @@ class compiler {
         // dbg("create component", $name, $parts);
         # print "create component $name";
         // print_r($parts);
+        $tagname = str_replace('_', '.', $name);
         $tpl = file_get_contents(__DIR__ . '/_component.php');
         $dir = $this->cbase;
         [$php, $use] = $this->get_use_statements($parts->php);
@@ -81,6 +82,7 @@ class compiler {
         if (!$components) $components = null;
         // print_r($parts);
         $repl = [
+            'TAGNAME' => $tagname,
             'NAME' => $name,
             'UID' => $parts->uid,
             'ISLAYOUT' => var_export($parts->is_layout, true),

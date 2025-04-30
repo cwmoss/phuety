@@ -60,11 +60,9 @@ class component {
             $assetholder->push($this->uid, $asset);
         }
     }
-    public function run($runner, phuety $engine, array $props = [], array $slots = [], ?asset $assetholder = null): void {
-        // TODO: optimize
-
+    public function run($runner, phuety $engine, phuety_context $context, array $props = [], array $slots = [], ?asset $assetholder = null): void {
         // dbg("++ all helper", $engine->helper);
-        $props_container = new data_container($props, $engine->helper);
+        $props_container = new data_container(["phuety" => $context] + $props, $engine->helper);
         $local = $this->run_code($props_container, $slots, $props_container, $assetholder);
         if ($local) $props_container->_add_local($local);
         $this->render($runner, $props_container, $slots);
