@@ -296,9 +296,9 @@ Some examples:
 
 https://symfony.com/doc/current/reference/formats/expression_language.html
 
-### <app.assets head|body />
+### <phuety.assets head|body />
 
-links to css/js files
+Build in Component. It collects the assets used in a page and prints the links to css/js files. Can be used in html `<head>` and before the `</body>`
 
 ## Component Map
 
