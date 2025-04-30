@@ -25,8 +25,8 @@ class component {
 
     // public $slot;
 
-    public bool $is_start = false;
-    protected phuety $engine;
+    // public bool $is_start = false;
+
     // expression parser
     protected $ep;
     // public $dom = null;
@@ -45,27 +45,41 @@ class component {
     }
 
     public function set_engine($e) {
-        $this->engine = $e;
+        # $this->engine = $e;
     }
 
     public function set_ep($ep) {
-        $this->ep = $ep;
+        # $this->ep = $ep;
     }
     static function new_from_string(string $tpl): component {
         return new self($tpl);
     }
 
-    public function run(array $props = [], array $slots = []) {
+    public function run(phuety $engine, array $props = [], array $slots = []): void {
         // TODO: optimize
         foreach ($this->assets as $asset) {
             $this->assetholder->push($this->uid, $asset);
         }
-        // dbg("++ all helper", $this->engine->helper);
-        $props = new data_container($props, $this->engine->helper);
-        $local = $this->run_code($props, $slots, $props);
-        if ($local) $props->_add_local($local);
-        $res = $this->render($props, $slots);
-        return $res;
+        // dbg("++ all helper", $engine->helper);
+        $props_container = new data_container($props, $engine->helper);
+        $local = $this->run_code($props_container, $slots, $props_container);
+        if ($local) $props_container->_add_local($local);
+        $this->render($engine, $props_container, $slots);
+    }
+
+    static public function get_runner(phuety $engine, self $component) {
+        $assets = $component->assets;
+
+        return function ($runner, array $props = [], array $slots = [], ?asset $assetholder = null) use ($component, $engine, $assets) {
+            if ($assetholder) foreach ($assets as $asset) {
+                $assetholder->push($component->uid, $asset);
+            }
+
+            $props_container = new data_container($props, $engine->helper);
+            $local = $component->run_code($props_container, $slots, $props_container, $assetholder);
+            if ($local) $props_container->_add_local($local);
+            $component->render($runner, $props_container, $slots);
+        };
     }
 
     public function separate_functions($input) {
@@ -80,11 +94,11 @@ class component {
         return [$data, $fun];
     }
 
-    public function run_code(data_container $props, array $slots, data_container $helper): array {
+    public function run_code(data_container $props, array $slots, data_container $helper, asset $assetholder): array {
         return [];
     }
 
-    public function render(data_container $__d, array $slots = []): void {
+    public function render($__runner, data_container $__d, array $slots = []): void {
         // return "";
     }
 

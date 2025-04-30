@@ -2,6 +2,7 @@
 
 namespace phuety;
 
+use Closure;
 use Exception;
 use Le\SMPLang\SMPLang;
 use phuety\symfony_el\expressions;
@@ -9,8 +10,8 @@ use ReflectionClass;
 
 class phuety {
 
-    public compiler $compiler;
-    public $expression_parser;
+    public ?compiler $compiler = null;
+    public ?expressions $expression_parser = null;
 
     public array $compiled = [];
 
@@ -49,11 +50,13 @@ class phuety {
         } elseif (!is_writable($this->cbase)) {
             throw new Exception("compile dir must be writeable ($this->cbase)");
         }
-        if (!$this->compiler_options) $this->compiler_options = new compiler_options();
-        $this->compiler = new compiler($this);
-        $this->expression_parser = new expressions();
-        // $this->expression_parser = new dotdata(['strrev' => 'strrev']);
-        // $this->expression_parser = new SMPLang(['strrev' => 'strrev']);
+        if ($this->compile_mode !== "never") {
+            if (!$this->compiler_options) $this->compiler_options = new compiler_options();
+            $this->compiler = new compiler($this);
+            $this->expression_parser = new expressions();
+            // $this->expression_parser = new dotdata(['strrev' => 'strrev']);
+            // $this->expression_parser = new SMPLang(['strrev' => 'strrev']);
+        }
     }
     public function set_custom_tag($tag) {
         $this->compiler->set_custom_tag($tag);
@@ -73,26 +76,34 @@ class phuety {
         $component = $this->get_tmp_component($cname, $tpl);
         // print_r($component);
         // TODO: optimize?
-        unlink(new ReflectionClass($component)->getFileName());
         // unlink($this->cbase . "/" . $component->name . "_component.php");
-        $data['$asset'] = new asset;
+        // $data['$asset'] = new asset;
         ob_start();
-        $component->run($data);
+        // $component->run($this, $data);
+        $component($data, [], new asset);
         return ob_get_clean();
     }
 
     public function render(string $cname, array $data): string {
         $component = $this->get_component($cname, true);
-        $data['$asset'] = new asset;
+        // $data['$asset'] = new asset;
         ob_start();
-        $component->run($data);
+        // $component->run($this, $data);
+        $component($data, [], new asset);
         return ob_get_clean();
     }
 
     public function run(string $cname, array $data) {
-        $component = $this->get_component($cname, true);
-        $data['$asset'] = new asset;
-        return $component->run($data);
+        // $this->compiled = [];
+        $assetholder = new asset;
+        $runner = function ($runner, $component_name, $props, $slots = []) use ($assetholder) {
+            $this->get_component($component_name)($runner, $props, $slots, $assetholder);
+        };
+        $runner($runner, $cname, $data);
+        //$component = $this->get_component($cname, true);
+        // $data['$asset'] = new asset;
+        // $component->run($this, $data);
+        //$component($data, [], new asset);
     }
 
     public function is_component($tagname) {
@@ -151,7 +162,7 @@ location layout => layout => layout
         return [file_get_contents($filename), $filename];
     }
 
-    public function get_component($tagname, $start = false): component {
+    public function get_component($tagname, $start = false): component|Closure { #: component
         $cname = str_replace($this->component_name_separator, '_', $tagname);
         if ($this->compiled[$cname] ?? null) {
             $comp = $this->compiled[$cname];
@@ -161,34 +172,37 @@ location layout => layout => layout
             }
             $comp = $this->load_component($cname);
         }
-        if ($start) $comp->is_start = true;
+        // if ($start) $comp->is_start = true;
         return $comp;
     }
 
-    public function get_tmp_component($tagname, $src): component {
+    public function get_tmp_component($tagname, $src): component|Closure {
         $cname = str_replace($this->component_name_separator, '_', $tagname);
         if ($this->compiled[$cname] ?? null) {
             $comp = $this->compiled[$cname];
         } else {
             $uid = $this->compiler->compile($cname, [$src, ""]);
-            $comp = $this->load_component($cname);
+            $comp = $this->load_component($cname, true);
         }
-        $comp->is_start = true;
+        // $comp->is_start = true;
         return $comp;
     }
 
-    public function load_component($name) {
+    public function load_component($name, $tmp = false): component|Closure {
         // $cname = str_replace('-', '_', $name); //  . '_component';
         $comp = $this->load_component_class($name, $this->cbase);
-        $comp->set_engine($this);
-        $comp->set_ep($this->expression_parser);
+        if ($tmp) unlink(new ReflectionClass($comp)->getFileName());
+        // $comp->set_engine($this);
+        // $comp->set_ep($this->expression_parser);
         if (!current($this->compiled)) {
-            $comp->assetholder = new asset;
+            //$comp->assetholder = new asset;
         } else {
-            $comp->assetholder = current($this->compiled)->assetholder;
+            //$comp->assetholder = current($this->compiled)->assetholder;
         }
-        $this->compiled[$name] = $comp;
-        return $comp;
+        // $this->compiled[$name] = $comp;
+        $this->compiled[$name] = component::get_runner($this, $comp, new asset);
+        return $this->compiled[$name];
+        // return $comp;
     }
 
     public function load_component_class($name, $dir) {
