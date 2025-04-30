@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <app.assets head></app.assets>
+  <phuety.assets head></phuety.assets>
 
   <link rel="stylesheet" href="/assets/mvp.css">
   <link rel="stylesheet" href="/components-css">
@@ -38,7 +38,7 @@
     <Userprofile userid="enduser"></Userprofile>
   </main>
 
-  <app.assets body />
+  <phuety.assets body />
 </body>
 
 </html>

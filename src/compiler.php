@@ -22,7 +22,9 @@ class compiler {
     }
 
     public function compile($name, array $src) {
-        [$source, $src_file] = $src;
+        [$source, $src_file, $is_compiled] = $src;
+        if ($is_compiled) return;
+
         $splitter = new splitter([], $this->engine->asset_base(), $this->custom_tags, $this->engine->opts);
         $parts = $splitter->split_php($source, $name);
         $parts->compile_basedir = $this->cbase;
@@ -122,7 +124,7 @@ class compiler {
     }
 
     public function write_js(string $name, array $js) {
-        $gendir = $this->engine->asset_base() . '/generated';
+        $gendir = $this->engine->asset_build_dir();
         foreach (glob("{$gendir}/{$name}---*.js") as $fname) {
             unlink($fname);
         }

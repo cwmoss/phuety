@@ -1,5 +1,7 @@
 vendor/
 composer.lock
 compiled/
+showcase/public/assets/generated
+showcase/public/assets/build
 .DS_Store
 .phpunit.result.cache
