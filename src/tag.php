@@ -61,6 +61,7 @@ class tag {
 
     public bool $is_component = false;
     public bool $is_slot = false;
+    public bool $is_template = false;
     public bool $is_asset = false;
 
     public ?string $slotname = null;
@@ -83,6 +84,8 @@ class tag {
             $this->is_slot = true;
             [$dummy, $name] = explode(".", $tagname, 2);
             $this->slotname = $name ?: "default";
+        } elseif ($tagname == "template.") {
+            $this->is_template = true;
         } elseif (str_contains($tagname, ".")) {
             $this->is_component = true;
         } elseif ($tagname == "link" && ($attrs["rel"] ?? null) == "assets") {

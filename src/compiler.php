@@ -54,16 +54,18 @@ class compiler {
         // var_dump($dom);
         $splitter->split_sfc($dom, $name, $is_layout, $parts);
 
-        $parts->render = $dom ? $this->compile_dom($name, $parts) : "";
+        if ($dom) $this->compile_template($name, $parts);
         $uid = $this->create_component($name, $parts);
 
         // $uid = component::create($name, $this->cbase, $parts);
         return $uid;
     }
 
-    public function compile_dom($name, $parts) {
+    public function compile_template($name, $parts) {
         $compiler = new template_compiler($parts->dom, [], $this->engine->compiler_options, $parts->head, $parts->total_rootelements);
         $res = $compiler->compile();
+        $parts->render = $res;
+        $parts->components = $compiler->components;
         return $res;
     }
     public function create_component($name, parts $parts) {
@@ -73,6 +75,8 @@ class compiler {
         $tpl = file_get_contents(__DIR__ . '/_component.php');
         $dir = $this->cbase;
         [$php, $use] = $this->get_use_statements($parts->php);
+        $components = array_values(array_unique($parts->components));
+        if (!$components) $components = null;
         // print_r($parts);
         $repl = [
             'NAME' => $name,
@@ -87,6 +91,7 @@ class compiler {
             'RENDER' => $parts->render,
             'CUSTOM_TAGS' => var_export($parts->custom, true),
             'TOTAL_ROOTELEMENTS' => $parts->total_rootelements,
+            'COMPONENTS' => var_export($components, true),
             'DEBUG_INFO' => var_export(["src" => $parts->src_file, "php" => $parts->php_start], true)
         ];
 

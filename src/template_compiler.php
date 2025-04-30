@@ -30,6 +30,8 @@ class template_compiler {
     private $template;
 
     public array $result = [];
+    public array $components = [];
+
     private $expressionParser;
 
     public function __construct(public HTMLDocument $dom, array $methods, public compiler_options $compiler_options, public ?Document $head = null, public int $total_rootelements = 0) {
@@ -102,10 +104,13 @@ class template_compiler {
             // $this->result[] = new instruction("html", $attr);
             // ignore children
             $this->result[] = new instruction("endtag", tag: $tag);
+            if ($tag->is_component) $this->components[] = $name;
             return;
         }
 
         $tag = tag::new_from_dom_element($node, $compiler_options->binding_prefixes());
+        if ($tag->is_component) $this->components[] = $name;
+
         // dbg("++ path", $node->getNodePath());
         $this->result[] = new instruction("tag", tag: $tag, level: $level, single_root: ($this->total_rootelements == 1));
         if ($name == "head" && $this->head) {
