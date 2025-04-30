@@ -82,19 +82,22 @@ In the php section, you have access to the following variables:
 - (object) `$props`, containing the properties passed to the component,
 - (object) `$helper`, containing optional helper functions, passed to the phuety engine
 - (array) `$slots`, containing the slots passed to the component.
+- (object) `$phuety`, containing the phuety context (mode, parent, component, top),
 
 #### Template Section
 
 In the template section, you have access to the following variables:
 
 - (object) `$props`, containing the properties passed to the component
+- (object) `$phuety`, containing the phuety context (mode, parent, component, top),
 - all variables and closures defined in the php section
 
 The properties are also merged with the defined variables in this order (first wins):
 
-1. `$props` (the property object)
-2. local defined names
-3. property names
+1. `props` the property object
+2. `phuety` the phuety context object
+3. local defined names
+4. property names
 
 ```html
 <div :html="props.name"></div>

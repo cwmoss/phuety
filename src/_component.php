@@ -6,6 +6,8 @@ use phuety\data_container;
 use phuety\phuety;
 use phuety\tag;
 use phuety\asset;
+use phuety\phuety_context;
+
 use function phuety\dbg;
 
 USESTATEMENTS
@@ -23,7 +25,7 @@ class NAME_component extends component {
     public int $total_rootelements = TOTAL_ROOTELEMENTS;
     public ?array $components = COMPONENTS;
 
-    public function run_code(data_container $props, array $slots, data_container $helper, asset $assetholder): array{
+    public function run_code(data_container $props, array $slots, data_container $helper, phuety_context $phuety, asset $assetholder): array{
         // dbg("++ props for component", $this->name, $props);PHPCODE
         return get_defined_vars();
     }

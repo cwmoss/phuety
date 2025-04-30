@@ -9,7 +9,7 @@
 
 </nav>
 
-{{props.phuety}}
+{{phuety}}
 
 <style>
     a.active {

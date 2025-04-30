@@ -53,6 +53,9 @@ class data_container {
         $this->data += $local_var_and_closures;
     }
 
+    public function _add_phuety_context(phuety_context $context) {
+        $this->data = ["phuety" => $context] + $this->data;
+    }
     /*
         magic methods && bool converter are used in the php sections of SFC templates
     */

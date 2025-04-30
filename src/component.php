@@ -62,13 +62,14 @@ class component {
     }
     public function run($runner, phuety $engine, phuety_context $context, array $props = [], array $slots = [], ?asset $assetholder = null): void {
         // dbg("++ all helper", $engine->helper);
-        $props_container = new data_container(["phuety" => $context] + $props, $engine->helper);
-        $local = $this->run_code($props_container, $slots, $props_container, $assetholder);
+        $props_container = new data_container($props, $engine->helper);
+        $local = $this->run_code($props_container, $slots, $props_container, $context, $assetholder);
+        // $props_container->_add_phuety_context($context);
         if ($local) $props_container->_add_local($local);
         $this->render($runner, $props_container, $slots);
     }
 
-    static public function get_runner(phuety $engine, self $component) {
+    static public function xxxget_runner(phuety $engine, self $component) {
         $assets = $component->assets;
 
         return function ($runner, array $props = [], array $slots = [], ?asset $assetholder = null) use ($component, $engine, $assets) {
@@ -77,7 +78,7 @@ class component {
             }
 
             $props_container = new data_container($props, $engine->helper);
-            $local = $component->run_code($props_container, $slots, $props_container, $assetholder);
+            $local = $component->run_code($props_container, $slots, $props_container, $context, $assetholder);
             if ($local) $props_container->_add_local($local);
             $component->render($runner, $props_container, $slots);
         };
@@ -95,7 +96,7 @@ class component {
         return [$data, $fun];
     }
 
-    public function run_code(data_container $props, array $slots, data_container $helper, asset $assetholder): array {
+    public function run_code(data_container $props, array $slots, data_container $helper, phuety_context $phuety, asset $assetholder): array {
         return [];
     }
 
