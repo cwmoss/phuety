@@ -25,6 +25,7 @@ class parts {
         public array $assets = [],
         // public $uid => $name . '---' . uniqid(),
         public int $total_rootelements = 0,
+        public array $components = [],
         public array $custom = []
     ) {
     }
