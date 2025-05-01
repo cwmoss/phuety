@@ -8,8 +8,11 @@ ini_set("display_errors", 0);
 $http_method = $_SERVER['REQUEST_METHOD'];
 // $path = $_SERVER['REQUEST_URI'] ?: '/';
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-error_log("path: $path --");
+error_log("path: $path");
 send_nocache();
+
+$hdl = fn($e) => include_once(__DIR__ . "/boot_exception.html");
+set_exception_handler($hdl);
 
 if ($_SERVER['REQUEST_URI'] == '/assets/mvp.css') {
     header("Content-Type: text/css");

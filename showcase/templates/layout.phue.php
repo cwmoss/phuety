@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html :lang="language">
 
 <head class="light">
   <meta charset="UTF-8">
@@ -26,7 +26,7 @@
 </head>
 
 <body :class="bodyclass">
-  <header>
+  <header :else>
     <sc.navigation :path="props.path"></sc.navigation>
   </header>
   <main>
@@ -44,6 +44,7 @@
 </html>
 
 <?php
+$language = "en";
 $bodyclass = ''; // $props['class'] ?? '';
 $smile = "😃";
 

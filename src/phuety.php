@@ -194,9 +194,9 @@ location layout => layout => layout
 
         // dbg("++ loading component source", $tagname, $filename);
         if (file_exists($filename . $this->sfc_extension)) {
-            return [file_get_contents($filename . $this->sfc_extension), $filename, false];
+            return [file_get_contents($filename . $this->sfc_extension), $filename . $this->sfc_extension, false];
         }
-        return [file_get_contents($filename . $this->component_extension), $filename, true];
+        return [file_get_contents($filename . $this->component_extension), $filename . $this->component_extension, true];
     }
 
     public function get_component($tagname, ?string $string_source = null): component|Closure { #: component

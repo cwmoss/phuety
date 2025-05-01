@@ -5,6 +5,7 @@ namespace phuety;
 class instruction {
 
     public function __construct(
+        public int $line_no,
         public string $name,
         public ?string $expression = null,
         public ?tag $tag = null,

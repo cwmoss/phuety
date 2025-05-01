@@ -1,0 +1,61 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Error</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+          "Segoe UI Symbol";
+        box-sizing: border-box;
+        /* background-image: "";
+            background-size: cover;
+            */
+      }
+
+      main {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: row;
+        column-gap: 20px;
+      }
+
+      section {
+        max-width: 85ch;
+        background-color: white;
+        padding: 1em;
+        margin-top: -10em;
+      }
+      pre {
+        max-width: 85ch;
+        white-space: pre-wrap;
+      }
+      .container img {
+        width: 420px;
+      }
+
+      .text {
+        display: block;
+        padding: 40px 40px;
+        width: 450px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <main>
+      <section>
+        <h1>500</h1>
+        <code>
+          <pre><?= htmlspecialchars($e->getMessage()) ?></pre>
+
+          <pre><?= $e->getTraceAsString() ?></pre>
+        </code>
+      </section>
+    </main>
+  </body>
+</html>

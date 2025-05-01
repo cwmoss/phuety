@@ -14,7 +14,8 @@ class parts {
     public bool $is_layout = false;
     public string $compile_basedir = "";
     public string $src_file = "";
-
+    public string $source = "";
+    public array $line_offsets = [0, 0];
     public function __construct(
         public string $name = "",
         public string $php = "",

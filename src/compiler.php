@@ -29,6 +29,7 @@ class compiler {
         $parts = $splitter->split_php($source, $name);
         $parts->compile_basedir = $this->cbase;
         $parts->src_file = $src_file;
+        $parts->source = $source;
         $is_layout = false;
         $dom = null;
         $head = null;
@@ -39,10 +40,17 @@ class compiler {
             $is_layout = true;
             // $dom = compiler::get_document($html);
             // $source = str_replace(["<head", "</head>"], ["<xead", "</xead>"], $source);
-            if (preg_match("~(<head.*?>)(.*?)</head>~ism", $parts->html, $mat)) {
-                // dbg("++ found head", $mat);
-                $parts->html = str_replace($mat[0], $mat[1] . '', $parts->html);
-                $parts->head = dom::get_template_fragment($mat[2]);
+            if (preg_match("~(<head.*?>)(.*?)(</head>)~ism", $parts->html, $mat, \PREG_OFFSET_CAPTURE)) {
+                $parts->line_offsets = [
+                    // line where <head.. starts
+                    count(explode("\n", substr($parts->html, 0, $mat[0][1]))),
+                    // line where </head> ends
+                    count(explode("\n", substr($parts->html, 0, $mat[3][1] + 7))),
+                ];
+                // the head is reduced to the start tag
+                $parts->html = str_replace($mat[0][0], $mat[1][0] . '', $parts->html);
+                $parts->head = dom::get_template_fragment($mat[2][0]);
+                dbg("++ found head", $parts->html, $mat[0][1], $mat[3][1] + 7, $parts->line_offsets);
             }
             $dom = dom::get_document($parts->html);
             // dbg("++ doctype", $dom->saveHtml($dom->doctype));

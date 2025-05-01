@@ -6,12 +6,15 @@
 
   <h2 :if="ok">hello {{ strrev(name) }}</h2>
 
+
   <sc.modal title="Content In Modal For Some Reasons" open="Can I Have Modals?">
     <p>Why? But yeah.</p>
 
     <em>ok</em>
 
   </sc.modal>
+
+  <img html="dummy">
 
   <sc.code file="components/sc_modal.phue.php"></sc.code>
   <sc.code file="pages/home.phue.php"></sc.code>
