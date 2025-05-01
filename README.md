@@ -19,10 +19,6 @@ _phuety_ gives you a nice way to code the html views in your application.
 - automatic, context aware escaping :white_check_mark:
 - it's fast, since it compiles to php :white_check_mark:
 
-# Die Schönheit der Einfachheit
-
-_phuety_ enables vue like templating on the most easy platform (the php) by marrying the php dom parser with the symfony expression parser. simple, powerful, beautiful :)
-
 ## How?
 
 ### Naming
