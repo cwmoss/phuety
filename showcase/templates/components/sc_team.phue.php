@@ -2,7 +2,7 @@
     <ul class="splide__pagination"></ul>
     <div class="splide__track">
         <div class="splide__list">
-            <aside v-foreach="person in props.persons" class="slide splide__slide">
+            <aside :foreach="person in props.persons" class="slide splide__slide">
 
                 <h3>{{person.name.first}} {{person.name.last}}</h3>
                 <img :src="person.picture.large"></img>
@@ -30,5 +30,13 @@
         width: 200px;
         margin-right: 16px;
 
+    }
+
+    .splide__pagination {
+        bottom: -1.5em;
+    }
+
+    .splide__pagination__page.is-active {
+        background: green;
     }
 </style>

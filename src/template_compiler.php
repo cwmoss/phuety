@@ -14,14 +14,6 @@ use Le\SMPLang\SMPLang;
 use phuety\symfony_el\expressions;
 use Symfony\Component\ExpressionLanguage\SyntaxError;
 
-/*
-TODO: 
-    - named slots
-    - bindings, boolean
-    - classmap
-    - stylemap
-*/
-
 class template_compiler {
 
     /**
@@ -34,7 +26,13 @@ class template_compiler {
 
     private $expressionParser;
 
-    public function __construct(public HTMLDocument $dom, array $methods, public compiler_options $compiler_options, public ?Document $head = null, public int $total_rootelements = 0) {
+    public function __construct(
+        public HTMLDocument $dom,
+        array $methods,
+        public compiler_options $compiler_options,
+        public ?Document $head = null,
+        public int $total_rootelements = 0
+    ) {
         // $this->expressionParser = new CachingExpressionParser(new BasicJsExpressionParser($methods));
         // $this->expressionParser = new SMPLang(['strrev' => 'strrev']);
         $this->expressionParser = new expressions();

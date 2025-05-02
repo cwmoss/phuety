@@ -156,7 +156,7 @@ class tag {
         if (is_array($attr) || is_object($attr)) {
             $attr = json_encode($attr, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
         }
-        return htmlspecialchars($attr);
+        return htmlspecialchars((string)$attr);
     }
 
     public static function tag_open_merged_attrs(string $name, array $bindings, array $attrs, ?object $fallthrough_props = null) {

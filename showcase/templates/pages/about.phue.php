@@ -1,7 +1,7 @@
 <app.layout title="About Us" :path="props.path">
 
     <h1>Our Team</h1>
-    <sc.team :persons="res.data.results"></sc.team>
+    <sc.team :persons="data.results"></sc.team>
 
     <sc.code file="components/sc_team.phue.php"></sc.code>
 </app.layout>
@@ -19,6 +19,7 @@
 
 use Leaf\Fetch;
 
-$res = Fetch::get("https://randomuser.me/api/?results=12");
+$res = file_get_contents("https://randomuser.me/api/?results=12");
+$data = json_decode($res);
 
 ?>

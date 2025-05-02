@@ -26,7 +26,7 @@
 </head>
 
 <body :class="bodyclass">
-  <header :else>
+  <header>
     <sc.navigation :path="props.path"></sc.navigation>
   </header>
   <main>
