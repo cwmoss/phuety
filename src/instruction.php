@@ -45,7 +45,7 @@ class instruction {
     }
 
     public function mask_phptags($text) {
-        return strtr($text, ['<?php' => '<?="<?php"?>', '?>' => '<?="?>"']);
+        return strtr($text, ['<?php' => "<?= '<?php' ?>", '?>' => "<?= '?>' ?>"]);
     }
 
     public function php_element($ep): string {
