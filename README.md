@@ -2,7 +2,7 @@
 
     # you'll need php8.4 with the dom extension enabled
     composer require cwmoss/phuety dev-main
-    php -S localhost:4000 -t showcase/public/
+    php -S localhost:4000 -t vendor/cwmoss/phuety/showcase/public/
 
 > [!NOTE]
 > This project is still beta. The API is subject to change.
