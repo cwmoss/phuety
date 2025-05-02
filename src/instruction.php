@@ -37,14 +37,18 @@ class instruction {
             "endslotted" => sprintf('<?php $__s[0]["%s"]=ob_get_clean(); ?>', $this->expression),
             "doctype" => $this->html,
             "#comment" => '<!--' . $this->text . '-->',
-            "#skip" => $this->text,
+            "#skip" => $this->mask_phptags($this->text),
             default => "default-{$this->name}"
         };
 
         return $php;
     }
 
-    function php_element($ep): string {
+    public function mask_phptags($text) {
+        return str_replace(['<?php', '?>'], ['<?="<?php"?>', '<?="?>"'], $text);
+    }
+
+    public function php_element($ep): string {
         $tag = $this->tag;
         $html = "";
         if ($tag->html_content_expression) {
