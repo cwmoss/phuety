@@ -2,6 +2,9 @@
 
     # you'll need php8.4 with the dom extension enabled
     composer require cwmoss/phuety dev-main
+
+    # for running the demo, you'll need a qr code package
+    composer require chillerlan/php-qrcode
     php -S localhost:4000 -t vendor/cwmoss/phuety/showcase/public/
 
 > [!NOTE]

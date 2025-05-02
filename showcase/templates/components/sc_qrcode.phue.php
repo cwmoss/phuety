@@ -1,4 +1,4 @@
-<img :src="code" :alt="'QR Code..'">
+<img :src="code" :alt="'QR Code for: '~data" :style="{width:size}">
 
 
 {{phuety}}
@@ -8,3 +8,5 @@
 use  chillerlan\QRCode\{QRCode, QROptions};
 
 $code = (new QRCode)->render($props->data);
+
+$size = $props->size ?? "200px";

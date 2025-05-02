@@ -40,7 +40,7 @@
   "require-dev": {
     "pestphp/pest": "^2.28",
     "phpunit/phpunit": "^10.4",
-    "chillerlan/php-qrcode": "^4.3",
+    "chillerlan/php-qrcode": "^5",
     "cwmoss/slowfoot": "dev-main"
   },
   "config": {
