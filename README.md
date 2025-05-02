@@ -346,6 +346,12 @@ full prefixed in template source folder.
     // render template string
     $output = $phuety->render_template_string("<h1 :html="title"></h1>", ['title' => 'Hello']);
 
+### compile_all([entrypoints])
+
+compiles all sfc components. optional takes a string or a list of entrypoints, that reflect a key in the maps array.
+
+    $phuety->compile_all("page.*");
+
 ## Examples
 
 look into `showcase/` dir

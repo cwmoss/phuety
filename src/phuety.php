@@ -149,22 +149,18 @@ class phuety {
     }
     /*
 
-tagname form-field
+tagname form.field
 cname form_field
 
 #        rule-key    rule-value     component source file (.phue.php)
-location form-*   => form/       => form/form_field 
+location form.*   => form/       => form/form_field 
 
-tagname page-hello
+tagname page.hello
 cname page_hello
-location page-* => pages/* => pages/hello
+location page.* => pages/* => pages/hello
 
-tagname phuety-assets
-cname phuety-assets
-location phuety-* => * => assets
-
-tagname layout
-cname layout
+tagname app.layout
+cname app_layout
 location layout => layout => layout
 */
     public function get_component_source_location($tagname) {
@@ -186,6 +182,18 @@ location layout => layout => layout
         return false;
     }
 
+    public function get_component_name_from_filename($filename, $mapkey, $mapvalue) {
+        // single component rule
+        if (!str_ends_with($mapkey, "*")) return $mapkey;
+
+        if (str_starts_with($filename, $this->base)) $filename = str_replace($this->base, "", $filename);
+        $fname = basename($filename, $this->sfc_extension);
+        $tagname = str_replace("_", $this->component_name_separator, $fname);
+        $prefix = rtrim($mapkey, ".*");
+        $expand = str_ends_with($mapvalue, "*");
+        if ($expand) return $prefix . "." . $tagname;
+        return $tagname;
+    }
     public function get_component_source($tagname): array {
         $path = $this->get_component_source_location($tagname);
         if (!$path) die("could not resolve component source for $tagname");
@@ -259,6 +267,28 @@ location layout => layout => layout
         foreach ($components as $name) {
             // $c = $this->get_component($name);
             $this->run($name, ["path" => "/dummy/path"]);
+        }
+    }
+
+    public function compile_all(null|string|array $entrypoints = null) {
+        $this->compile_mode = "always";
+        if ($entrypoints && !is_array($entrypoints)) $entrypoints = [$entrypoints];
+        foreach ($this->map as $key => $directory) {
+            if ($entrypoints && !in_array($key, $entrypoints)) continue;
+
+            $dir = $directory;
+            if ($dir[0] != "/") $dir = $this->base . "/" . $dir;
+            $glob = match (true) {
+                str_ends_with($dir, "*") => $dir . $this->sfc_extension,
+                str_ends_with($dir, "/") => $dir . '*' . $this->sfc_extension,
+                default => $dir . $this->sfc_extension
+            };
+            foreach (glob($glob) as $file) {
+                $tagname = $this->get_component_name_from_filename($file, $key, $directory);
+                // dbg("find tagname", $tagname);
+                $this->get_component($tagname);
+            }
+            // $this->run($name, ["path" => "/dummy/path"]);
         }
     }
 }

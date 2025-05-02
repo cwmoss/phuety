@@ -4,15 +4,17 @@
 <head class="light">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <phuety.assets head></phuety.assets>
-
-  <link rel="stylesheet" href="/assets/mvp.css">
   <link rel="stylesheet" href="/components-css">
+  <link rel="stylesheet" href="/assets/mvp.css">
+
   <title :html="props.title"></title>
   <style>
     nav {
       margin-bottom: 1em;
+    }
+
+    cta-modal:not(:defined) {
+      display: none;
     }
 
     header {
@@ -23,6 +25,9 @@
       padding-top: 1em;
     }
   </style>
+
+  <phuety.assets head></phuety.assets>
+
 </head>
 
 <body :class="bodyclass">

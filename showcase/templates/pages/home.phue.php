@@ -23,9 +23,9 @@
 
   <sc.code file="layout.phue.php"></sc.code>
 
-  <p>{{horst??"kein horst"}}</p>
+  <p>{{not_settet_variable??"this is not set"}}</p>
 
-  <sc.page.navigation total_pages="7" current_page="3"></sc.page.navigation>
+  <sc.page.navigation total_pages="7" :current_page="page"></sc.page.navigation>
 
 </app.layout>
 
@@ -36,3 +36,4 @@
 $title = "Homepage!";
 $name = "welt";
 $ok = true;
+$page = $_GET["page"] ?? 1;

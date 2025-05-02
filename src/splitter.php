@@ -102,7 +102,7 @@ class splitter {
 
         // count root elements
         $c = 0;
-        foreach ($dom->documentElement->childNodes as $node) {
+        if ($dom) foreach ($dom->documentElement->childNodes as $node) {
             if ($node->nodeType == \XML_ELEMENT_NODE) {
                 $c++;
                 // add class, only if scoped styles are needed

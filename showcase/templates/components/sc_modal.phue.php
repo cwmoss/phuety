@@ -14,11 +14,15 @@
 
 </cta-modal>
 
-<script head src="/assets/cta-modal.js"></script>
+<script body src="/assets/cta-modal.js"></script>
 
 <style>
     .cta-modal-toggle.open {
         padding: 0 1em;
+    }
+
+    root:not(:defined) {
+        display: none;
     }
 </style>
 <?php
