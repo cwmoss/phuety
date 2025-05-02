@@ -35,8 +35,7 @@
   },
   "require": {
     "php": ">=8.4",
-    "symfony/expression-language": "^7.2",
-    "leafs/fetch": "dev-main"
+    "symfony/expression-language": "^7.2"
   },
   "require-dev": {
     "pestphp/pest": "^2.28",

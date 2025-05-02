@@ -57,6 +57,15 @@ $phuety = new phuety\phuety(__DIR__ . '/templates', [
     'sc.*' => 'components/'
 ], __DIR__ . '/tmp', compile_mode: "always", assets_base: "/../public/assets");
 
+$fetch = function ($url) {
+    $res = file_get_contents($url);
+    return (object)[
+        "status" => "ok",
+        "data" => json_decode($res)
+    ];
+};
+
+$phuety->set_helper(["fetch" => $fetch]);
 
 print $phuety->run('page.' . $the_route[0], ($the_route[1] ?? []) + ['path' => $path]);
 

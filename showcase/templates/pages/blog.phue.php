@@ -2,6 +2,9 @@
 
     <h1>Blog</h1>
 
+    <sc.code file="pages/blog.phue.php"></sc.code>
+    <sc.code file="components/sc_infinitescroll.phue.php"></sc.code>
+
     <p>This is an example for using infinite scroll.<br>
         There are 10 pages of Lorem ipsum...</p>
 
@@ -18,8 +21,7 @@
 
     </sc.infinitescroll>
 
-    <sc.code file="pages/blog.vue.php"></sc.code>
-    <sc.code file="components/sc_infinitescroll.vue.php"></sc.code>
+
 </app.layout>
 
 
@@ -31,10 +33,8 @@
 
 <?php
 
-use Leaf\Fetch;
-
 $page = $props->page ?? 1;
-$res = Fetch::get("https://jsonplaceholder.typicode.com/posts?_limit=10&_page=" . $page);
+$res = $helper->fetch("https://jsonplaceholder.typicode.com/posts?_limit=10&_page=" . $page);
 // print_r($res);
 
 // sleep(1);

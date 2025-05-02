@@ -1,8 +1,9 @@
 <app.layout title="About Us" :path="props.path">
 
     <h1>Our Team</h1>
-    <sc.team :persons="data.results"></sc.team>
+    <sc.team :persons="res.data.results"></sc.team>
 
+    <sc.code file="pages/about.phue.php"></sc.code>
     <sc.code file="components/sc_team.phue.php"></sc.code>
 </app.layout>
 
@@ -15,11 +16,8 @@
 
 <?php
 
+# use Leaf\Fetch;
 
-
-use Leaf\Fetch;
-
-$res = file_get_contents("https://randomuser.me/api/?results=12");
-$data = json_decode($res);
+$res = $helper->fetch("https://randomuser.me/api/?results=12");
 
 ?>

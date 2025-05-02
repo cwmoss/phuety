@@ -8,7 +8,7 @@
         <option :foreach="option in options" :value="option" :selected="option==value">{{option}}</option>
     </select>
 
-    <div v-if="error" class="invalid-feedback">{{error}}</div>
+    <div :if="error" class="invalid-feedback">{{error}}</div>
 </div>
 
 
