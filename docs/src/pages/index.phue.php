@@ -30,6 +30,11 @@
       padding-bottom: 0;
     }
 
+    nav a {
+      color: black;
+      text-decoration: none;
+    }
+
     section {
       background-color: black;
       color: white;
@@ -93,7 +98,7 @@
 
 <body>
   <header>
-    <nav><span>phuety</span> home docs</nav>
+    <nav><span>phuety</span> <a href="docs/">docs</a> <a href="https://github.com/cwmoss/phuety">github</a></nav>
     <section bbl>
       <blockquote class="speech bubble">OMG <br /><em>hahaha</em></blockquote>
     </section>
