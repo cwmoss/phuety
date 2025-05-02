@@ -12,7 +12,7 @@ use slowfoot_plugin\phuety\phuety_adapter;
 return new configuration(
   site_name: 'phuety Documentation',
   site_description: 'Docs for phuety',
-  // path_prefix: "/docs",
+  path_prefix: "/phuety",
   // store: "memory",
   sources: [
     "chapter" => new markdown\loader('content/**/*.md', remove_prefix: "content/"),

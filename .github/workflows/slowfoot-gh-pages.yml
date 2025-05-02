@@ -46,7 +46,7 @@ jobs:
     # Docs: https://getcomposer.org/doc/articles/scripts.md
 
     - name: build docs
-      run: php docs/vendor/bin/slowfoot build
+      run: php docs/vendor/bin/slowfoot build -f
 
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3

@@ -1,7 +1,7 @@
 ---
 chapter_title: Getting Started
 title: Install
-slug: doc_start
+slug: docs
 ---
 
 ## Why
@@ -11,6 +11,6 @@ slowfoot is a static site generator. it should be a perfect fit for headless CMS
 ## Install
 
 ```bash
-$ composer require cwmoss/slowfoot dev-main
+$ composer require cwmoss/phuety dev-main
 
 ```
