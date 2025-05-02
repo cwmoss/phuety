@@ -58,6 +58,11 @@ class template_compiler {
         if ($compiler_options->check_attribute($node, "elseif")) {
             throw new exception("`:elseif` without `:if` on <$name>", $line);
         }
+        if ($name == "script" && $node->hasChildNodes()) {
+            // dbg("skip", $name);
+            $this->result[] = new instruction($line, "#skip", text: $node->ownerDocument->saveHtml($node));
+            return;
+        }
         if ($attr = $compiler_options->check_and_remove_attribute($node, "slot")) {
             if (!$parent || !str_contains($parent->nodeName, "."))
                 throw new exception(

@@ -27,7 +27,10 @@ class splitter {
         TODO: support more cases
     */
     public function split_php($source, $name): parts {
-        [$sfc, $php] = explode('<?php', $source, 2) + [1 => ""];
+        if (str_starts_with($source, '<?php')) {
+            return new parts($name, rtrim($source, '>?'), "", 1);
+        }
+        [$sfc, $php] = explode("\n<?php", $source, 2) + [1 => ""];
         $php_start = $php ? count(explode("\n", $sfc)) : null;
         return new parts($name, rtrim($php, '>?'), trim($sfc), $php_start);
     }

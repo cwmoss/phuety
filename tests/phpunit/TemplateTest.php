@@ -125,6 +125,10 @@ class TemplateTest extends TestCase {
         $this->assertSame('<div style="font-size: big; font-size: small; background-color: red;"></div>', $result);
     }
 
+    public function testScript() {
+        $result = $this->render_string('<div><script :name="otto">let a = "b";</script></div>', []);
+        $this->assertSame('<div><script :name="otto">let a = "b";</script></div>', $result);
+    }
     private function render_string(string $template, array $data) {
         $runner = new phuety(__DIR__ . '/../fixtures', [], '', ['css' => 'scoped_simple']);
         return $runner->render_template_string($template, $data);

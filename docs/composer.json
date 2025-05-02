@@ -1,0 +1,6 @@
+{
+    "require": {
+        "cwmoss/slowfoot": "dev-main",
+        "cwmoss/phuety": "dev-main"
+    }
+}

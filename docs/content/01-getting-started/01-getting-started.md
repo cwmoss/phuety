@@ -1,7 +1,7 @@
 ---
 chapter_title: Getting Started
 title: Install
-slug: index
+slug: doc_start
 ---
 
 ## Why

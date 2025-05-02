@@ -37,6 +37,7 @@ class instruction {
             "endslotted" => sprintf('<?php $__s[0]["%s"]=ob_get_clean(); ?>', $this->expression),
             "doctype" => $this->html,
             "#comment" => '<!--' . $this->text . '-->',
+            "#skip" => $this->text,
             default => "default-{$this->name}"
         };
 
