@@ -56,6 +56,11 @@ class SlotTest extends TestCase {
         );
     }
 
+    public function testComponentInSlot() {
+        $result = $this->render_string('<test.slot1>and <test.slot2>good bye</test.slot2></test.slot1>');
+        $this->assertSame("<div>hello\n    and <div>hello\n    good bye</div></div>", trim($result));
+    }
+
     private function render_string(string $template, array $data = []) {
         $runner = new phuety(__DIR__ . '/../fixtures', ['test.*' => '*', 'page.*' => 'pages/*'], '', ['css' => 'scoped_simple']);
         return $runner->render_template_string($template, $data);

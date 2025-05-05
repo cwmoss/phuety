@@ -6,9 +6,12 @@ class data_container {
 
     private array $blocks = [];
 
-    public function __construct(private array $data, private array $helper = []) {
+    public function __construct(private object $globals, private array $helper = [], private array $data = []) {
     }
 
+    public function with_props(array $data = []) {
+        return new self($this->globals, $this->helper, $data);
+    }
     /*
         _get and _call are used for expression evaluation
     */
@@ -19,6 +22,9 @@ class data_container {
     }
 
     public function _get($name, $default = null) {
+        if ($name == "globals") {
+            return $this->globals;
+        }
         if ($this->blocks) {
             foreach (range(count($this->blocks) - 1, 0) as $idx) {
                 if (isset($this->blocks[$idx][$name])) return $this->_convert($this->blocks[$idx][$name]);
@@ -28,6 +34,8 @@ class data_container {
     }
 
     public function __isset($name) {
+        if ($name == "globals") return true;
+
         if ($this->blocks) {
             foreach (range(count($this->blocks) - 1, 0) as $idx) {
                 if (isset($this->blocks[$idx][$name])) true;

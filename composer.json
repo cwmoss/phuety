@@ -1,7 +1,6 @@
 {
   "name": "cwmoss/phuety",
   "description": "component based html5 templates",
-  "version": "v1.0",
   "minimum-stability": "dev",
   "repositories": [
     {
@@ -19,6 +18,11 @@
     "files": [
       "src/functions.php"
     ]
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "bary\\components\\": "tests/fixtures/components/"
+    }
   },
   "scripts": {
     "bin": [

@@ -66,12 +66,12 @@ class ComponentTest extends TestCase {
     }
 
     private function render_string(string $template, array $data) {
-        $runner = new phuety(__DIR__ . '/../fixtures', ['test.*' => '*'], '', ['css' => 'scoped_simple']);
+        $runner = new phuety(__DIR__ . '/../fixtures', ['test.*' => './*'], '', ['css' => 'scoped_simple']);
         return $runner->render_template_string($template, $data);
     }
 
     private function create_and_render(string $template, array $data, array $methods = []) {
-        $runner = new phuety(__DIR__ . '/../fixtures', ['test.*' => '*'], "", ['css' => 'scoped_simple']);
+        $runner = new phuety(__DIR__ . '/../fixtures', ['test.*' => './*'], "", ['css' => 'scoped_simple']);
         return $runner->render($template, $data);
     }
 }

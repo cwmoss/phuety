@@ -3,10 +3,10 @@
 namespace phuety;
 
 use Closure;
-use Exception;
 use Le\SMPLang\SMPLang;
 use phuety\symfony_el\expressions;
 use ReflectionClass;
+use stdClass;
 
 class phuety {
 
@@ -21,6 +21,8 @@ class phuety {
     public string $component_extension = ".php";
     public string $sfc_extension = ".phue.php";
 
+    public component_map $map;
+
     /** 
      * 
      * @param string $base base directory of template sources
@@ -32,7 +34,7 @@ class phuety {
      * */
     public function __construct(
         public string $base,
-        public array $map = [],
+        component_map|array $map = [],
         public string $cbase = "",
         public array $opts = ['css' => 'scope'],
         public string $compile_mode = "always",
@@ -42,10 +44,14 @@ class phuety {
         public ?phuety_context $context = null
     ) {
         // dbg("start");
-        $this->init();
+        $this->init($map);
     }
 
-    private function init() {
+    private function init(array|component_map $map) {
+        if (is_array($map)) $this->map = new component_map($map);
+        else $this->map = $map;
+        $this->map->add("phuety.*", __DIR__ . "/components/*");
+
         if (!$this->cbase) $this->cbase = $this->base . '/../compiled';
         if (!is_dir($this->cbase)) mkdir($this->cbase, recursive: true);
         if ($this->compile_mode == "never") {
@@ -67,7 +73,6 @@ class phuety {
             // $this->expression_parser = new dotdata(['strrev' => 'strrev']);
             // $this->expression_parser = new SMPLang(['strrev' => 'strrev']);
         }
-        $this->map["phuety.*"] = __DIR__ . "/components/*";
     }
     public function set_custom_tag($tag) {
         $this->compiler->set_custom_tag($tag);
@@ -86,26 +91,28 @@ class phuety {
         return $this->base . $this->assets_base . "/build";
     }
 
-    public function render_template_string(string $tpl, array $data): string {
+    public function render_template_string(string $tpl, array $data = [], array $helper = [], object $globals = new stdClass): string {
+        // dbg("+++data", $data);
         // $component = component::new_from_string($tpl, $this->cbase);
         $cname = "tmp.x" . uniqid();
         $component = $this->get_component($cname, $tpl);
-        return $this->render($cname, $data);
+        return $this->render($cname, $data, $helper, $globals);
     }
 
-    public function render(string $cname, array $data): string {
+    public function render(string $cname, array $data = [], array $helper = [], object $globals = new stdClass): string {
         ob_start();
-        $this->run($cname, $data);
+        $this->run($cname, $data, $helper, $globals);
         return ob_get_clean();
     }
 
-    public function run(string $cname, array $data) {
+    public function run(string $cname, array $data = [], array $helper = [], object $globals = new stdClass) {
         // $this->compiled = [];
         $context = $this->context->with_top($cname);
 
         $assetholder = $this->collect($cname);
-        $runner = function ($runner, $component_name, phuety_context $context, $props, $slots = []) use ($assetholder) {
-            $this->get_component($component_name)->run($runner, $this, $context, $props, $slots, $assetholder);
+        $data_container = new data_container($globals, $helper);
+        $runner = function ($runner, $component_name, phuety_context $context, $props, $slots = []) use ($assetholder, $data_container) {
+            $this->get_component($component_name)->run($runner, $this, $context, $data_container->with_props($props), $slots, $assetholder);
         };
         $runner($runner, $cname, $context, $data);
         //$component = $this->get_component($cname, true);
@@ -164,22 +171,7 @@ cname app_layout
 location layout => layout => layout
 */
     public function get_component_source_location($tagname) {
-        if (isset($this->map[$tagname])) {
-            return $this->map[$tagname];
-        }
-        [$prefix, $name] = explode($this->component_name_separator, $tagname) + [1 => null];
-        if (!$name) return false;
-        if (isset($this->map[$prefix . $this->component_name_separator . '*'])) {
-            $cname = str_replace($this->component_name_separator, '_', $tagname);
-            $path = $this->map[$prefix . $this->component_name_separator . '*'];
-            if (str_ends_with($path, '/')) {
-                $path .= $cname;
-            } else {
-                $path = str_replace('*', str_replace($this->component_name_separator, '_', $name), $path);
-            }
-            return $path;
-        }
-        return false;
+        return $this->map->resolve($tagname, $this->component_name_separator);
     }
 
     public function get_component_name_from_filename($filename, $mapkey, $mapvalue) {
@@ -194,20 +186,24 @@ location layout => layout => layout
         if ($expand) return $prefix . "." . $tagname;
         return $tagname;
     }
-    public function get_component_source($tagname): array {
+    public function get_component_source($tagname): array|callable {
         $path = $this->get_component_source_location($tagname);
         if (!$path) die("could not resolve component source for $tagname");
+        if (is_callable($path)) return $path;
         if ($path[0] != "/") $filename = $this->base . '/' . $path;
         else $filename = $path;
 
-        // dbg("++ loading component source", $tagname, $filename);
+        // dbg("++ loading component source", $tagname, $filename, $path);
         if (file_exists($filename . $this->sfc_extension)) {
             return [file_get_contents($filename . $this->sfc_extension), $filename . $this->sfc_extension, false];
         }
-        return [file_get_contents($filename . $this->component_extension), $filename . $this->component_extension, true];
+        if (file_exists($filename . $this->component_extension)) {
+            return [file_get_contents($filename . $this->component_extension), $filename . $this->component_extension, true];
+        }
+        throw new exception("could not resolve component: $tagname");
     }
 
-    public function get_component($tagname, ?string $string_source = null): component|Closure { #: component
+    public function get_component($tagname, ?string $string_source = null): render_component|component|Closure { #: component
         if ($this->compiled[$tagname] ?? null) {
             $comp = $this->compiled[$tagname];
         } else {
@@ -217,10 +213,16 @@ location layout => layout => layout
                 $uid = $this->compiler->compile($cname, [$string_source, "", false]);
                 $comp = $this->load_component($cname, true);
             } else {
-                if ($this->compile_mode != "never") {
-                    $uid = $this->compiler->compile($cname, $this->get_component_source($tagname));
+                $source = $this->get_component_source($tagname);
+                if (is_callable($source)) {
+                    $comp = $source($tagname);
+                } else {
+                    if ($this->compile_mode != "never") {
+                        $uid = $this->compiler->compile($cname, $source);
+                    }
+
+                    $comp = $this->load_component($cname);
                 }
-                $comp = $this->load_component($cname);
             }
 
             $this->compiled[$tagname] = $comp;

@@ -3,13 +3,6 @@
 namespace phuety;
 
 use Closure;
-use Dom\Document;
-use Dom\Element;
-use Dom\HTMLDocument;
-use Dom\NodeList;
-use Dom\Node;
-
-use WMDE\VueJsTemplating\Component as vcomponent;
 
 class component {
 
@@ -60,9 +53,9 @@ class component {
             $assetholder->push($this->uid, $asset);
         }
     }
-    public function run($runner, phuety $engine, phuety_context $context, array $props = [], array $slots = [], ?asset $assetholder = null): void {
+    public function run($runner, phuety $engine, phuety_context $context, data_container $props_container, array $slots = [], ?asset $assetholder = null): void {
         // dbg("++ all helper", $engine->helper);
-        $props_container = new data_container($props, $engine->helper);
+        // $props_container = new data_container($props, $engine->helper);
         $local = $this->run_code($props_container, $slots, $props_container, $context, $assetholder);
         // $props_container->_add_phuety_context($context);
         if ($local) $props_container->_add_local($local);
