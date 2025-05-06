@@ -23,7 +23,7 @@
 
   <main>
 
-    <doc.nav :current_id="page._id" :current="page._file?:[]"></doc.nav>
+    <top.nav :current_id="page._id" :current="page._file?:[]"></top.nav>
 
     <slot.></slot.>
 

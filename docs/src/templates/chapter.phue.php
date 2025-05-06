@@ -1,14 +1,14 @@
-<app.layout :title="page.title" :page="page">
+<layout.default :title="page.title" :page="page">
     <article>
         <h1>{{ page.title }}</h1>
-        <doc.markdown :body="page.mdbody"></doc.markdown>
+        <sft.markdown :body="page.mdbody"></sft.markdown>
     </article>
 
     <aside>
         <h4>ON THIS PAGE</h4>
-        <doc.markdown toc :body="page.mdbody"></doc.markdown>
+        <sft.markdown toc :body="page.mdbody"></sft.markdown>
     </aside>
-</app.layout>
+</layout.default>
 
 <style>
     p {

@@ -1,11 +1,11 @@
-<app.layout :title="page.title" :page="page">
+<layout.default :title="page.title" :page="page">
   <article>
     <h1>hello</h1>
 
     <p>to the world</p>
 
     <figure>
-      <doc.image src="src/pages/kitty.jpg" size="600x" alt="this is the cat"></doc.image>
+      <sft.image src="src/pages/kitty.jpg" size="600x" alt="this is the cat"></sft.image>
 
       <figcaption>Foto von <a href="https://unsplash.com/de/@yerlinmatu?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">Yerlin Matu</a>
         auf <a href="https://unsplash.com/de/fotos/flachfokusfotografie-von-weissen-und-braunen-katzen-GtwiBmtJvaU?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">Unsplash</a>
@@ -13,7 +13,7 @@
     </figure>
 
   </article>
-</app.layout>
+</layout.default>
 
 <style>
   p {
