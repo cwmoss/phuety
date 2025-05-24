@@ -130,7 +130,7 @@ class phuety {
         // dbg("++ all components", $all_components);
         $assetholder = new asset;
         foreach ($all_components as $name => $dummy) {
-            $this->get_component($name)->collect_assets($assetholder);
+            $this->get_component($name)->collect_assets($assetholder, $name);
         }
         $this->collected[$cname] = $assetholder;
         return $assetholder;
