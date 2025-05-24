@@ -14,7 +14,7 @@ class assets extends component {
     public bool $has_code = true;
 
     public function run_code(data_container $props, array $slots, data_container $helper, phuety_context $phuety, asset $assetholder): array {
-        $position = isset($props->head) ? 'head' : 'body';
+        $position = isset($props->body) ? 'body' : 'head';
         // print $this->assets->get($position);
         // print $props['$asset']->get($position);
         dbg("++ run assets", $position, $assetholder, " --- ", $assetholder->get($position));

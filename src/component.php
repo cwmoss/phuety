@@ -48,9 +48,12 @@ class component {
     static function new_from_string(string $tpl): component {
         return new self($tpl);
     }
-    public function collect_assets(asset $assetholder) {
+    public function collect_assets(asset $assetholder, $tagname) {
         foreach ($this->assets as $asset) {
             $assetholder->push($this->uid, $asset);
+        }
+        if ($this->has_style) {
+            $assetholder->push_css($tagname);
         }
     }
     public function run($runner, phuety $engine, phuety_context $context, data_container $props_container, array $slots = [], ?asset $assetholder = null): void {
