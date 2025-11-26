@@ -92,6 +92,21 @@ class TemplateTest extends TestCase {
     }
 
     public function testClass() {
+        $result = $this->render_string('<div :class="temperature"></div>', ["temperature" => "hot"]);
+        $this->assertSame('<div class="hot"></div>', $result);
+
+        $result = $this->render_string('<div :class="{hot: true}"></div>', []);
+        $this->assertSame('<div class="hot"></div>', $result);
+
+        $result = $this->render_string('<div :class="{hot: is_hot}"></div>', ["is_hot" => true]);
+        $this->assertSame('<div class="hot"></div>', $result);
+
+        $result = $this->render_string('<div :class="{hot: is_hot}"></div>', ["is_hot" => false]);
+        $this->assertSame('<div></div>', $result);
+
+        $result = $this->render_string('<a :href="url" :class="{active: is_active}">home</a>', ["is_active" => false, "url" => "/index"]);
+        $this->assertSame('<a href="/index">home</a>', $result);
+
         $result = $this->render_string('<div :class="temperature" class="dishes"></div>', ["temperature" => "hot"]);
         $this->assertSame('<div class="dishes hot"></div>', $result);
 

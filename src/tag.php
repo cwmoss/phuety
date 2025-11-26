@@ -160,18 +160,21 @@ class tag {
     }
 
     public static function tag_open_merged_attrs(string $name, array $bindings, array $attrs, ?object $fallthrough_props = null) {
+        // dbg("+++ tag::tag_open_merged_attrs", $name, $bindings, $attrs, $fallthrough_props);
         $special = [];
-        $s = self::merge_attributes($attrs["class"] ?? null, $bindings["class"] ?? null, $fallthrough_props?->class, "class");
+        $s = self::merge_attributes($attrs["class"] ?? null, $bindings["class"] ?? null, $fallthrough_props->class ?? null, "class");
         if ($s) $special["class"] = $s;
-        $s = self::merge_attributes($attrs["style"] ?? null, $bindings["style"] ?? null, $fallthrough_props?->style, "style");
+        $s = self::merge_attributes($attrs["style"] ?? null, $bindings["style"] ?? null, $fallthrough_props->style ?? null, "style");
         if ($s) $special["style"] = $s;
-        if ($fallthrough_props?->id) {
+        if ($fallthrough_props->id ?? null) {
             $special["id"] = $fallthrough_props->id;
         }
+        unset($attrs["class"], $bindings["class"], $attrs["style"], $bindings["style"]);
         return self::tag_open($name, $special + $bindings + $attrs);
     }
 
     public static function merge_attributes(?string $attr, mixed $binding, mixed $fallthrough, string $type = "class"): ?string {
+        // dbg("merge attrs", $attr);
         if (!$attr && !$binding && !$fallthrough) return null;
         $attr = (array) $attr;
         if ($attr && $type == "style") $attr = array_map(fn($s) => rtrim($s, "; ") . ";", $attr);
@@ -183,6 +186,7 @@ class tag {
     public static function resolve_attr_object(mixed $obj, string $type = "class"): array {
         if (!$obj) return [];
         $resolved = [];
+
         foreach ((array) $obj as $k => $v) {
             if (is_numeric($k)) {
                 $resolved[] = $v;
@@ -193,10 +197,13 @@ class tag {
                 }
             }
         }
+
+        // dbg("resolve class", (array) $obj, $obj, $resolved);
         return $resolved;
     }
 
     public static function tag_open(string $name, array $attrs): string {
+        // dbg("++ tag open", $attrs);
         $attr = [];
         foreach ($attrs as $aname => $avalue) {
             if (is_bool($avalue) || in_array($aname, self::$boolean_attributes)) {

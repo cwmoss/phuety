@@ -5,3 +5,5 @@ showcase/public/assets/generated
 showcase/public/assets/build
 .DS_Store
 .phpunit.result.cache
+xtest.php
+tests/fixtures/assets/build

@@ -109,9 +109,13 @@ class phuety {
         // $this->compiled = [];
         $context = $this->context->with_top($cname);
 
-        $assetholder = $this->collect($cname);
-        $assetholder->write_css($cname, $this->cbase, $this->asset_build_dir(), "/assets/build/");
-
+        // skip collect with string rendering. it makes no sense here (i think)
+        if (str_starts_with($cname, "tmp.")) {
+            $assetholder = new asset;
+        } else {
+            $assetholder = $this->collect($cname);
+            $assetholder->write_css($cname, $this->cbase, $this->asset_build_dir(), "/assets/build/");
+        }
         $data_container = new data_container($globals, $helper);
         $runner = function ($runner, $component_name, phuety_context $context, $props, $slots = []) use ($assetholder, $data_container) {
             $this->get_component($component_name)->run($runner, $this, $context, $data_container->with_props($props), $slots, $assetholder);

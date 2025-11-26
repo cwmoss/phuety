@@ -36,14 +36,15 @@ class asset {
         if ($this->css_written) return;
         $this->css_written = true;
 
-        dbg("+++ write CSS", $this->css);
+        // dbg("+++ write CSS", $this->css);
         $css = "";
         foreach ($this->css as $name => $fname) {
-            dbg("load css", $compile_dir . "/$name");
-            $css .= file_get_contents($compile_dir . "/$fname" . ".css");
+            // dbg("load css", $compile_dir . "/$name");
+            $css .= file_get_contents($compile_dir . "/$fname" . ".css") . "\n";
         }
+        if (!$css) return;
         file_put_contents($asset_dir . "/$cname" . ".css", $css);
-        $this->push($name, [
+        $this->push($cname, [
             "css",
             "head",
             null,
