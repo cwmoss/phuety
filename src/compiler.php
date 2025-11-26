@@ -50,7 +50,7 @@ class compiler {
                 // the head is reduced to the start tag
                 $parts->html = str_replace($mat[0][0], $mat[1][0] . '', $parts->html);
                 $parts->head = dom::get_template_fragment($mat[2][0]);
-                dbg("++ found head", $parts->html, $mat[0][1], $mat[3][1] + 7, $parts->line_offsets);
+                // dbg("++ found head", $parts->html, $mat[0][1], $mat[3][1] + 7, $parts->line_offsets);
             }
             $dom = dom::get_document($parts->html);
             // dbg("++ doctype", $dom->saveHtml($dom->doctype));

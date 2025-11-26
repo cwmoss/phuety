@@ -27,7 +27,7 @@ class exception extends GlobalException {
         $trace = $this->getTrace();
         $context = $this->find_context($trace);
         if ($context) {
-            dbg("line numbers:", $this->src_line, $context->line_offsets);
+            // dbg("line numbers:", $this->src_line, $context->line_offsets);
             if ($this->src_line > $context->line_offsets[0])
                 $this->src_line = $this->src_line + ($context->line_offsets[1] - $context->line_offsets[0]);
             $context_line = sprintf(" => %s\n", $this->show_line($context));

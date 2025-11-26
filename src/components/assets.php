@@ -17,7 +17,7 @@ class assets extends component {
         $position = isset($props->body) ? 'body' : 'head';
         // print $this->assets->get($position);
         // print $props['$asset']->get($position);
-        dbg("++ run assets", $position, $assetholder, " --- ", $assetholder->get($position));
+        // dbg("++ run assets", $position, $assetholder, " --- ", $assetholder->get($position));
         print $assetholder->get($position);
         return [];
     }
