@@ -6,7 +6,8 @@ class data_container {
 
     private array $blocks = [];
 
-    public function __construct(private object $globals, private array $helper = [], private array $data = [], private array $props = []) {
+    public function __construct(private object $globals, private array $helper = [], private array $data = [], private array|object $props = []) {
+        $this->props = (object) $props;
     }
 
     public function with_props(array $data = []) {
@@ -26,14 +27,14 @@ class data_container {
             return $this->globals;
         }
         if ($name == "props") {
-            return $this->_convert($this->props);
+            return $this->props;
         }
         if ($this->blocks) {
             foreach (range(count($this->blocks) - 1, 0) as $idx) {
                 if (isset($this->blocks[$idx][$name])) return $this->_convert($this->blocks[$idx][$name]);
             }
         }
-        return $this->_convert($this->data[$name] ?? $this->props[$name] ?? $default);
+        return $this->_convert($this->data[$name] ?? $this->props->$name ?? $default);
     }
 
     public function __isset($name) {
@@ -46,7 +47,7 @@ class data_container {
             }
         }
 
-        return isset($this->props[$name]) || isset($this->data[$name]);
+        return isset($this->props->$name) || isset($this->data[$name]);
     }
 
     public function _convert($value) {
