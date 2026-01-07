@@ -6,11 +6,11 @@ class data_container {
 
     private array $blocks = [];
 
-    public function __construct(private object $globals, private array $helper = [], private array $data = []) {
+    public function __construct(private object $globals, private array $helper = [], private array $data = [], private array $props = []) {
     }
 
     public function with_props(array $data = []) {
-        return new self($this->globals, $this->helper, $data);
+        return new self($this->globals, $this->helper, [], $data);
     }
     /*
         _get and _call are used for expression evaluation
@@ -25,23 +25,28 @@ class data_container {
         if ($name == "globals") {
             return $this->globals;
         }
+        if ($name == "props") {
+            return $this->props;
+        }
         if ($this->blocks) {
             foreach (range(count($this->blocks) - 1, 0) as $idx) {
                 if (isset($this->blocks[$idx][$name])) return $this->_convert($this->blocks[$idx][$name]);
             }
         }
-        return $this->_convert($this->data[$name] ?? $default);
+        return $this->_convert($this->data[$name] ?? $this->props[$name] ?? $default);
     }
 
     public function __isset($name) {
         if ($name == "globals") return true;
+        if ($name == "props") return true;
 
         if ($this->blocks) {
             foreach (range(count($this->blocks) - 1, 0) as $idx) {
                 if (isset($this->blocks[$idx][$name])) true;
             }
         }
-        return isset($this->data[$name]);
+
+        return isset($this->props[$name]) || isset($this->data[$name]);
     }
 
     public function _convert($value) {
@@ -58,7 +63,7 @@ class data_container {
     }
 
     public function _add_local(array $local_var_and_closures) {
-        $this->data += $local_var_and_closures;
+        $this->data = $local_var_and_closures;
     }
 
     public function _add_phuety_context(phuety_context $context) {
