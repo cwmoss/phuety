@@ -26,7 +26,7 @@ class data_container {
             return $this->globals;
         }
         if ($name == "props") {
-            return $this->props;
+            return $this->_convert($this->props);
         }
         if ($this->blocks) {
             foreach (range(count($this->blocks) - 1, 0) as $idx) {
