@@ -13,7 +13,7 @@ class handle_css {
         if ($node->tagName != "STYLE") return false;
         $attrs = dom::attributes($node);
         if (!isset($attrs['global'])) {
-            $css = str_replace('root', '&.root', (string) $node->textContent);
+            $css = str_replace(':root', '&.root', (string) $node->textContent);
             $css = sprintf(".%s{\n%s\n}", $parts->uid, $css);
             $parts->css = $css;
         } else {

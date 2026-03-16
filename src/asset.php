@@ -7,6 +7,12 @@ class asset {
     public array $assets = [];
     public array $css = [];
     public bool $css_written = false;
+    public bool $use_bun = false;
+
+    // TODO: inject setup: bun, prod/dev, etc.
+    public function __construct() {
+        $this->use_bun = str_starts_with(`bun -v`, "1.");
+    }
 
     public function push($uid, $asset) {
         $id = match (true) {
@@ -44,6 +50,11 @@ class asset {
         }
         if (!$css) return;
         file_put_contents($asset_dir . "/$cname" . ".css", $css);
+        if ($this->use_bun) {
+            $in = $asset_dir . "/$cname" . ".css";
+            $syntax_down = `bun build $in`;
+            file_put_contents($asset_dir . "/$cname" . ".css", $syntax_down);
+        }
         $this->push($cname, [
             "css",
             "head",
