@@ -11,7 +11,8 @@ class asset {
 
     // TODO: inject setup: bun, prod/dev, etc.
     public function __construct() {
-        $this->use_bun = str_starts_with(`bun -v`, "1.");
+        $outp = shell_exec("bun -v");
+        $this->use_bun = str_starts_with($outp, "1.");
     }
 
     public function push($uid, $asset) {
@@ -52,7 +53,7 @@ class asset {
         file_put_contents($asset_dir . "/$cname" . ".css", $css);
         if ($this->use_bun) {
             $in = $asset_dir . "/$cname" . ".css";
-            $syntax_down = `bun build $in`;
+            $syntax_down = shell_exec("bun build $in");
             file_put_contents($asset_dir . "/$cname" . ".css", $syntax_down);
         }
         $this->push($cname, [

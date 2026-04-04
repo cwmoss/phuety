@@ -6,6 +6,7 @@ use DOMDocument;
 use DOMElement;
 use DOMNode;
 use DOMXPath;
+use FilesystemIterator;
 use WMDE\VueJsTemplating\Component as vcomponent;
 
 class compiler {
@@ -135,8 +136,11 @@ class compiler {
 
     public function write_js(string $name, array $js) {
         $gendir = $this->engine->asset_build_dir();
-        foreach (glob("{$gendir}/{$name}---*.js") as $fname) {
-            unlink($fname);
+        // $files = glob("{$gendir}/{$name}---*.js");
+        $files = new FilesystemIterator($gendir);
+        foreach ($files as $file) {
+            if ($file->getExtension() == "js" && str_starts_with($file->getFilename(), "{$name}---"))
+                unlink($file->getPathname());
         }
         foreach ($js as $fname => $code) {
             file_put_contents($gendir . '/' . $fname, $code);

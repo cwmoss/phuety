@@ -3,6 +3,7 @@
 namespace phuety;
 
 use Closure;
+use FilesystemIterator;
 use Le\SMPLang\SMPLang;
 use phuety\symfony_el\expressions;
 use ReflectionClass;
@@ -281,6 +282,7 @@ location layout => layout => layout
     public function compile_all(null|string|array $entrypoints = null) {
         $this->compile_mode = "always";
         if ($entrypoints && !is_array($entrypoints)) $entrypoints = [$entrypoints];
+        $ext = ltrim($this->sfc_extension, ".");
         foreach ($this->map as $key => $directory) {
             if ($entrypoints && !in_array($key, $entrypoints)) continue;
 
@@ -291,8 +293,12 @@ location layout => layout => layout
                 str_ends_with($dir, "/") => $dir . '*' . $this->sfc_extension,
                 default => $dir . $this->sfc_extension
             };
-            foreach (glob($glob) as $file) {
-                $tagname = $this->get_component_name_from_filename($file, $key, $directory);
+            // $files = glob($glob);
+            $files = new FilesystemIterator($dir);
+
+            foreach ($files as $file) {
+                if ($file->getExtension() !== $ext) continue;
+                $tagname = $this->get_component_name_from_filename($file->getPathname(), $key, $directory);
                 // dbg("find tagname", $tagname);
                 $this->get_component($tagname);
             }

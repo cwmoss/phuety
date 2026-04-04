@@ -38,6 +38,7 @@ class MapTest extends TestCase {
         $this->assertSame('<div class="barx_test root">hello world</div>', trim($result));
     }
 
+    // TODO: make it work again
     public function testNoSFC() {
         $result = $this->create_and_render('bary.hello', ["bary.*" => __DIR__ . "/../fixtures/components/*"], ['name' => 'world']);
         $this->assertSame('<div>hi world</div>', trim($result));
