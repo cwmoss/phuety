@@ -207,7 +207,7 @@ location layout => layout => layout
         if (file_exists($filename . $this->component_extension)) {
             return [file_get_contents($filename . $this->component_extension), $filename . $this->component_extension, true];
         }
-        throw new exception("could not resolve component: $tagname");
+        throw new exception("could not resolve component: $tagname => $filename");
     }
 
     public function get_component($tagname, ?string $string_source = null): render_component|component|Closure { #: component
