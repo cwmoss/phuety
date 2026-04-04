@@ -197,7 +197,8 @@ location layout => layout => layout
         $path = $this->get_component_source_location($tagname);
         if (!$path) die("could not resolve component source for $tagname");
         if (is_callable($path)) return $path;
-        if ($path[0] != "/") $filename = $this->base . '/' . $path;
+        // phar:///usr/...
+        if ($path[0] != "/" && !str_contains($path, "://")) $filename = $this->base . '/' . $path;
         else $filename = $path;
 
         // dbg("++ loading component source", $tagname, $filename, $path);
