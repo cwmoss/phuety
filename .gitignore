@@ -7,3 +7,4 @@ showcase/public/assets/build
 .phpunit.result.cache
 xtest.php
 tests/fixtures/assets/build
+_experiments/
