@@ -113,8 +113,7 @@ The properties are also merged with the defined variables in this order (first w
 <!-- <div>Joe</div> -->
 <div :html="name"></div>
 <!-- <div>Anna</div> -->
-<?php
-$name = "Anna"
+<?php $name = "Anna"
 ```
 
 The styles section above is transformed to scoped styles. You can disable scoping using the attribute `global`.
@@ -367,6 +366,9 @@ look into `showcase/` dir
 - [ ] assets: cache buster dev, cache buster prod
 - [x] compile to php-string-templates
 - [x] new expression parser => take symfony for now
+- [ ] multiple else-if, foreach-else
+- [ ] @assets... path aliases for href, src, ...
+- [ ] doctype problem
 - [ ] test with vue order of rendering
 
 ## Inspiration, copypaste, similar projects
