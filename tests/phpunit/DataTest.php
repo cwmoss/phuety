@@ -29,7 +29,7 @@ class DataTest extends TestCase {
 
     private function render_string(string $template, array $map = [], array $data = [], array $globals = []) {
         $compiled = __DIR__ . "/../compiled";
-        `rm -rf $compiled`;
+        shell_exec("rm -rf $compiled");
         $runner = new phuety(__DIR__ . '/../fixtures', $map, '', ['css' => 'scoped_simple']);
         return $runner->render_template_string($template, $data, globals: (object) $globals);
     }
