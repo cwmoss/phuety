@@ -105,7 +105,8 @@ class compiler {
             'CUSTOM_TAGS' => var_export($parts->custom, true),
             'TOTAL_ROOTELEMENTS' => $parts->total_rootelements,
             'COMPONENTS' => var_export($components, true),
-            'DEBUG_INFO' => var_export(["src" => $parts->src_file, "php" => $parts->php_start], true)
+            'DEBUG_INFO' => join(" ~ ", [$parts->src_file, $parts->php_start])
+            // var_export(["src" => $parts->src_file, "php" => $parts->php_start], true)
         ];
 
         $tpl = str_replace(array_keys($repl), array_values($repl), $tpl);

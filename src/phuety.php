@@ -7,7 +7,9 @@ use FilesystemIterator;
 use Le\SMPLang\SMPLang;
 use phuety\symfony_el\expressions;
 use ReflectionClass;
+use RuntimeException;
 use stdClass;
+use Throwable;
 
 class phuety {
 
@@ -108,24 +110,35 @@ class phuety {
 
     public function run(string $cname, array $data = [], array $helper = [], object $globals = new stdClass) {
         // $this->compiled = [];
-        $context = $this->context->with_top($cname);
+        try {
+            $context = $this->context->with_top($cname);
 
-        // skip collect with string rendering. it makes no sense here (i think)
-        if (str_starts_with($cname, "tmp.")) {
-            $assetholder = new asset;
-        } else {
-            $assetholder = $this->collect($cname);
-            $assetholder->write_css($cname, $this->cbase, $this->asset_build_dir(), "/assets/build/");
+            // skip collect with string rendering. it makes no sense here (i think)
+            if (str_starts_with($cname, "tmp.")) {
+                $assetholder = new asset;
+            } else {
+                $assetholder = $this->collect($cname);
+                $assetholder->write_css($cname, $this->cbase, $this->asset_build_dir(), "/assets/build/");
+            }
+            $data_container = new data_container($globals, $helper);
+            $runner = function ($runner, $component_name, phuety_context $context, $props, $slots = []) use ($assetholder, $data_container) {
+                $this->get_component($component_name)->run($runner, $this, $context, $data_container->with_props($props), $slots, $assetholder);
+            };
+            $runner($runner, $cname, $context, $data);
+            //$component = $this->get_component($cname, true);
+            // $data['$asset'] = new asset;
+            // $component->run($this, $data);
+            //$component($data, [], new asset);
+        } catch (Throwable $e) {
+            dbg("++  exception in run");
+            // ob_get_clean();
+            $new_message = exception::find_component_error($e, $this);
+            if ($new_message) {
+                throw new RuntimeException($new_message, previous: $e);
+            } else {
+                throw $e;
+            }
         }
-        $data_container = new data_container($globals, $helper);
-        $runner = function ($runner, $component_name, phuety_context $context, $props, $slots = []) use ($assetholder, $data_container) {
-            $this->get_component($component_name)->run($runner, $this, $context, $data_container->with_props($props), $slots, $assetholder);
-        };
-        $runner($runner, $cname, $context, $data);
-        //$component = $this->get_component($cname, true);
-        // $data['$asset'] = new asset;
-        // $component->run($this, $data);
-        //$component($data, [], new asset);
     }
 
     public function collect($cname): asset {
@@ -193,10 +206,10 @@ location layout => layout => layout
         if ($expand) return $prefix . "." . $tagname;
         return $tagname;
     }
-    public function get_component_source($tagname): array|callable {
+    public function get_component_source($tagname): array|Closure {
         $path = $this->get_component_source_location($tagname);
         if (!$path) die("could not resolve component source for $tagname");
-        if (is_callable($path)) return $path;
+        if ($path instanceof Closure) return $path;
         // phar:///usr/...
         if ($path[0] != "/" && !str_contains($path, "://")) $filename = $this->base . '/' . $path;
         else $filename = $path;
@@ -211,21 +224,26 @@ location layout => layout => layout
         throw new exception("could not resolve component: $tagname => $filename");
     }
 
-    public function get_component($tagname, ?string $string_source = null): render_component|component|Closure { #: component
+    public function get_component(string $tagname, ?string $string_source = null): render_component|component|Closure { #: component
         if ($this->compiled[$tagname] ?? null) {
+            // dbg("get component $tagname compiled:");
             $comp = $this->compiled[$tagname];
         } else {
+            // dbg("get component $tagname uncompiled:");
             $cname = str_replace($this->component_name_separator, '_', $tagname);
             // tmp (string) components
             if ($string_source) {
+                // dbg("get component $tagname string-source:");
                 $uid = $this->compiler->compile($cname, [$string_source, "", false]);
                 $comp = $this->load_component($cname, true);
             } else {
                 $source = $this->get_component_source($tagname);
-                if (is_callable($source)) {
+                // dbg("component source:", $source, $this->compile_mode, ($source instanceof Closure));
+                if ($source instanceof Closure) {
                     $comp = $source($tagname);
                 } else {
                     if ($this->compile_mode != "never") {
+                        // dbg("component compile");
                         $uid = $this->compiler->compile($cname, $source);
                     }
 
@@ -235,6 +253,7 @@ location layout => layout => layout
 
             $this->compiled[$tagname] = $comp;
         }
+        // dbg("get component $tagname:", $comp);
         // if ($start) $comp->is_start = true;
         return $comp;
     }

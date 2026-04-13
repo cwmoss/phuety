@@ -38,6 +38,11 @@ class TemplateTest extends TestCase {
 
         $result = $this->render_string('<div :if="hour<11">Morning!</div><div :elseif="hour < 17">Good Afternoon</div><div :else>Good Evening</div>', ['hour' => '20']);
         $this->assertSame('<div>Good Evening</div>', $result);
+
+        $result = $this->render_string('<template. :if="hour<11"><h1>Morning!</h1><p>happy new day</p></template.>
+        <template. :elseif="hour < 17"><p>Good Afternoon</p></template.>
+        <template. :else>Good Evening</template.>', ['hour' => '16']);
+        $this->assertSame('<p>Good Afternoon</p>', trim($result));
     }
 
     public function testFor() {

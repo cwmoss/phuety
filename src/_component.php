@@ -12,6 +12,10 @@ use function phuety\dbg;
 
 USESTATEMENTS
 
+/**
+ * DEBUG_INFO
+ */
+
 class NAME_component extends component {
     public string $uid = "UID";
     public bool $is_layout = ISLAYOUT;
@@ -38,7 +42,7 @@ class NAME_component extends component {
         // dbg("+++ assetsholder ", $this->is_start, $this->assetholder);
     }
 
-    public function debug_info(){
-        return DEBUG_INFO;
-    }
+    // public function debug_info(){
+    //    return DEBUG_INFO;
+    // }
 }

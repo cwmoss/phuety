@@ -14,20 +14,15 @@ send_nocache();
 $hdl = fn($e) => include_once(__DIR__ . "/boot_exception.html");
 set_exception_handler($hdl);
 
-if ($_SERVER['REQUEST_URI'] == '/assets/mvp.css') {
-    header("Content-Type: text/css");
-    print file_get_contents(__DIR__ . '/public/assets/mvp.css');
-    exit;
-} elseif ($path == '/components-css') {
-    header("Content-Type: text/css");
-    foreach (glob(__DIR__ . '/tmp/*.css') as $f) {
-        print file_get_contents($f);
-        print "\n";
-    }
-    exit;
-} elseif ($_SERVER['REQUEST_URI'] == '/assets/logo.jpg') {
-    header("Content-Type: image/jpeg");
-    print file_get_contents(__DIR__ . '/public/assets/logo.jpg');
+if (str_starts_with($path, "/assets/")) {
+    $ext = pathinfo($path, PATHINFO_EXTENSION);
+    match ($ext) {
+        "css" => header("Content-Type: text/css"),
+        "js" => header("Content-Type: application/javascript"),
+        "jpg" => header("Content-Type: image/jpeg")
+    };
+
+    print file_get_contents(__DIR__ . '/public' . $path);
     exit;
 }
 
@@ -64,9 +59,9 @@ $fetch = function ($url) {
     ];
 };
 
-$phuety->set_helper(["fetch" => $fetch]);
+// $phuety->set_helper(["fetch" => $fetch]);
 
-print $phuety->run('page.' . $the_route[0], ($the_route[1] ?? []) + ['path' => $path]);
+print $phuety->run('page.' . $the_route[0], ($the_route[1] ?? []) + ['path' => $path], ["fetch" => $fetch]);
 
 
 function send_nocache() {

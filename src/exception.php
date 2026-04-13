@@ -23,6 +23,39 @@ class exception extends GlobalException {
         return new self($e->getMessage(), $instruction->line_no, "expression for `$instruction->name`\n");
     }
 
+    /*
+    function 	string 	The current function name. See also __FUNCTION__.
+line 	int 	The current line number. See also __LINE__.
+file 	string 	The current file name. See also __FILE__.
+class 	string 	The current class name. See also __CLASS__
+object 	object 	The current object.
+type 	string 	The current call type. If a method call, "->" is returned. If a static method call, "::" is returned. If a function call, nothing is returned.
+args 	array 	If inside a function, this lists the functions arguments. If inside an included file, this lists the included file name(s). 
+*/
+    static public function find_component_error(Throwable $e, phuety $phuety): string {
+        $stack = $e->getTrace();
+        array_unshift($stack, ["file" => $e->getFile(), "line" => $e->getLine()]);
+        // $file = $e->getFile();
+        // var_dump($phuety->helper);
+
+        foreach ($stack as $trace) {
+            $file = $trace["file"];
+            if (str_ends_with($file, "_component.php")) {
+                $debug = new debug_info($file, $trace["line"]);
+                return "[phuety runtime] " . $debug->get_message() . "\n" . self::trace_for_exception($e, $stack);
+            }
+        }
+        return "";
+    }
+
+    static public function trace_for_exception(Throwable $e, array $stack): string {
+        $msgs = [$e->getMessage(), ""];
+        foreach ($stack as $trace) {
+            $msgs[] = sprintf("%s:%s type:%s", $trace["file"], $trace["line"], $trace["type"] ?? "");
+        }
+        return join("\n", $msgs);
+    }
+
     public function format() {
         $trace = $this->getTrace();
         $context = $this->find_context($trace);

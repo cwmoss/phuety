@@ -28,14 +28,24 @@
 <style>
     h1 {
         color: gold;
+        /*
+        width: 55px;
+
+
+
+
+
+        */
     }
 </style>
 
 <?php
 
+
+
 $page = $props->page ?? 1;
+// $kaputt = print(;
 $res = $helper->fetch("https://jsonplaceholder.typicode.com/posts?_limit=10&_page=" . $page);
 // print_r($res);
 
 // sleep(1);
-?>

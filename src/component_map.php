@@ -2,6 +2,8 @@
 
 namespace phuety;
 
+use Closure;
+
 class component_map {
 
     private array $map = [];
@@ -12,12 +14,12 @@ class component_map {
         }
     }
 
-    public function add($prefix, $path) {
+    public function add(string $prefix, string|Closure $path) {
         if ($prefix == "*") {
             $this->default = $path;
             return;
         }
-        if (is_callable($path)) {
+        if ($path instanceof Closure) {
             $this->map[$prefix] = $path;
             return;
         }
@@ -34,7 +36,7 @@ class component_map {
         $this->map[$prefix] = [$path, $swallow];
     }
 
-    public function resolve(string $tagname, string $separator = ".") {
+    public function resolve(string $tagname, string $separator = "."): string|Closure {
         // dbg("resolve tag", $tagname, $this->map);
         if (isset($this->map[$tagname])) {
             return $this->map[$tagname];
@@ -45,7 +47,7 @@ class component_map {
 
         if ($found = $this->map[$prefix . $separator . '*'] ?? null) {
             // dbg("resolve prefix", $prefix, $found);
-            if (is_callable($found)) return $found;
+            if ($found instanceof Closure) return $found;
             // swallow prefix?
             if ($found[1]) {
                 $cname = str_replace($separator, '_', $name);
