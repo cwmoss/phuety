@@ -21,6 +21,8 @@ _phuety_ gives you a nice way to code the html views in your application.
 - automatic, context aware escaping :white_check_mark:
 - it's fast, since it compiles to php :white_check_mark:
 
+<div><nav style="display:flex;flex-wrap: wrap;gap:1rem;"><a href="#if-ph-if">:if</a><a href="#else-ph-else">:else</a><a href="#foreach-ph-foreach">:foreach</a></nav></div>
+
 ## How?
 
 ### Naming
