@@ -75,9 +75,31 @@ class template_compiler {
             return;
         }
         if ($attr = $compiler_options->check_and_remove_attribute($node, "if")) {
-            $this->result[] = new instruction($line, "if", $attr);
-            $this->walk_nodes($node, $compiler_options, $parent, $level);
             // dbg("+++ if => else?", $name, $node->nextElementSibling->nodeName ?? "");
+            $this->result[] = new instruction($line, "if", $attr);
+            $elses = [];
+            // $else_taken = false;
+            while ($current = $node->nextElementSibling) {
+                if ($attr = $compiler_options->check_and_remove_attribute($current, "elseif")) {
+                    $elses[] = [$current, new instruction($node->nextElementSibling->getLineNo(), "elseif", $attr)];
+                    $this->removeNode($current);
+                } elseif (($compiler_options->check_and_remove_attribute($node->nextElementSibling, "else") !== false)) {
+                    $elses[] = [$current, new instruction($node->nextElementSibling->getLineNo(), "else")];
+                    $this->removeNode($current);
+                    break;
+                } else {
+                    break;
+                }
+            }
+
+            $this->walk_nodes($node, $compiler_options, $parent, $level);
+
+            foreach ($elses as $else) {
+                $this->result[] = $else[1];
+                $this->walk_nodes($else[0], $compiler_options, $parent, $level);
+            }
+            $this->result[] = new instruction($line, "endif");
+            /*
             if (
                 $node->nextElementSibling &&
                 ($attr = $compiler_options->check_and_remove_attribute($node->nextElementSibling, "elseif"))
@@ -94,7 +116,7 @@ class template_compiler {
                 $this->walk_nodes($node->nextElementSibling, $compiler_options, $parent, $level);
                 $this->removeNode($node->nextElementSibling);
             }
-            $this->result[] = new instruction($line, "endif");
+            */
             return;
         }
         if ($attr = $compiler_options->check_and_remove_attribute($node, "for")) {
