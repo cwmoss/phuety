@@ -99,9 +99,22 @@ class template_compiler {
         }
         if ($attr = $compiler_options->check_and_remove_attribute($node, "for")) {
             $for_parts = $this->parse_for_attribute($attr, $line);
-            $this->result[] = new instruction($line, "foreach", for_expression: $for_parts);
+            $with_else = false;
+            if (
+                $node->nextElementSibling &&
+                ($compiler_options->check_and_remove_attribute($node->nextElementSibling, "else") !== false)
+            ) {
+                $with_else = true;
+            }
+            $this->result[] = new instruction($line, "foreach", for_expression: $for_parts, for_with_else: $with_else);
             $this->walk_nodes($node, $compiler_options, $parent, $level);
-            $this->result[] = new instruction($line, "endforeach", for_expression: $for_parts);
+            $this->result[] = new instruction($line, "endforeach", for_expression: $for_parts, for_with_else: $with_else);
+            if ($with_else) {
+                $this->result[] = new instruction($node->nextElementSibling->getLineNo(), "elseforeach");
+                $this->walk_nodes($node->nextElementSibling, $compiler_options, $parent, $level);
+                $this->removeNode($node->nextElementSibling);
+                $this->result[] = new instruction($line, "endelseforeach");
+            }
             return;
         }
 

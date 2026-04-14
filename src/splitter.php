@@ -35,7 +35,7 @@ class splitter {
         return new parts($name, rtrim($php, '>?'), trim($sfc), $php_start);
     }
     public function split_sfc(Document|string|null $dom, $name, bool $is_layout, parts $parts) {
-        $parts->uid = $name . '---' . substr(base64_encode(md5($name, true)), 0, 6);
+        $parts->uid = $name . '---' . substr(hash('xxh3', $name), 0, 6);
 
         // dom::d("split $name -- ", $dom);
         // TODO: scoping without uniqid

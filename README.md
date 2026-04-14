@@ -373,9 +373,9 @@ look into `showcase/` dir
 - [x] compile to php-string-templates
 - [x] new expression parser => take symfony for now
 - [ ] multiple else-if, foreach-else
-- [ ] exception, show problem source
+- [x] exception, show problem source
 - [ ] @assets... path aliases for href, src, ...
-- [ ] doctype problem
+- [x] doctype problem
 - [ ] test with vue order of rendering
 
 ## Inspiration, copypaste, similar projects

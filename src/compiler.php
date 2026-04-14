@@ -34,9 +34,10 @@ class compiler {
         $is_layout = false;
         $dom = null;
         $head = null;
+        $first_chars = ltrim(mb_strtolower(mb_substr($parts->html, 0, 50)));
         if (
-            str_starts_with($parts->html, '<html') || str_starts_with($parts->html, '<!DOCTYPE') ||
-            str_starts_with($parts->html, '<root') || str_starts_with($parts->html, '<head') || str_starts_with($parts->html, '<x-page')
+            str_starts_with($first_chars, '<html') || str_starts_with($first_chars, '<!doctype') ||
+            str_starts_with($first_chars, '<root') || str_starts_with($first_chars, '<head') || str_starts_with($first_chars, '<x-page')
         ) {
             $is_layout = true;
             // $dom = compiler::get_document($html);

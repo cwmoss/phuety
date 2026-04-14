@@ -59,6 +59,21 @@ class TemplateTest extends TestCase {
         $this->assertSame('', $result);
     }
 
+
+    /*
+    
+    <div :if="items" :foreach="items as it">{{it}}</div>
+    <div :else>no items</div>
+
+    <div :foreach="items as it">{{it}}</div>
+    <div :else>no items</div>
+
+    <div :if="can_see_items" :foreach="items as it">{{it}}</div>
+    <div :else>no items</div>
+    <div :else>ask admin</div>
+*/
+
+
     public function testRaw() {
         $result = $this->render_string('<div :html="html"></div>', ['html' => '<em>hello world</em>']);
         $this->assertSame('<div><em>hello world</em></div>', $result);

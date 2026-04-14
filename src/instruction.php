@@ -14,7 +14,8 @@ class instruction {
         public ?string $text = null,
         public ?string $parent_element = null,
         public ?int $level = null,
-        public bool $single_root = false
+        public bool $single_root = false,
+        public bool $for_with_else = false
     ) {
     }
 
@@ -31,6 +32,8 @@ class instruction {
             "endif" => '<?php } ?>',
             "endforeach" => $this->php_foreach_end(),
             "else" => '<?php } else { ?>',
+            "elseforeach" => '',
+            "endelseforeach" => '<?php } ?>',
             "tag" => $this->php_element($ep),
             "endtag" => $this->php_element_end($ep),
             "slotted" => '<?php ob_start(); ?>',
@@ -125,9 +128,14 @@ class instruction {
         $item = trim($this->for_expression["item"]);
         $key = trim($this->for_expression["key"]);
         $list = trim($this->for_expression["list"]);
+        $loopvar = sprintf('$_loop_%s', hash("xxh3", $list));
         return sprintf(
-            '<?php foreach(%s as %s $%s){$__d->_add_block(["%s"=>$%s %s]); ?>',
+            '<?php if((%s = %s) && (!%s instanceof \Generator || %s->valid())) { foreach(%s as %s $%s){$__d->_add_block(["%s"=>$%s %s]); ?>',
+            $loopvar,
             $this->compile_expression($list, $ep),
+            $loopvar,
+            $loopvar,
+            $loopvar,
             $key ? sprintf('$%s => ', $key) : '',
             $item,
             $item,
@@ -138,7 +146,8 @@ class instruction {
 
     function php_foreach_end(): string {
         return sprintf(
-            '<?php $__d->_remove_block();} ?>'
+            '<?php $__d->_remove_block();}} %s ?>',
+            $this->for_with_else ? "else { " : ""
             //,
             //$item,
             //$key !== null ? '' : sprintf(', $__blockdata["%s"]', $key)
