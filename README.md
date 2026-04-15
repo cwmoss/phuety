@@ -372,9 +372,9 @@ look into `showcase/` dir
 - [ ] assets: cache buster dev, cache buster prod
 - [x] compile to php-string-templates
 - [x] new expression parser => take symfony for now
-- [ ] multiple else-if, foreach-else
+- [x] multiple else-if, foreach-else
 - [x] exception, show problem source
-- [ ] @assets... path aliases for href, src, ...
+- [x] @assets... path aliases for href, src, ...
 - [x] doctype problem
 - [ ] test with vue order of rendering
 
