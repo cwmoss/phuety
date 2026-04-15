@@ -44,12 +44,19 @@ $the_route = match ("$http_method $path") {
     default => ['404']
 };
 
-$phuety = new phuety\phuety(__DIR__ . '/templates', [
-    'app.layout' => 'layout',
-    'page.*' => 'pages/*',
-    'form.*' => 'form/',
-    'sc.*' => 'components/'
-], __DIR__ . '/tmp', compile_mode: "always", assets_base: "/../public/assets");
+$phuety = new phuety\phuety(
+    __DIR__ . '/templates',
+    [
+        'app.layout' => 'layout',
+        'page.*' => 'pages/*',
+        'form.*' => 'form/',
+        'sc.*' => 'components/'
+    ],
+    __DIR__ . '/tmp',
+    compile_mode: "always",
+    assets_base: "/../public/assets",
+    path_aliases: ["assets" => "/assets/"]
+);
 
 $fetch = function ($url) {
     $res = file_get_contents($url);

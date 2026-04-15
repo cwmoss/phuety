@@ -44,7 +44,8 @@ class phuety {
         public array $helper = [],
         public string $assets_base = "/assets",
         public ?compiler_options $compiler_options = null,
-        public ?phuety_context $context = null
+        public ?phuety_context $context = null,
+        public array $path_aliases = []
     ) {
         // dbg("start");
         $this->init($map);
@@ -110,6 +111,7 @@ class phuety {
 
     public function run(string $cname, array $data = [], array $helper = [], object $globals = new stdClass) {
         // $this->compiled = [];
+        $helper["__path_alias"] = $this->resolve_path_alias(...);
         try {
             $context = $this->context->with_top($cname);
 
@@ -139,6 +141,11 @@ class phuety {
                 throw $e;
             }
         }
+    }
+
+    public function resolve_path_alias(string $alias, string $path): string {
+        $pfx = $this->path_aliases[$alias] ?? "@$alias/";
+        return $pfx . $path;
     }
 
     public function collect($cname): asset {

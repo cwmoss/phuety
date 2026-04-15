@@ -21,7 +21,7 @@
         padding: 0 1em;
     }
 
-    root:not(:defined) {
+    :root:not(:defined) {
         display: none;
     }
 </style>

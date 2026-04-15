@@ -4,7 +4,7 @@
 </nav>
 
 <style>
-    root {
+    :root {
         display: flex;
         justify-content: start;
     }

@@ -13,7 +13,7 @@
 
 
 <style>
-    root {
+    :root {
         margin-bottom: 1em;
 
     }

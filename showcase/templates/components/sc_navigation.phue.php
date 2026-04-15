@@ -1,6 +1,8 @@
 <nav>
 
-    <a :if="!subnav" href="/"><sc-logo></sc-logo></a>
+    <a :if="!subnav" href="/">
+        <sc.logo></sc.logo>
+    </a>
     <ul>
         <li :foreach="item in navpoints">
             <a :href="item.url" :class="active==item.url?'active':''" :html="item.title"></a>

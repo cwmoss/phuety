@@ -120,10 +120,36 @@ class tag {
             if ($is_binding) {
                 $tag["bindings"][$name] = $value;
             } else {
-                $tag["attrs"][$name] = $value;
+                $alias = self::check_alias_attribute($tag["tagname"], $name, $value);
+                if ($alias) {
+                    $tag["bindings"][$name] = $alias;
+                } else {
+                    $tag["attrs"][$name] = $value;
+                }
             }
         }
         return new self(...$tag);
+    }
+
+    // https://www.w3.org/TR/REC-html40/index/attributes.html
+    // https://html.spec.whatwg.org/multipage/indices.html#attributes-1
+    // https://stackoverflow.com/questions/2725156/complete-list-of-html-tag-attributes-which-have-a-url-value
+    public static $alias_attrs = [
+        "href" => ["a", "base", "link", "area"],
+        "action" => ["form"],
+        "formaction" => ["input"],
+        "src" => ["script", "img", "iframe", "source", "track", "video"],
+        "poster" => ["video"],
+        "data" => ["object"]
+    ];
+
+    public static function check_alias_attribute($tagname, $name, $value): string {
+        if ($value[0] != "@") return "";
+        $tags = self::$alias_attrs[$name] ?? null;
+        if (!$tags) return "";
+        if (!in_array($tagname, $tags)) return "";
+        [$alias, $path] = explode("/", $value, 2) + [1 => ""];
+        return sprintf("__path_alias('%s', '%s')", substr($alias, 1), $path);
     }
 
     public function to_attrs(): array {

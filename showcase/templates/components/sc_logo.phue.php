@@ -1,7 +1,7 @@
-<img src="/assets/logo.jpg" alt="showcase logo">
+<img src="@assets/logo.jpg" alt="showcase logo">
 
 <style>
-    root {
+    :root {
         width: 80px;
         border-radius: 50%;
         border: 8px solid gold;

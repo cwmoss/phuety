@@ -49,7 +49,7 @@
         width: 100%;
     }
 
-    root {
+    :root {
         margin-top: 3em;
     }
 </style>

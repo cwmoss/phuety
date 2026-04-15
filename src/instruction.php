@@ -130,9 +130,10 @@ class instruction {
         $list = trim($this->for_expression["list"]);
         $loopvar = sprintf('$_loop_%s', hash("xxh3", $list));
         return sprintf(
-            '<?php if((%s = %s) && (!%s instanceof \Generator || %s->valid())) { foreach(%s as %s $%s){$__d->_add_block(["%s"=>$%s %s]); ?>',
+            '<?php if((%s = %s) && ((!%s instanceof \Generator && !%s instanceof \Iterator) || %s->valid())) { foreach(%s as %s $%s){$__d->_add_block(["%s"=>$%s %s]); ?>',
             $loopvar,
             $this->compile_expression($list, $ep),
+            $loopvar,
             $loopvar,
             $loopvar,
             $loopvar,
