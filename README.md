@@ -31,7 +31,7 @@ _phuety_ gives you a nice way to code the html views in your application.
 <tr>
     <td><a href="#html-ph-html">:html, ph-html</a></td>
     <td><a href="#name-ph-bindname">:[name], ph-bind:[name], Attributes</a></td>
-    <td><a href="#expressions">{{ expression }}</a></td>
+    <td><a href="#-expression-">{{ expression }}</a></td>
     <td></td>
 </tr>
 <tr>
@@ -174,8 +174,8 @@ example:
 <div :foreach="profiles as user" :if="allowed_to_see_profiles">
     <span class="name" :html="user.name"></span> <span class="email" :html="user.email"></span>
 </div>
-<em :else>no users registered</em>
-<!-- this is wrong, it should say: not allowed to see profiles -->
+<em :else>no profiles</em>
+<!-- the meaning for this :else here is: not allowed to see profiles -->
 ````
 
 Expressions look like this:
