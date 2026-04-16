@@ -26,6 +26,9 @@ _phuety_ gives you a nice way to code the html views in your application.
        </tr>
 </table>
 
+| --- | --- | --- |
+| [:elseif, ph-elseif](#elseif-ph-elseif) | huhu | haha |
+
 
 ## How?
 
