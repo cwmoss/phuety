@@ -22,12 +22,26 @@ _phuety_ gives you a nice way to code the html views in your application.
 - it's fast, since it compiles to php :white_check_mark:
 
 <table>
-   <tr> <td><a href="#if-ph-if">:if</a></td><td><a href="#else-ph-else">:else</a></td><td><a href="#foreach-ph-foreach">:foreach</a></td><td>[:elseif, ph-elseif](#elseif-ph-elseif)</td>
-       </tr>
+<tr>
+    <td><a href="#if-ph-if">:if</a></td>
+    <td><a href="#else-ph-else">:else</a></td>
+    <td><a href="#elseif-ph-elseif">:elseif, ph-elseif</td>
+    <td><a href="#foreach-ph-foreach">:foreach</a></td>
+</tr>
+<tr>
+    <td><a href="#html-ph-html">:html, ph-html</a></td>
+    <td><a href="#name-ph-bind-name">:[name], ph-bind:[name], Attributes</a></td>
+    <td><a href="#expression">{{ expression }}</a></td>
+    <td></td>
+</tr>
+<tr>
+    <td><a href="#template">&lt;template.&gt;</a></td>
+    <td><a href="#slot">&lt;slot.&gt;</a></td>
+    <td><a href="#phuety-assets">&lt;phuety.assets&gt;</a></td>
+    <td></td>
+</tr>
 </table>
 
-| --- | --- | --- |
-| [:elseif, ph-elseif](#elseif-ph-elseif) | huhu | haha |
 
 
 ## How?
@@ -277,15 +291,15 @@ Fallthrough attributes are: `id`, `class` and `style`.
 <button class="large">Click Me</button>
 ```
 
-### <template.>
-
-The template tag is for wrapping multiple elements with :if, :else, :elseif, :foreach.
-
 ### {{ expression }}
 
 Use the "Mustache" syntax (double curly braces) to place contents in text areas.
 
     <span>Message: {{ msg }}</span>
+
+### <template.>
+
+The template tag is for wrapping multiple elements with :if, :else, :elseif, :foreach.
 
 ### <slot.>, <slot.[name]>, :slot, ph-slot
 
