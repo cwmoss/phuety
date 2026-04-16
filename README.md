@@ -30,14 +30,14 @@ _phuety_ gives you a nice way to code the html views in your application.
 </tr>
 <tr>
     <td><a href="#html-ph-html">:html, ph-html</a></td>
-    <td><a href="#name-ph-bind-name">:[name], ph-bind:[name], Attributes</a></td>
-    <td><a href="#expression">{{ expression }}</a></td>
+    <td><a href="#name-ph-bindname">:[name], ph-bind:[name], Attributes</a></td>
+    <td><a href="#expressions">{{ expression }}</a></td>
     <td></td>
 </tr>
 <tr>
     <td><a href="#template">&lt;template.&gt;</a></td>
-    <td><a href="#slot">&lt;slot.&gt;</a></td>
-    <td><a href="#phuety-assets">&lt;phuety.assets&gt;</a></td>
+    <td><a href="#slot-slotname-slot-ph-slot">&lt;slot.&gt;</a></td>
+    <td><a href="#phuetyassets-headbody-">&lt;phuety.assets&gt;</a></td>
     <td></td>
 </tr>
 </table>
