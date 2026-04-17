@@ -11,7 +11,7 @@ class asset {
 
     // TODO: inject setup: bun, prod/dev, etc.
     public function __construct() {
-        $outp = shell_exec("bun -v");
+        $outp = shell_exec("bun -v 2>&1");
         $this->use_bun = str_starts_with($outp, "1.");
     }
 
