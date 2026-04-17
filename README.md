@@ -66,7 +66,7 @@ Single File Components can contain template code, script code, style code and ph
 </nav>
 
 <style>
-    root {
+    :root {
         display: flex;
         justify-content: start;
     }
@@ -141,7 +141,7 @@ $name = "Anna";
 ```
 
 The styles section above is transformed to scoped styles. You can disable scoping using the attribute `global`.
-The special selector `root` is for addressing all template root elements (in this case the `<nav>` element).
+The special selector `:root` is for addressing all template root elements (in this case the `<nav>` element).
 
 ### :if, ph-if
 
