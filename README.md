@@ -22,8 +22,24 @@ _phuety_ gives you a nice way to code the html views in your application.
 - it's fast, since it compiles to php :white_check_mark:
 
 <table>
-   <tr> <td><a href="#if-ph-if">:if</a></td><td><a href="#else-ph-else">:else</a></td><td><a href="#foreach-ph-foreach">:foreach</a></td>
-       </tr>
+<tr>
+    <td><a href="#if-ph-if">:if</a></td>
+    <td><a href="#else-ph-else">:else</a></td>
+    <td><a href="#elseif-ph-elseif">:elseif, ph-elseif</td>
+    <td><a href="#foreach-ph-foreach">:foreach</a></td>
+</tr>
+<tr>
+    <td><a href="#html-ph-html">:html, ph-html</a></td>
+    <td><a href="#name-ph-bindname">:[name], ph-bind:[name], Attributes</a></td>
+    <td><a href="#-expression-">{{ expression }}</a></td>
+    <td></td>
+</tr>
+<tr>
+    <td><a href="#template">&lt;template.&gt;</a></td>
+    <td><a href="#slot-slotname-slot-ph-slot">&lt;slot.&gt;</a></td>
+    <td><a href="#phuetyassets-headbody-">&lt;phuety.assets&gt;</a></td>
+    <td></td>
+</tr>
 </table>
 
 ## How?
@@ -48,7 +64,7 @@ Single File Components can contain template code, script code, style code and ph
 </nav>
 
 <style>
-    root {
+    :root {
         display: flex;
         justify-content: start;
     }
@@ -118,11 +134,11 @@ The properties are also merged with the defined variables in this order (first w
 <!-- <div>Joe</div> -->
 <div :html="name"></div>
 <!-- <div>Anna</div> -->
-<?php $name = "Anna"
+<?php $name = "Anna";
 ```
 
 The styles section above is transformed to scoped styles. You can disable scoping using the attribute `global`.
-The special selector `root` is for addressing all template root elements (in this case the `<nav>` element).
+The special selector `:root` is for addressing all template root elements (in this case the `<nav>` element).
 
 ### :if, ph-if
 
@@ -130,7 +146,9 @@ when `:if` and `:foreach` are on the same Element the `:if` directive get proces
 
 ### :else, ph-else
 
-The :else directive must directly follow an `:if` or `:elseif` directive.
+The `:else` directive must directly follow an `:if` or `:elseif` directive.
+
+`:else` can also be combined with `:foreach`. see below.
 
 ### :elseif, ph-elseif
 
@@ -145,6 +163,19 @@ The `:elseif` directive must directly follow an `:if` or another `:elseif` direc
 ### :foreach, ph-foreach
 
 when `:if` and `:foreach` are on the same Element the `:if` directive get processed before the `:foreach` directive.
+you can combine `:foreach` with `:else` for alternative output, if there is nothing to iterate. just be careful if you use
+`:if` and `:foreach` and `:else`, then the `:else` is binded to the the `:if`, since this takes priority.
+
+example:
+
+```html
+<div :foreach="profiles as user" :if="allowed_to_see_profiles">
+  <span class="name" :html="user.name"></span>
+  <span class="email" :html="user.email"></span>
+</div>
+<em :else>no profiles</em>
+<!-- the meaning for this :else here is: not allowed to see profiles -->
+```
 
 Expressions look like this:
 
@@ -260,15 +291,15 @@ Fallthrough attributes are: `id`, `class` and `style`.
 <button class="large">Click Me</button>
 ```
 
-### <template.>
-
-The template tag is for wrapping multiple elements with :if, :else, :elseif, :foreach.
-
 ### {{ expression }}
 
 Use the "Mustache" syntax (double curly braces) to place contents in text areas.
 
     <span>Message: {{ msg }}</span>
+
+### <template.>
+
+The template tag is for wrapping multiple elements with :if, :else, :elseif, :foreach.
 
 ### <slot.>, <slot.[name]>, :slot, ph-slot
 

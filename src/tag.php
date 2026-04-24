@@ -144,6 +144,7 @@ class tag {
     ];
 
     public static function check_alias_attribute($tagname, $name, $value): string {
+        if (!$value) return "";
         if ($value[0] != "@") return "";
         $tags = self::$alias_attrs[$name] ?? null;
         if (!$tags) return "";

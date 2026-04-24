@@ -60,6 +60,7 @@ class component {
         // dbg("++ all helper", $engine->helper);
         // $props_container = new data_container($props, $engine->helper);
         $local = $this->run_code($props_container, $slots, $props_container, $context, $assetholder);
+        if ($local === null) return;
         // $props_container->_add_phuety_context($context);
         if ($local) $props_container->_add_local($local);
         $this->render($runner, $props_container, $slots);
@@ -92,7 +93,7 @@ class component {
         return [$data, $fun];
     }
 
-    public function run_code(data_container $props, array $slots, data_container $helper, phuety_context $phuety, asset $assetholder): array {
+    public function run_code(data_container $props, array $slots, data_container $helper, phuety_context $phuety, asset $assetholder): ?array {
         return [];
     }
 
