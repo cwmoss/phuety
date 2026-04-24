@@ -26,7 +26,6 @@ _phuety_ gives you a nice way to code the html views in your application.
        </tr>
 </table>
 
-
 ## How?
 
 ### Naming
@@ -377,6 +376,9 @@ look into `showcase/` dir
 - [x] @assets... path aliases for href, src, ...
 - [x] doctype problem
 - [ ] test with vue order of rendering
+- [ ] write everything in 1 folder
+- [ ] have a template_source_file in context
+- [ ] have a template_source_directory in context
 
 ## Inspiration, copypaste, similar projects
 
