@@ -45,7 +45,8 @@ class phuety {
         public string $assets_base = "/assets",
         public ?compiler_options $compiler_options = null,
         public ?phuety_context $context = null,
-        public array $path_aliases = []
+        public array $path_aliases = [],
+        public string $prefix = ""
     ) {
         // dbg("start");
         $this->init($map);
@@ -117,7 +118,7 @@ class phuety {
 
             // skip collect with string rendering. it makes no sense here (i think)
             if (str_starts_with($cname, "tmp.")) {
-                $assetholder = new asset;
+                $assetholder = new asset($this->prefix);
             } else {
                 $assetholder = $this->collect($cname);
                 $assetholder->write_css($cname, $this->cbase, $this->asset_build_dir(), "/assets/build/");
@@ -153,7 +154,7 @@ class phuety {
         $all_components = [];
         $this->collect_all($cname, $all_components);
         // dbg("++ all components", $all_components);
-        $assetholder = new asset;
+        $assetholder = new asset($this->prefix);
         foreach ($all_components as $name => $dummy) {
             $this->get_component($name)->collect_assets($assetholder, $name);
         }

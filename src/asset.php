@@ -10,7 +10,7 @@ class asset {
     public bool $use_bun = false;
 
     // TODO: inject setup: bun, prod/dev, etc.
-    public function __construct() {
+    public function __construct(public string $prefix = "") {
         $outp = shell_exec("bun -v 2>&1");
         $this->use_bun = str_starts_with($outp, "1.");
     }
@@ -30,10 +30,23 @@ class asset {
         if (!isset($this->css[$tagname])) $this->css[$tagname] = str_replace(".", "_", $tagname);
     }
 
+    static public function tag(array $tag_props, string $prefix) {
+        $attrs = $tag_props[2];
+        if (isset($attrs["href"]) || isset($attrs["src"])) {
+            if (isset($attrs["href"])) {
+                $attrs["href"] = $prefix . $attrs["href"];
+            }
+            if (isset($attrs["src"])) {
+                $attrs["src"] = $prefix . $attrs["src"];
+            }
+            return tag::tag($tag_props[0], $attrs);
+        }
+        return $tag_props[3];
+    }
     public function get($position = null) {
         return join("\n", array_map(function ($a) {
             // html tag
-            return $a[3];
+            return self::tag($a, $this->prefix);
         }, array_filter($this->assets, function ($a) use ($position) {
             return $a[1] == $position;
         })));
