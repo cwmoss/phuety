@@ -1,10 +1,9 @@
 vendor/
 composer.lock
-compiled/
-showcase/public/assets/generated
-showcase/public/assets/build
+_compiled/
+showcase/public/assets/_build
 .DS_Store
 .phpunit.result.cache
 xtest.php
-tests/fixtures/assets/build
+tests/fixtures/assets/_build
 _experiments/

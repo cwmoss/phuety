@@ -28,8 +28,6 @@
     "bin": [
       "bin/phuety"
     ],
-    "post-update-cmd": "@setup",
-    "setup": "mkdir -p compiled; mkdir -p showcase/public/assets/generated",
     "test": [
       "@phpunit"
     ],
@@ -42,8 +40,8 @@
     "symfony/expression-language": "^7.2"
   },
   "require-dev": {
-    "pestphp/pest": "^2.28",
-    "phpunit/phpunit": "^10.4",
+    "pestphp/pest": "^4",
+    "phpunit/phpunit": "^12",
     "chillerlan/php-qrcode": "^5",
     "cwmoss/slowfoot": "dev-main"
   },

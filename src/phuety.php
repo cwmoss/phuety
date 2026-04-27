@@ -57,7 +57,7 @@ class phuety {
         else $this->map = $map;
         $this->map->add("phuety.*", __DIR__ . "/components/*");
 
-        if (!$this->cbase) $this->cbase = $this->base . '/../compiled';
+        if (!$this->cbase) $this->cbase = $this->base . '/../_compiled';
         if (!is_dir($this->cbase)) mkdir($this->cbase, recursive: true);
         if ($this->compile_mode == "never") {
             if (!is_readable($this->cbase)) {
@@ -93,7 +93,7 @@ class phuety {
 
     public function asset_build_dir(): string {
         // return $this->base . '/../public/assets';
-        return $this->base . $this->assets_base . "/build";
+        return $this->base . $this->assets_base . "/_build";
     }
 
     public function render_template_string(string $tpl, array $data = [], array $helper = [], object $globals = new stdClass): string {
@@ -121,7 +121,7 @@ class phuety {
                 $assetholder = new asset($this->prefix);
             } else {
                 $assetholder = $this->collect($cname);
-                $assetholder->write_css($cname, $this->cbase, $this->asset_build_dir(), "/assets/build/");
+                $assetholder->write_css($cname, $this->cbase, $this->asset_build_dir(), "/assets/_build/");
             }
             $data_container = new data_container($globals, $helper);
             $runner = function ($runner, $component_name, phuety_context $context, $props, $slots = []) use ($assetholder, $data_container) {

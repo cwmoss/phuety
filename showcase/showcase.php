@@ -52,7 +52,6 @@ $phuety = new phuety\phuety(
         'form.*' => 'form/',
         'sc.*' => 'components/'
     ],
-    __DIR__ . '/tmp',
     compile_mode: "always",
     assets_base: "/../public/assets",
     path_aliases: ["assets" => "/assets/"]
