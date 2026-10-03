@@ -2,7 +2,7 @@
 
 use slowfoot\configuration;
 use slowfoot\document;
-use slowfoot\store;
+use slowfoot\store\store;
 use slowfoot\hook;
 
 class site {

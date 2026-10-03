@@ -7,7 +7,7 @@ on:
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
-  
+
 permissions:
   contents: read
   pages: write
@@ -15,42 +15,41 @@ permissions:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    #- name: Validate composer.json and composer.lock
-    #  run: composer validate --strict
+      #- name: Validate composer.json and composer.lock
+      #  run: composer validate --strict
 
-    - name: Cache Composer packages
-      id: composer-cache
-      uses: actions/cache@v3
-      with:
-        path: docs/vendor
-        key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-php-
+      - name: Cache Composer packages
+        id: composer-cache
+        uses: actions/cache@v3
+        with:
+          path: docs/vendor
+          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-
 
-    - name: Setup PHP and disable opcache
-      uses: shivammathur/setup-php@verbose
-      with:
-        php-version: '8.5'
-      env:
-        COMPOSER_PROCESS_TIMEOUT: 300
-    - name: Install dependencies
-      run: composer install --prefer-dist --no-progress -d docs/
+      - name: Setup PHP and disable opcache
+        uses: shivammathur/setup-php@verbose
+        with:
+          php-version: "8.5"
+        env:
+          COMPOSER_PROCESS_TIMEOUT: 300
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress -d docs/
 
-    # Add a test script to composer.json, for instance: "test": "vendor/bin/phpunit"
-    # Docs: https://getcomposer.org/doc/articles/scripts.md
+      # Add a test script to composer.json, for instance: "test": "vendor/bin/phpunit"
+      # Docs: https://getcomposer.org/doc/articles/scripts.md
 
-    - name: build docs
-      run: php docs/vendor/bin/slowfoot build -f
+      - name: build docs
+        run: php docs/vendor/bin/slowfoot build -f -d=docs/
 
-    - name: Upload artifact
-      uses: actions/upload-pages-artifact@v3
-      with:
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
           path: docs/dist/
 
   # Deployment job
