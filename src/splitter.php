@@ -6,7 +6,13 @@ use DOM\Document;
 
 class splitter {
 
-    public function __construct(public array $handler = [], public string $assets_base = "", public array $custom_tags = [], public array $opts = []) {
+    public function __construct(
+        public asset_compiler $asset_compiler,
+        public array $handler = [],
+        public string $assets_base = "",
+        public array $custom_tags = [],
+        public array $opts = [],
+    ) {
         $this->handler = [
             new handle_css(),
             new handle_script(),
@@ -54,7 +60,7 @@ class splitter {
                     }
                 }
                 $header_handler = [
-                    new handle_link()
+                    new handle_head_link($this->asset_compiler)
                 ];
                 foreach ($parts->head->firstElementChild->childNodes as $node) {
                     dbg("head", $node->nodeName);

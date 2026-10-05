@@ -14,6 +14,7 @@ use Throwable;
 class phuety {
 
     public ?compiler $compiler = null;
+    public ?asset_compiler $asset_compiler = null;
     public ?expressions $expression_parser = null;
 
     public array $compiled = [];
@@ -71,6 +72,14 @@ class phuety {
             if (!is_dir($this->asset_build_dir())) mkdir($this->asset_build_dir(), recursive: true);
             if (!$this->context) $this->context = new phuety_context("dev");
         }
+        $this->asset_compiler = new asset_compiler(
+            $this->cbase,
+            $this->asset_base(),
+            $this->asset_build_dir(),
+            "/assets/_build/",
+            $this->resolve_path_alias(...),
+            $this->prefix,
+        );
         if ($this->compile_mode !== "never") {
             if (!$this->compiler_options) $this->compiler_options = new compiler_options();
             $this->compiler = new compiler($this);

@@ -26,7 +26,14 @@ class compiler {
         [$source, $src_file, $is_compiled] = $src;
         if ($is_compiled) return;
 
-        $splitter = new splitter([], $this->engine->asset_base(), $this->custom_tags, $this->engine->opts);
+        $splitter = new splitter(
+            $this->engine->asset_compiler,
+            [],
+            $this->engine->asset_base(),
+            $this->custom_tags,
+            $this->engine->opts,
+        );
+
         $parts = $splitter->split_php($source, $name);
         $parts->compile_basedir = $this->cbase;
         $parts->src_file = $src_file;

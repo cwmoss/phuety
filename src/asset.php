@@ -56,7 +56,7 @@ class asset {
         if ($this->css_written) return;
         $this->css_written = true;
 
-        $this->write_css_links();
+        // $this->write_css_links();
 
         // dbg("+++ write CSS", $this->css);
         $css = "";
