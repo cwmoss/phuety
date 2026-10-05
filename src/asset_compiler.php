@@ -42,7 +42,7 @@ class asset_compiler {
         if (file_exists($dest)) return $new_name;
 
         if ($this->use_bun) {
-            $css = shell_exec("$this->use_bun build $src");
+            $css = shell_exec("$this->use_bun build --no-bundle $src");
             file_put_contents($dest, $css);
         } else {
             copy($src, $dest);
