@@ -2,11 +2,7 @@
 
 namespace phuety;
 
-use DOMXPath;
 use DOM\Document;
-use Dom\Element;
-
-use function PHPUnit\Framework\isNull;
 
 class splitter {
 
@@ -26,7 +22,7 @@ class splitter {
         atm only php block at the end of sfc is supported
         TODO: support more cases
     */
-    public function split_php($source, $name): parts {
+    public function split_php(string $source, string $name): parts {
         if (str_starts_with($source, '<?php')) {
             return new parts($name, rtrim($source, '>?'), "", 1);
         }
@@ -34,7 +30,7 @@ class splitter {
         $php_start = $php ? count(explode("\n", $sfc)) : null;
         return new parts($name, rtrim($php, '>?'), trim($sfc), $php_start);
     }
-    public function split_sfc(Document|string|null $dom, $name, bool $is_layout, parts $parts) {
+    public function split_sfc(Document|string|null $dom, string $name, bool $is_layout, parts $parts) {
         $parts->uid = $name . '---' . substr(hash('xxh3', $name), 0, 6);
 
         // dom::d("split $name -- ", $dom);
@@ -48,12 +44,34 @@ class splitter {
                 // self::d("split layout", $dom);
                 // var_dump(iterator_to_array($dom->childNodes));
                 // die();
-                // dbg("split layout", iterator_to_array($dom->childNodes));
+                // dbg("+++ split layout", $parts->head->saveHtml(), $parts->head->documentElement);
                 foreach ($dom->childNodes as $node) {
+                    // dbg("++ split layout", $node->nodeName);
                     if ($node->nodeType == \XML_COMMENT_NODE && str_starts_with($node->textContent, "?php")) {
                         $phpcode = substr($node->textContent, 4);
                         $parts->php = $phpcode;
                         $remove[] = $node;
+                    }
+                }
+                $header_handler = [
+                    new handle_link()
+                ];
+                foreach ($parts->head->firstElementChild->childNodes as $node) {
+                    dbg("head", $node->nodeName);
+                    if ($node->nodeType == \XML_ELEMENT_NODE) {
+                        // dbg("++ splitter", $node->tagName);
+                        $handled = false;
+                        foreach ($header_handler as $handler) {
+                            if ($handler->handle($node, $parts)) {
+                                if ($handler->remove_node) {
+                                    $remove[] = $node;
+                                }
+                                $handled = true;
+                                break;
+                            }
+                        }
+                        // default: some template element
+                        // if (!$handled) {}
                     }
                 }
                 // var_dump(iterator_to_array($dom->childNodes));

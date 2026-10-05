@@ -15,7 +15,7 @@ class asset {
         $this->use_bun = str_starts_with($outp, "1.");
     }
 
-    public function push($uid, $asset) {
+    public function push(string $uid, array $asset) {
         $id = match (true) {
             $asset[0] == 'script' && isset($asset[2]['src']) => $asset[2]['src'],
             $asset[0] == 'link' => $asset[2]['href'],
@@ -26,7 +26,7 @@ class asset {
         }
     }
 
-    public function push_css($tagname) {
+    public function push_css(string $tagname) {
         if (!isset($this->css[$tagname])) $this->css[$tagname] = str_replace(".", "_", $tagname);
     }
 
@@ -56,6 +56,8 @@ class asset {
         if ($this->css_written) return;
         $this->css_written = true;
 
+        $this->write_css_links();
+
         // dbg("+++ write CSS", $this->css);
         $css = "";
         foreach ($this->css as $name => $fname) {
@@ -69,11 +71,28 @@ class asset {
             $syntax_down = shell_exec("bun build $in");
             file_put_contents($asset_dir . "/$cname" . ".css", $syntax_down);
         }
+
+        $new_name = self::hash_file_rename($asset_dir, $cname, "css");
+
         $this->push($cname, [
             "css",
             "head",
             null,
-            sprintf('<link rel="stylesheet" href="%s%s.css">', $asset_url, $cname)
+            sprintf('<link rel="stylesheet" href="%s%s.css">', $asset_url, $new_name)
         ]);
+    }
+
+    public function write_css_links() {
+        foreach ($this->assets as $id => $asset) {
+            if ($asset[0] == "link" && str_starts_with($id, "@assets")) {
+                dbg("header-link", $id);
+            }
+        }
+    }
+    static public function hash_file_rename(string $dirname, string $fname, string $extension): string {
+        $hash = hash_file('xxh3', $dirname . "/$fname" . "." . $extension);
+        $new_name = $fname . "." . $hash;
+        rename($dirname . "/$fname" . "." . $extension, $dirname . "/$new_name" . "." . $extension);
+        return $new_name;
     }
 }

@@ -79,7 +79,7 @@ class phuety {
             // $this->expression_parser = new SMPLang(['strrev' => 'strrev']);
         }
     }
-    public function set_custom_tag($tag) {
+    public function set_custom_tag(string $tag) {
         $this->compiler->set_custom_tag($tag);
     }
     public function set_helper(array $helper) {
@@ -149,7 +149,7 @@ class phuety {
         return $pfx . $path;
     }
 
-    public function collect($cname): asset {
+    public function collect(string $cname): asset {
         if (isset($this->collected[$cname])) return $this->collected[$cname];
         $all_components = [];
         $this->collect_all($cname, $all_components);
@@ -162,7 +162,7 @@ class phuety {
         return $assetholder;
     }
 
-    public function collect_all($cname, array &$visited) {
+    public function collect_all(string $cname, array &$visited) {
         $component = $this->get_component($cname);
         $visited[$cname] = true;
         if ($component->components) {
@@ -172,7 +172,7 @@ class phuety {
         }
     }
 
-    public function is_component($tagname) {
+    public function is_component(string $tagname): bool {
         return str_contains($tagname, $this->component_name_separator);
 
         // alternative: look for prefixes
@@ -198,11 +198,11 @@ tagname app.layout
 cname app_layout
 location layout => layout => layout
 */
-    public function get_component_source_location($tagname) {
+    public function get_component_source_location(string $tagname): string|Closure {
         return $this->map->resolve($tagname, $this->component_name_separator);
     }
 
-    public function get_component_name_from_filename($filename, $mapkey, $mapvalue) {
+    public function get_component_name_from_filename(string $filename, string $mapkey, string $mapvalue): string {
         // single component rule
         if (!str_ends_with($mapkey, "*")) return $mapkey;
 
@@ -214,7 +214,8 @@ location layout => layout => layout
         if ($expand) return $prefix . "." . $tagname;
         return $tagname;
     }
-    public function get_component_source($tagname): array|Closure {
+
+    public function get_component_source(string $tagname): array|Closure {
         $path = $this->get_component_source_location($tagname);
         if (!$path) die("could not resolve component source for $tagname");
         if ($path instanceof Closure) return $path;
@@ -266,7 +267,7 @@ location layout => layout => layout
         return $comp;
     }
 
-    public function load_component($name, $tmp = false): component|Closure {
+    public function load_component(string $name, $tmp = false): component|Closure {
         // $cname = str_replace('-', '_', $name); //  . '_component';
         $comp = $this->load_component_class($name, $this->cbase);
         if ($tmp) unlink(new ReflectionClass($comp)->getFileName());
@@ -282,7 +283,7 @@ location layout => layout => layout
         return $comp;
     }
 
-    public function load_component_class($name, $dir) {
+    public function load_component_class(string $name, string $dir): component {
         $cname = "$name" . '_component';
         $classname = "compiled\\$name" . '_component';
         if (file_exists($dir . '/' . $cname . '.php')) {

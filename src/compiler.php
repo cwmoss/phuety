@@ -18,11 +18,11 @@ class compiler {
         $this->cbase = $engine->cbase;
     }
 
-    public function set_custom_tag($tag) {
+    public function set_custom_tag(string $tag) {
         $this->custom_tags[] = $tag;
     }
 
-    public function compile($name, array $src) {
+    public function compile(string $name, array $src) {
         [$source, $src_file, $is_compiled] = $src;
         if ($is_compiled) return;
 
@@ -73,14 +73,14 @@ class compiler {
         return $uid;
     }
 
-    public function compile_template($name, $parts) {
+    public function compile_template($name, parts $parts) {
         $compiler = new template_compiler($parts->dom, [], $this->engine->compiler_options, $parts->head, $parts->total_rootelements);
         $res = $compiler->compile();
         $parts->render = $res;
         $parts->components = $compiler->components;
         return $res;
     }
-    public function create_component($name, parts $parts) {
+    public function create_component(string $name, parts $parts) {
         // dbg("create component", $name, $parts);
         # print "create component $name";
         // print_r($parts);
@@ -148,7 +148,7 @@ class compiler {
             file_put_contents($gendir . '/' . $fname, $code);
         }
     }
-    public function get_use_statements($code) {
+    public function get_use_statements(string $code): array {
         $use = preg_match_all("/^\s*use\s+[^;]+;\s*$/ms", $code, $mat, \PREG_SET_ORDER);
         if (!$mat) return [$code, ""];
 
