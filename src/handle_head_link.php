@@ -20,6 +20,8 @@ class handle_head_link {
             $node->removeAttribute("nobuild");
             return true;
         }
+        // TODO: why
+        if (!isset($attrs["href"])) return true;
         // if (!str_starts_with($attrs["href"], "@assets")) return true;
         $new_name = $this->asset_compiler->compile_head_css($attrs["href"]);
         $node->setAttribute("href", $new_name);
