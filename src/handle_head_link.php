@@ -15,6 +15,7 @@ class handle_head_link {
     public function handle(HtmlElement $node, parts $parts): bool {
         if ($node->tagName != "LINK") return false;
         $attrs = dom::attributes($node);
+        if ($attrs["rel"] != "stylesheet") return false;
         if (isset($attrs["nobuild"])) {
             $node->removeAttribute("nobuild");
             return true;
