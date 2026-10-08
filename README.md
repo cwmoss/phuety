@@ -1,6 +1,6 @@
 ## Start
 
-    # you'll need php8.4 with the dom extension enabled
+    # you'll need php8.5 with the dom extension enabled
     composer require cwmoss/phuety dev-main
 
     # for running the demo, you'll need a qr code package
@@ -23,10 +23,10 @@ _phuety_ gives you a nice way to code the html views in your application.
 
 <table>
 <tr>
-    <td><a href="#if-ph-if">:if</a></td>
-    <td><a href="#else-ph-else">:else</a></td>
+    <td><a href="#if-ph-if">:if, ph-if</a></td>
+    <td><a href="#else-ph-else">:else, ph-else</a></td>
     <td><a href="#elseif-ph-elseif">:elseif, ph-elseif</td>
-    <td><a href="#foreach-ph-foreach">:foreach</a></td>
+    <td><a href="#foreach-ph-foreach">:foreach, ph-foreach</a></td>
 </tr>
 <tr>
     <td><a href="#html-ph-html">:html, ph-html</a></td>
@@ -42,13 +42,15 @@ _phuety_ gives you a nice way to code the html views in your application.
 </tr>
 </table>
 
-## How?
+## How does it work?
 
 ### Naming
 
 All Components have a dot in it's name.
 
 The name is all lowercase. It must start with a letter and can contain numbers. It must contain at least one dot (.). Don't use dashes as they are reserved for Web Components.
+
+To find a component you must use a Component map, that maps the name to a file (ex. <page.home> => pages/home.phue.php). if the map is empty, all components are supposed to be in the default templates folder. Read more under "Component Map"
 
 ### Phuety Components are Single File Components (SFC)
 
